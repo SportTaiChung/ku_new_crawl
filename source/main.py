@@ -8,6 +8,7 @@ import time;
 import js2py
 import numpy
 
+from random import Random
 import websocket
 
 default_headers = {'user-agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'}
@@ -22,6 +23,20 @@ WR_index = 1
 BB_index = 1
 
 eval_res, jsfile = js2py.run_file("pako.js")
+eval_res, password = js2py.run_file("account.js")
+
+BB_Last = {}
+
+defaultMachineId = "c1000b11349e8d89dbb53f19b17ee805"
+
+def randomMachineId():
+    str = ''
+    chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
+    length = len(chars) - 1
+    random = Random()
+    for i in range(32):
+        str+=chars[random.randint(0,length)]
+    return str.lower()
 
 def WRKeepLive(ws):
     if ws :
@@ -42,34 +57,44 @@ def BBKeepLive(ws):
         print("BB keeplive stop.")
 
 def on_WR_message(ws, message):
+    print("BB raw : "  + message)
     cc = jsfile.pako.inflate(message, {'to':"string"})
     print("WR : " + cc)
 
 def on_BB_message(ws, message):
+    print("BB raw : "  + message)
     cc = jsfile.pako.inflate(message, {'to':"string"})
+    BB_Last = cc
     print("BB : "  + cc)
 
 def on_WR_error(ws, error):
-    print("WR : " + error)
+    print("WR error : " + str(error))
 
 def on_BB_error(ws, error):
-    print("BB : " + error)
+    print("BB error : " + str(error))
 
 def on_WR_close(ws, close_status_code, close_msg):
-    print("### WR closed ###")
+    print("### WR closed ###" + str(close_msg))
 
 def on_BB_close(ws, close_status_code, close_msg):
-    print("### BB closed ###")
+    print("### BB closed ### " + str(close_msg))
 
 def on_WR_open(ws):
     print("WR Opened connection")
+    global WR_index
     ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(WR_index) + ',"stick":1}')
+    WR_index += 1
     time.sleep(keepLive_time)
     BBKeepLive(ws)
 
 def on_BB_open(ws):
     print("BB Opened connection")
+    global BB_index, BB_Last
+    #if bool(BB_Last) == False :
+    #    ws.send('{"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + '}')
+
     ws.send('{"action":"cst","module":0,"device":0,"mode":1,"sport":12,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}')
+    BB_index += 1
     time.sleep(keepLive_time)
     WRKeepLive(ws)
 
@@ -109,8 +134,11 @@ def openWebSocket(url, option, protocol, type):
     ws.run_forever(origin="https://dsp.nbb21f.net")
 
 def MemCookie(urlArary):
+    #machineId = randomMachineId()
+    machineId = defaultMachineId
+
     ts = calendar.timegm(time.gmtime())
-    url = urlArary[2] + urlArary[0] + "&brsVal=c1000b11349e8d89dbb53f19b17ee805" + "&jsoncallback=success_jsonpCallback&_=" + str(ts)
+    url = urlArary[2] + urlArary[0] + "&brsVal=" + machineId + "&jsoncallback=success_jsonpCallback&_=" + str(ts)
 
     r = session_requests.get(url)
     if r.status_code == 200:
@@ -132,7 +160,16 @@ def getqueryString(url, key):
         if value[0] == key:
             return value[1]
 
-def requestOpenWocket(token, SourceType, urlArray, urlSearch, protocol):
+def openSocket(SourceType, urlArray, urlSearch, protocol):
+    if SourceType == "BBRS":
+        type = "BB" 
+    else:
+        type = "WR"
+    for url in urlArray:
+        a = threading.Thread(target = openWebSocket, args = ("wss://" + url + "/", urlSearch, protocol, type,))
+        a.start()
+
+def requestOpenSocket(token, SourceType, urlArray, urlSearch):
     
     header = {}
     header['user-agent'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'
@@ -150,23 +187,7 @@ def requestOpenWocket(token, SourceType, urlArray, urlSearch, protocol):
     r = session_requests.post(url, headers = header, data= payload )
     if r.status_code == 200:
         response = json.loads(r.text)
-        if response["open"]:
-            if SourceType == "BBRS":
-                a = threading.Thread(target = openWebSocket, args = ("wss://" + urlArray[2] + "/", urlSearch, protocol, "BB",))
-                a.start()
-                #openWebSocket("wss://" + urlArray[0] + "/", urlSearch, protocol, "BB")
-                #BB_index += 1
-                #openWebSocket("wss://" + urlArray[1] + "/", urlSearch, protocol, "BB")
-                #BB_index += 1
-                #openWebSocket("wss://" + urlArray[2] + "/", urlSearch, protocol, "BB")
-            if SourceType == "WRRS":
-                a = threading.Thread(target = openWebSocket, args = ("wss://" + urlArray[2] + "/", urlSearch, protocol, "WR",))
-                a.start()
-                #openWebSocket("wss://" + urlArray[0] + "/", urlSearch, protocol, "WR")
-                #WR_index += 1
-                #openWebSocket("wss://" + urlArray[1] + "/", urlSearch, protocol, "WR")
-                #WR_index += 1
-                #openWebSocket("wss://" + urlArray[2] + "/", urlSearch, protocol, "WR")
+        print("requestOpenSocket : " + r.text)
 
 def goToLoby(lobyUrl):
     print("Go To Loby : " + lobyUrl)
@@ -203,21 +224,21 @@ def goToLoby(lobyUrl):
         sessionId = dataJson["Account"] + "_" + dataJson["SessionID"];
         print("sessionId : " + sessionId)
 
-        #requestOpenWocket(sessionId, "BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"]);
-        #requestOpenWocket(sessionId, "WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"]);
-        #a = threading.Thread(target = openWebSocket, args = ("wss://" + dataJson["BBWSUrl"][0] + "/", dataJson["BBUrlSearch"], dataJson["BBProtocol"], "BB",))
-        #a.start()
         
-        b = threading.Thread(target = requestOpenWocket, args = (sessionId, "WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"], dataJson["WRProtocol"],))
+        b = threading.Thread(target = openSocket, args = ("WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"], dataJson["WRProtocol"],))
         b.start()
 
-        a = threading.Thread(target = requestOpenWocket, args = (sessionId, "BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"], dataJson["BBProtocol"],))
+        a = threading.Thread(target = openSocket, args = ("BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"], dataJson["BBProtocol"],))
         a.start()
+
+        time.sleep(1)
+        requestOpenSocket(sessionId, "WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"])
+        requestOpenSocket(sessionId, "BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"])
+
         a.join()
         b.join()
-
-        #openWebSocket("wss://" + dataJson["WRWSUrl"][0] + "/", dataJson["WRUrlSearch"], dataJson["WRProtocol"], "WR")
-        #openWebSocket("wss://" + dataJson["BBWSUrl"][1] + "/", dataJson["BBUrlSearch"], dataJson["BBProtocol"], "BB")
+        while True:
+            time.sleep(1)
 
 def goToGameLogin():
     header = default_headers
@@ -245,7 +266,12 @@ def goToGameLogin():
         goToLoby("https://dcf.nbb21cf.net/" + body[startIndex:endIndex])
 
 
-r = session_requests.post('https://www.wa777.net/LoadData/Pd.ashx', data = {'txtUser':'qunnie56','txtPassword':'987f3a2f51b086fca44f0b95c262f9ab','screenSize':''}, headers = default_headers)
+userName = "78gg787"
+pwd = "878bb87"
+#userName = "hnbg123456"
+#pwd = "aaq13ss"
+
+r = session_requests.post('https://www.wa777.net/LoadData/Pd.ashx', data = {'txtUser': userName,'txtPassword': password.SetHMACMD5(pwd),'screenSize':''}, headers = default_headers)
 if r.status_code == 200:
     response = json.loads(r.text)
     headers = r.headers
