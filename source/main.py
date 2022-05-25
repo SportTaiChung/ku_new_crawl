@@ -57,27 +57,30 @@ def BBKeepLive(ws):
         print("BB keeplive stop.")
 
 def on_WR_message(ws, message):
-    print("BB raw : "  + message)
     cc = jsfile.pako.inflate(message, {'to':"string"})
     print("WR : " + cc)
 
 def on_BB_message(ws, message):
-    print("BB raw : "  + message)
+    global BB_Last
     cc = jsfile.pako.inflate(message, {'to':"string"})
     BB_Last = cc
     print("BB : "  + cc)
 
 def on_WR_error(ws, error):
-    print("WR error : " + str(error))
+    print("WR error : ")
+    print(error)
 
 def on_BB_error(ws, error):
-    print("BB error : " + str(error))
+    print("BB error : ")
+    print(error)
 
 def on_WR_close(ws, close_status_code, close_msg):
-    print("### WR closed ###" + str(close_msg))
+    print("### WR closed ###")
+    print(close_msg)
 
 def on_BB_close(ws, close_status_code, close_msg):
-    print("### BB closed ### " + str(close_msg))
+    print("### BB closed ### ")
+    print(close_msg)
 
 def on_WR_open(ws):
     print("WR Opened connection")
@@ -89,11 +92,15 @@ def on_WR_open(ws):
 
 def on_BB_open(ws):
     print("BB Opened connection")
-    global BB_index, BB_Last
-    #if bool(BB_Last) == False :
-    #    ws.send('{"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + '}')
-
-    ws.send('{"action":"cst","module":0,"device":0,"mode":1,"sport":12,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}')
+    global BB_index, BB_Last, VERIFY
+    sendCommand = ""
+    if bool(BB_Last) == False :
+        sendCommand = '{"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + '}'
+    else:
+        sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":12,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+    
+    print("BB Send : " + sendCommand)
+    ws.send(sendCommand)
     BB_index += 1
     time.sleep(keepLive_time)
     WRKeepLive(ws)
@@ -191,6 +198,7 @@ def requestOpenSocket(token, SourceType, urlArray, urlSearch):
 
 def goToLoby(lobyUrl):
     print("Go To Loby : " + lobyUrl)
+    global VERIFY
     header = {}
     header['user-agent'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'
     header['authority'] = 'dsp.nbb21f.net'
@@ -201,6 +209,8 @@ def goToLoby(lobyUrl):
     
     r = session_requests.get(lobyUrl, headers = header)
     if r.status_code == 200:
+        print("KU Loby headers : ")
+        print(r.headers)
         rawBody = r.text
         startKey = "window.connStr = "
         endKey = ";"
@@ -225,6 +235,7 @@ def goToLoby(lobyUrl):
         print("sessionId : " + sessionId)
 
         
+        time.sleep(5)
         b = threading.Thread(target = openSocket, args = ("WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"], dataJson["WRProtocol"],))
         b.start()
 
@@ -239,6 +250,11 @@ def goToLoby(lobyUrl):
         b.join()
         while True:
             time.sleep(1)
+    else :
+        print("Status : " + r.status_code)
+        print("header : " + r.headers)
+        print("body_text : " + r.text)
+
 
 def goToGameLogin():
     header = default_headers
@@ -266,10 +282,10 @@ def goToGameLogin():
         goToLoby("https://dcf.nbb21cf.net/" + body[startIndex:endIndex])
 
 
-userName = "78gg787"
-pwd = "878bb87"
-#userName = "hnbg123456"
-#pwd = "aaq13ss"
+#userName = "78gg787"
+#pwd = "878bb87"
+userName = "hnbg123456"
+pwd = "aaq13ss"
 
 r = session_requests.post('https://www.wa777.net/LoadData/Pd.ashx', data = {'txtUser': userName,'txtPassword': password.SetHMACMD5(pwd),'screenSize':''}, headers = default_headers)
 if r.status_code == 200:
