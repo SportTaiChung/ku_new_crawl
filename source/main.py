@@ -4,12 +4,12 @@ import datetime
 import json
 from threading import Timer
 import calendar;
-import time;
+import time
 import js2py
 import numpy
-
 from random import Random
 import websocket
+
 
 default_headers = {'user-agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'}
 
@@ -28,6 +28,8 @@ eval_res, password = js2py.run_file("account.js")
 BB_Last = {}
 
 defaultMachineId = "c1000b11349e8d89dbb53f19b17ee805"
+
+FP = None
 
 def randomMachineId():
     str = ''
@@ -61,9 +63,10 @@ def on_WR_message(ws, message):
     print("WR : " + cc)
 
 def on_BB_message(ws, message):
-    global BB_Last
+    global BB_Last, FP
     cc = jsfile.pako.inflate(message, {'to':"string"})
     BB_Last = cc
+    FP.write(cc + "\n")
     print("BB : "  + cc)
 
 def on_WR_error(ws, error):
@@ -90,20 +93,38 @@ def on_WR_open(ws):
     time.sleep(keepLive_time)
     BBKeepLive(ws)
 
+def BB_change(ws):
+    global BB_index
+    if ws :
+        command = '{"action":"cm","sport":11,"mode":2,"type":1,"dc":' + str(BB_index) + '}'
+        print("Send BB change. " + command)
+        ws.send(command)
+        BB_index += 1
+    else:
+        print("BB keeplive stop.")
+
 def on_BB_open(ws):
     print("BB Opened connection")
     global BB_index, BB_Last, VERIFY
     sendCommand = ""
     if bool(BB_Last) == False :
         sendCommand = '{"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + '}'
+        BB_Last = sendCommand
     else:
-        sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":12,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+        sendCommand = '{"action":"cst","module":0,"device":0,"mode":2,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
     
     print("BB Send : " + sendCommand)
     ws.send(sendCommand)
     BB_index += 1
+
     time.sleep(keepLive_time)
     WRKeepLive(ws)
+    r = Timer(30, BB_change, (ws,))
+    r.start()
+
+    sendCommand = '{"action":"cst","module":0,"device":0,"mode":2,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+    ws.send(sendCommand)
+
 
 def openWebSocket(url, option, protocol, type):
     print("Open WebSocket : " + url + option)
@@ -282,20 +303,26 @@ def goToGameLogin():
         goToLoby("https://dcf.nbb21cf.net/" + body[startIndex:endIndex])
 
 
-#userName = "78gg787"
-#pwd = "878bb87"
-userName = "hnbg123456"
-pwd = "aaq13ss"
+#userName = "hnbg123456"
+#pwd = "aaq13ss"
+userName = "78gg787"
+pwd = "878bb87"
+
+datetime_dt = datetime.datetime.today()
+datetime_dt = datetime_dt + datetime.timedelta(hours=8)
+datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+fileName = "debug_" + datetime_str
+FP = open(fileName + ".log", "a")
 
 r = session_requests.post('https://www.wa777.net/LoadData/Pd.ashx', data = {'txtUser': userName,'txtPassword': password.SetHMACMD5(pwd),'screenSize':''}, headers = default_headers)
 if r.status_code == 200:
+    print(r.text)
     response = json.loads(r.text)
     headers = r.headers
 
     memCookie = response["SData"].split("#")
     default_headers["cookie"] = headers["Set-Cookie"]
     MemCookie(memCookie)
-
 
 else: 
     print("Login Fail")
