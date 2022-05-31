@@ -5,6 +5,7 @@ import json
 from threading import Timer
 import calendar;
 import time
+import zlib
 import js2py
 import numpy
 from random import Random
@@ -22,7 +23,6 @@ VERIFY = ""
 WR_index = 1
 BB_index = 1
 
-eval_res, jsfile = js2py.run_file("pako.js")
 eval_res, password = js2py.run_file("account.js")
 
 BB_Last = {}
@@ -30,6 +30,16 @@ BB_Last = {}
 defaultMachineId = "c1000b11349e8d89dbb53f19b17ee805"
 
 FP = None
+
+def pako_inflate(data):
+
+    decompress = zlib.decompressobj(15)
+
+    decompressed_data = decompress.decompress(data)
+
+    decompressed_data += decompress.flush()
+
+    return decompressed_data
 
 def randomMachineId():
     str = ''
@@ -59,15 +69,16 @@ def BBKeepLive(ws):
         print("BB keeplive stop.")
 
 def on_WR_message(ws, message):
-    cc = jsfile.pako.inflate(message, {'to':"string"})
-    print("WR : " + cc)
+    cc = pako_inflate(message)
+    print("WR : " + str(cc))
 
 def on_BB_message(ws, message):
     global BB_Last, FP
-    cc = jsfile.pako.inflate(message, {'to':"string"})
+    cc = pako_inflate(message)
     BB_Last = cc
-    FP.write(cc + "\n")
-    print("BB : "  + cc)
+    print("BB : " + str(cc))
+    FP.write(str(cc) + "\n")
+    oo = json.loads(cc)
 
 def on_WR_error(ws, error):
     print("WR error : ")
@@ -303,16 +314,27 @@ def goToGameLogin():
         goToLoby("https://dcf.nbb21cf.net/" + body[startIndex:endIndex])
 
 
-#userName = "hnbg123456"
-#pwd = "aaq13ss"
-userName = "78gg787"
-pwd = "878bb87"
+userName = "hnbg123456"
+pwd = "aaq13ss"
+#userName = "78gg787"
+#pwd = "878bb87"
+
+DEBUG = 0
+BB_URL = ['twrs3.nbbrstw1.net:6125', 'sgrs1.nbbrstw1.net:6125', 'hkrs1.nbbrstw1.net:6125']
+BBUrlSearch = "?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142"
+BBProtocol = "e872700db368b1d2"
 
 datetime_dt = datetime.datetime.today()
 datetime_dt = datetime_dt + datetime.timedelta(hours=8)
 datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
 fileName = "debug_" + datetime_str
 FP = open(fileName + ".log", "a")
+
+if DEBUG == 1: 
+    a = threading.Thread(target = openSocket, args = ("BBRS", BB_URL, BBUrlSearch, BBProtocol,))
+    a.start()
+    a.join()
+    exit()
 
 r = session_requests.post('https://www.wa777.net/LoadData/Pd.ashx', data = {'txtUser': userName,'txtPassword': password.SetHMACMD5(pwd),'screenSize':''}, headers = default_headers)
 if r.status_code == 200:

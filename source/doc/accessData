@@ -1,0 +1,67 @@
+WRUrlSearch : ?user=78gg787&sid=otbwsbxhrm1iuojmt4o4uf0c&v=1654005417950
+WRProtocol : 3db1b2cd24f16b05
+sessionId : 78GG787_otbwsbxhrm1iuojmt4o4uf0c
+Open WebSocket : wss://twwr3.nbbrstw1.net:9515/?user=78gg787&sid=otbwsbxhrm1iuojmt4o4uf0c&v=1654005417950
+Open WebSocket : wss://twrs3.nbbrstw1.net:6125/?user=78gg787&sid=otbwsbxhrm1iuojmt4o4uf0c&v=1654005417950
+Open WebSocket : wss://sgwr1.nbbrstw1.net:9515/?user=78gg787&sid=otbwsbxhrm1iuojmt4o4uf0c&v=1654005417950
+Open WebSocket : wss://hkwr1.nbbrstw1.net:9515/?user=78gg787&sid=otbwsbxhrm1iuojmt4o4uf0c&v=1654005417950
+Open WebSocket : wss://sgrs1.nbbrstw1.net:6125/?user=78gg787&sid=otbwsbxhrm1iuojmt4o4uf0c&v=1654005417950
+Open WebSocket : wss://hkrs1.nbbrstw1.net:6125/?user=78gg787&sid=otbwsbxhrm1iuojmt4o4uf0c&v=1654005417950
+BB Opened connection
+BB Send : {"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"d528df7a319f2217","dc":1}
+
+
+WRUrlSearch : ?user=hnbg123456&sid=dng0th5xmofvbi1lxufw2nkc&v=1654005508773
+WRProtocol : 0b23843cfeceacc8
+sessionId : HNBG123456_dng0th5xmofvbi1lxufw2nkc
+Open WebSocket : wss://twwr3.nbbrstw1.net:9515/?user=hnbg123456&sid=dng0th5xmofvbi1lxufw2nkc&v=1654005508773
+Open WebSocket : wss://twrs3.nbbrstw1.net:6125/?user=hnbg123456&sid=dng0th5xmofvbi1lxufw2nkc&v=1654005508773
+Open WebSocket : wss://sgwr1.nbbrstw1.net:9515/?user=hnbg123456&sid=dng0th5xmofvbi1lxufw2nkc&v=1654005508773
+Open WebSocket : wss://hkwr1.nbbrstw1.net:9515/?user=hnbg123456&sid=dng0th5xmofvbi1lxufw2nkc&v=1654005508773
+Open WebSocket : wss://sgrs1.nbbrstw1.net:6125/?user=hnbg123456&sid=dng0th5xmofvbi1lxufw2nkc&v=1654005508773
+Open WebSocket : wss://hkrs1.nbbrstw1.net:6125/?user=hnbg123456&sid=dng0th5xmofvbi1lxufw2nkc&v=1654005508773
+BB Opened connection
+BB Send : {"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"e5df01bd72a11a6a","dc":1}
+
+
+
+['twrs3.nbbrstw1.net:6125', 'sgrs1.nbbrstw1.net:6125', 'hkrs1.nbbrstw1.net:6125']
+BBUrlSearch : ?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+BBProtocol : e872700db368b1d2
+WRWSUrl : 
+['twwr3.nbbrstw1.net:9515', 'sgwr1.nbbrstw1.net:9515', 'hkwr1.nbbrstw1.net:9515']
+WRUrlSearch : ?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+WRProtocol : e872700db368b1d2
+sessionId : 78GG787_iluai2ogtmor3i5h5hgxenc5
+Open WebSocket : wss://twwr3.nbbrstw1.net:9515/?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+Open WebSocket : wss://twrs3.nbbrstw1.net:6125/?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+Open WebSocket : wss://sgwr1.nbbrstw1.net:9515/?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+Open WebSocket : wss://sgrs1.nbbrstw1.net:6125/?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+Open WebSocket : wss://hkrs1.nbbrstw1.net:6125/?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+Open WebSocket : wss://hkwr1.nbbrstw1.net:9515/?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142
+WR Opened connection
+BB Opened connection
+BB Send : {"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"c3cebab1a2a3cc3d","dc":1}
+BB Opened connection
+BB Send : {"action":"cst","module":0,"device":0,"mode":2,"sport":11,"deposit":0,"modeId":11,"verify":"c3cebab1a2a3cc3d","dc":2,"type":1,"stick":1}
+WR Opened connection
+
+
+['twrs3.nbbrstw1.net:6125', 'sgrs1.nbbrstw1.net:6125', 'hkrs1.nbbrstw1.net:6125']
+BBUrlSearch : ?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+BBProtocol : deaf688bf58060fa
+WRWSUrl : 
+['twwr3.nbbrstw1.net:9515', 'sgwr1.nbbrstw1.net:9515', 'hkwr1.nbbrstw1.net:9515']
+WRUrlSearch : ?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+WRProtocol : deaf688bf58060fa
+sessionId : HNBG123456_vk543bjndv45b31nrldavltl
+Open WebSocket : wss://twwr3.nbbrstw1.net:9515/?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+Open WebSocket : wss://twrs3.nbbrstw1.net:6125/?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+Open WebSocket : wss://hkwr1.nbbrstw1.net:9515/?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+Open WebSocket : wss://sgrs1.nbbrstw1.net:6125/?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+Open WebSocket : wss://sgwr1.nbbrstw1.net:9515/?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+Open WebSocket : wss://hkrs1.nbbrstw1.net:6125/?user=hnbg123456&sid=vk543bjndv45b31nrldavltl&v=1654006805109
+BB Opened connection
+BB Send : {"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"96bf6beb60e3f532","dc":1}
+BB error : 
+
