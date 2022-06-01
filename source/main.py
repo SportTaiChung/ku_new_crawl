@@ -10,7 +10,8 @@ import js2py
 import numpy
 from random import Random
 import websocket
-
+import action as Action
+from upload import init_session, upload_data
 
 default_headers = {'user-agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'}
 
@@ -30,16 +31,6 @@ BB_Last = {}
 defaultMachineId = "c1000b11349e8d89dbb53f19b17ee805"
 
 FP = None
-
-def pako_inflate(data):
-
-    decompress = zlib.decompressobj(15)
-
-    decompressed_data = decompress.decompress(data)
-
-    decompressed_data += decompress.flush()
-
-    return decompressed_data
 
 def randomMachineId():
     str = ''
@@ -69,16 +60,16 @@ def BBKeepLive(ws):
         print("BB keeplive stop.")
 
 def on_WR_message(ws, message):
-    cc = pako_inflate(message)
-    print("WR : " + str(cc))
+    data = Action.onNext(message)
 
 def on_BB_message(ws, message):
-    global BB_Last, FP
-    cc = pako_inflate(message)
-    BB_Last = cc
-    print("BB : " + str(cc))
-    FP.write(str(cc) + "\n")
-    oo = json.loads(cc)
+    global connection, channel, _upload_status, mq_url
+    data = Action.onNext(message)
+    if connection.is_closed or channel.is_closed or not _upload_status:
+         if connection.is_open:
+             connection.close()
+         connection, channel = init_session(mq_url)
+    _upload_status = upload_data(channel, data, "11")
 
 def on_WR_error(ws, error):
     print("WR error : ")
@@ -319,22 +310,17 @@ pwd = "aaq13ss"
 #userName = "78gg787"
 #pwd = "878bb87"
 
-DEBUG = 0
-BB_URL = ['twrs3.nbbrstw1.net:6125', 'sgrs1.nbbrstw1.net:6125', 'hkrs1.nbbrstw1.net:6125']
-BBUrlSearch = "?user=78gg787&sid=iluai2ogtmor3i5h5hgxenc5&v=1654006624142"
-BBProtocol = "e872700db368b1d2"
+#datetime_dt = datetime.datetime.today()
+#datetime_dt = datetime_dt + datetime.timedelta(hours=8)
+#datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+#fileName = "debug_" + datetime_str
+#FP = open(fileName + ".log", "a")
 
-datetime_dt = datetime.datetime.today()
-datetime_dt = datetime_dt + datetime.timedelta(hours=8)
-datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
-fileName = "debug_" + datetime_str
-FP = open(fileName + ".log", "a")
 
-if DEBUG == 1: 
-    a = threading.Thread(target = openSocket, args = ("BBRS", BB_URL, BBUrlSearch, BBProtocol,))
-    a.start()
-    a.join()
-    exit()
+#mq_url = 'amqp://user:password@ip:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
+mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
+connection, channel = init_session(mq_url)
+_upload_status = True
 
 r = session_requests.post('https://www.wa777.net/LoadData/Pd.ashx', data = {'txtUser': userName,'txtPassword': password.SetHMACMD5(pwd),'screenSize':''}, headers = default_headers)
 if r.status_code == 200:

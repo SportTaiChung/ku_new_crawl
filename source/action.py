@@ -1,9 +1,27 @@
 import time
+import zlib
+import json
+import datetime
 import APHDC_pb2 as protobuf_spec
 
 GAME_TYPE = {}
 GAME_LIST = {}
 
+datetime_dt = datetime.datetime.today()
+datetime_dt = datetime_dt + datetime.timedelta(hours=14)
+datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+fileName = "debug_" + datetime_str
+FP = open(fileName + ".log", "a")
+
+def pako_inflate(data):
+
+    decompress = zlib.decompressobj(15)
+
+    decompressed_data = decompress.decompress(data)
+
+    decompressed_data += decompress.flush()
+
+    return decompressed_data
 
 class langFont:
     Font_SCStatus = ["未開賽", "上半場", "中場", "下半場", "LIVE", "結束"]
@@ -359,14 +377,15 @@ def TransformStatus(gameType, timeOption):
     gameType = "sc" if IsSC(gameType) else gameType 
     return o[gameType][timeOption] if o[gameType] and o[gameType][timeOption] else ""
 
-def TransformRunTime(gameType, timeStr):
+def TransformRunTime(gameType, timeStr, crawlTime):
     if "-60" == timeStr :
         return TransformStatus(gameType, 60) 
     else :
         try:
             runTime = time.strptime(timeStr, "%Y/%m/%d %H:%M:%S")
-            diffTime = int(time.time()) - int(time.mktime(runTime))
-            return str(diffTime / 60 / 1000)
+            nowTime = time.strptime(crawlTime, "%Y/%m/%d %H:%M:%S")
+            diffTime = int(time.mktime(nowTime)) - int(time.mktime(runTime))
+            return str(int(diffTime / 60))
         except ValueError:
             return timeStr
 
@@ -375,7 +394,7 @@ def addZero(n, t):
 
 def TransformNumToPk(gameType, lineStr):
     if lineStr == "":
-        return "" 
+        return "0" 
 
     if -1 == lineStr:
         return "0"
@@ -384,32 +403,35 @@ def TransformNumToPk(gameType, lineStr):
 
     try:
         checkArray.index(gameType)
-        t = round(abs(lineStr) / 1e3 * 200);
-        r = int(lineStr / 200);
-        a = lineStr % 200
+        r = int(int(lineStr) / 1e3)
+        a = int(lineStr) % 1e3
+        if 0 == a or 500 == a : 
+            return str(int(lineStr) / 1e3) + "" 
+        elif 250 == a : 
+            return str(r) + "/" + str(r + .5) 
+        elif 750 == a : 
+            return str(r + .5) + "/" + str(r + 1) 
+        else:
+            return "0"
+
+    except ValueError:
+        t = round(abs(int(lineStr)) / 1e3 * 200);
+        r = int(lineStr) / 200;
+        a = int(lineStr) % 200
         if 100 < a : 
             a = 200 - a
             r += 1
-            return r + "+" + o(a, 2) 
+            return str(r) + "+" + addZero(a, 2) 
         elif 0 == a : 
             return str(r) + "" 
         elif 100 == a : 
             return str(r) + ".5" 
         else : 
-            return str(r) + "-" + o(a, 2)
-
-    except ValueError:
-        a = int(lineStr) % 1e3
-        if 0 == a or 500 == a : 
-            return str(int(lineStr) / 1e3) + "" 
-        elif 250 == a : 
-            return str(r) + "/" + (r + .5) 
-        elif 750 == a : 
-            return str(r) + .5 + "/" + (r + 1) 
-        else:
-            return ""
+            return str(r) + "-" + addZero(a, 2)
 
 def ActionFirst(jsonData):
+    global datetime_str
+
     menuList = jsonData["menu"]["list"]
 
     for gameType in jsonData["ally"]:
@@ -431,7 +453,7 @@ def ActionFirst(jsonData):
 
     event_proto_list = []
 
-    data = protobuf_spec.ApHdcArr()
+    dataList = protobuf_spec.ApHdcArr()
 
     for odds in gameOddsList : 
 
@@ -451,42 +473,53 @@ def ActionFirst(jsonData):
             event.game_class = TransformGameType(gameType) 
             event.raw_event_id = gameRoundId
             event.game_id = gameRoundId
-            event.ip = "0.0.0.0"
+            event.ip = "192.168.1.1"
             event.status = '0'
+
             event.event_time = gameRound[9]
+
+            #event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
+
             event.source_updatetime = jsonData["date"]
+            
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
-            event.live_time = TransformRunTime(gameType, gameRound[10])
+            event.live_time = TransformRunTime(gameType, gameRound[10], jsonData["date"])
+
 
             event.information.league = GAME_TYPE[gameRound[1]]["name"] 
+
             event.information.home.team_name = gameRound[2][0]
+
             event.information.away.team_name = gameRound[3][0]
         
-            if IsSC(gameType) :
-                event.redcard.home = score[2] if len(score[2]) > 0 else 0
-                event.redcard.away = score[3] if len(score[3]) > 0 else 0
-
-                if jsonData["type"] == 2: #是否為"角球"
-                    event.conner.home = 0
-                    event.conner.away = 0
-
-
             score = gameScoreList[gameRoundId]
+
+            if IsSC(gameType) :
+                event.redcard.home = score[2] if len(score[2]) > 0 else '0'
+                event.redcard.away = score[3] if len(score[3]) > 0 else '0'
+                event.yellowcard.home = '0'
+                event.yellowcard.away = '0'
+            
+                if jsonData["type"] == 2: #是否為"角球"
+                    event.conner.home = '0'
+                    event.conner.away = '0'
+
             event.score.home = score[0]
             event.score.away = score[1]
 
-            if oddClass == 0: #全場
+            if oddClass == "0": #全場
                 event.game_type = "full"
-            if oddClass == 1: #上半場
+            if oddClass == "1": #上半場
                 event.game_type = "1st half"
 
             lineStr = TransformNumToPk(oddItem[0], oddItem[8])
+
             #讓分
             if oddType == 1:
                 lineAt = oddItem[9] # 1: 主讓 , 2: 客讓
-                event.twZF.homeZF.line = "-" if lineAt == 1 else "+" + lineStr
+                event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
                 event.twZF.homeZF.odds = str(oddItem[13])
-                event.twZF.awayZF.line = "+" if lineAt == 1 else "-" + lineStr
+                event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
                 event.twZF.awayZF.odds = str(oddItem[15])
 
             #大小
@@ -504,8 +537,11 @@ def ActionFirst(jsonData):
             elif oddType == 4:
                 event.sd.home = str(oddItem[13])
                 event.sd.away = str(oddItem[15])
-
+            
             event_proto_list.append(event)
+
+    dataList.aphdc.extend(event_proto_list)
+    return dataList
 
 '''
 def ActionAdd(jsonData){
@@ -522,17 +558,25 @@ def ActionUpdate(jsonData){
     global GAME_LIST
 
 }
+'''
 
-def onNext(jsonData){
+def onNext(messageZip):
+    global FP
 
-    if jsonData.action == "first" || jsonData.action == "cm" : 
+    messageUnzip = pako_inflate(messageZip)
+    messageDecode = messageUnzip.decode("utf-8")
+    messageJson = json.loads(messageDecode)
+    FP.write(str(cc) + "\n")
+    FP.flush()
 
-    elif jsonData.action == "add" : 
-    elif jsonData.action == "del" : 
-    elif jsonData.action == "update" : 
+    if messageJson["action"] == "first" or messageJson["action"] == "cm" : 
+        ActionFirst(messageJson)
+    elif messageJson["action"] == "add" : 
+        print(messageJson)
+    elif messageJson["action"] == "del" : 
+        print(messageJson)
+    elif messageJson["action"] == "update" : 
+        print(messageJson)
     else :
         print("Unknown Action : " + jsonData.action + "\n" + json.dumps(jsonData))
 
-
-}
-'''
