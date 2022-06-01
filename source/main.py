@@ -19,8 +19,6 @@ session_requests = requests.session()
 
 keepLive_time = 25
 
-VERIFY = ""
-
 WR_index = 1
 BB_index = 1
 
@@ -65,11 +63,17 @@ def on_WR_message(ws, message):
 def on_BB_message(ws, message):
     global connection, channel, _upload_status, mq_url
     data = Action.onNext(message)
-    if connection.is_closed or channel.is_closed or not _upload_status:
-         if connection.is_open:
-             connection.close()
-         connection, channel = init_session(mq_url)
-    _upload_status = upload_data(channel, data, "11")
+
+    try: 
+        if connection.is_closed or channel.is_closed or not _upload_status:
+            if connection.is_open:
+                connection.close()
+            connection, channel = init_session(mq_url)
+    
+        _upload_status = upload_data(channel, data, "11")
+    except:
+        print("Can't connect to MQ.")
+    
 
 def on_WR_error(ws, error):
     print("WR error : ")
@@ -191,13 +195,20 @@ def getqueryString(url, key):
             return value[1]
 
 def openSocket(SourceType, urlArray, urlSearch, protocol):
+    socketList = []
     if SourceType == "BBRS":
         type = "BB" 
     else:
         type = "WR"
-    for url in urlArray:
+    for index, url in enumerate(urlArray):
         a = threading.Thread(target = openWebSocket, args = ("wss://" + url + "/", urlSearch, protocol, type,))
         a.start()
+        socketList.append(a)
+
+    for socket in socketList:
+        socket.join()
+
+    print(SourceType + " is closed")
 
 def requestOpenSocket(token, SourceType, urlArray, urlSearch):
     
@@ -221,7 +232,7 @@ def requestOpenSocket(token, SourceType, urlArray, urlSearch):
 
 def goToLoby(lobyUrl):
     print("Go To Loby : " + lobyUrl)
-    global VERIFY
+    global VERIFY, BBUrl, BBUrlSearch, BBProtocol, WRUrl, WRUrlSearch, WRProtocol, SessionId
     header = {}
     header['user-agent'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'
     header['authority'] = 'dsp.nbb21f.net'
@@ -246,33 +257,40 @@ def goToLoby(lobyUrl):
         print("Verify : " + VERIFY)
         print("BBWSUrl : ")
         print(dataJson["BBWSUrl"])
+        BBUrl = dataJson["BBWSUrl"]
+        BBUrlSearch = dataJson["BBUrlSearch"]
         print("BBUrlSearch : " + dataJson["BBUrlSearch"])
+        BBProtocol = dataJson["BBProtocol"]
         print("BBProtocol : " + dataJson["BBProtocol"])
 
         print("WRWSUrl : ")
         print(dataJson["WRWSUrl"])
+        WRUrl = dataJson["WRWSUrl"]
         print("WRUrlSearch : " + dataJson["WRUrlSearch"])
+        WRUrlSearch = dataJson["WRUrlSearch"]
         print("WRProtocol : " + dataJson["WRProtocol"])
+        WRProtocol = dataJson["WRProtocol"]
 
-        sessionId = dataJson["Account"] + "_" + dataJson["SessionID"];
-        print("sessionId : " + sessionId)
+        SessionId = dataJson["Account"] + "_" + dataJson["SessionID"];
+        print("sessionId : " + SessionId)
 
         
         time.sleep(5)
-        b = threading.Thread(target = openSocket, args = ("WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"], dataJson["WRProtocol"],))
-        b.start()
-
-        a = threading.Thread(target = openSocket, args = ("BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"], dataJson["BBProtocol"],))
-        a.start()
-
-        time.sleep(1)
-        requestOpenSocket(sessionId, "WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"])
-        requestOpenSocket(sessionId, "BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"])
-
-        a.join()
-        b.join()
         while True:
+            b = threading.Thread(target = openSocket, args = ("WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"], dataJson["WRProtocol"],))
+            b.start()
+
+            a = threading.Thread(target = openSocket, args = ("BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"], dataJson["BBProtocol"],))
+            a.start()
+
             time.sleep(1)
+            requestOpenSocket(SessionId, "WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"])
+            requestOpenSocket(SessionId, "BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"])
+
+            a.join()
+            b.join()
+            print("Wait Sleep")
+            time.sleep(5)
     else :
         print("Status : " + r.status_code)
         print("header : " + r.headers)
@@ -305,10 +323,11 @@ def goToGameLogin():
         goToLoby("https://dcf.nbb21cf.net/" + body[startIndex:endIndex])
 
 
-userName = "hnbg123456"
-pwd = "aaq13ss"
-#userName = "78gg787"
-#pwd = "878bb87"
+#userName = "hnbg123456"
+#wd = "aaq13ss"
+
+userName = "78gg787"
+pwd = "878bb87"
 
 #datetime_dt = datetime.datetime.today()
 #datetime_dt = datetime_dt + datetime.timedelta(hours=8)
@@ -316,10 +335,27 @@ pwd = "aaq13ss"
 #fileName = "debug_" + datetime_str
 #FP = open(fileName + ".log", "a")
 
+BBUrl = []
+BBUrlSearch = "" 
+BBProtocol = ""
+
+WRUrl = []
+WRUrlSearch = ""
+WRProtocol = ""
+
+SessionId = ""
+
+VERIFY = ""
 
 #mq_url = 'amqp://user:password@ip:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
 mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
-connection, channel = init_session(mq_url)
+
+try:
+    print("Start connect to MQ.")
+    connection, channel = init_session(mq_url)
+except:
+    print("MQ can't connect")
+
 _upload_status = True
 
 r = session_requests.post('https://www.wa777.net/LoadData/Pd.ashx', data = {'txtUser': userName,'txtPassword': password.SetHMACMD5(pwd),'screenSize':''}, headers = default_headers)

@@ -566,7 +566,7 @@ def onNext(messageZip):
     messageUnzip = pako_inflate(messageZip)
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
-    FP.write(str(cc) + "\n")
+    FP.write(str(messageDecode) + "\n")
     FP.flush()
 
     if messageJson["action"] == "first" or messageJson["action"] == "cm" : 
@@ -578,5 +578,5 @@ def onNext(messageZip):
     elif messageJson["action"] == "update" : 
         print(messageJson)
     else :
-        print("Unknown Action : " + jsonData.action + "\n" + json.dumps(jsonData))
+        print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
 
