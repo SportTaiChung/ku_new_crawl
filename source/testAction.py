@@ -60,7 +60,7 @@ class TestActionMethods(unittest.TestCase):
             obj = json.loads(line)
             datetime_dt = datetime.datetime.today()
             datetime_dt = datetime_dt + datetime.timedelta(hours=8)
-            datetime_str = datetime_dt.strftime("%Y/%m/%d %H:%M")
+            datetime_str = datetime_dt.strftime("%Y/%m/%d %H:%M:%S")
             obj["date"] = datetime_str
             line = json.dumps(obj)
             gameOddsList, sportType = Action.onNext(line.encode("utf-8"))

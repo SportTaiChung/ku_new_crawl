@@ -429,10 +429,6 @@ def TransformNumToPk(gameType, lineStr):
         else : 
             return str(r) + "-" + addZero(a, 2)
 
-def TransformTimeFormat(oldTime):
-    oldFormat = time.strptime(oldTime, "%Y/%m/%d %H:%M")
-    return time.strftime('%Y-%m-%d %H:%M', oldFormat)
-
 def ActionFirst(jsonData):
     global datetime_str
 
@@ -480,11 +476,11 @@ def ActionFirst(jsonData):
             event.ip = "192.168.1.1"
             event.status = '0'
 
-            event.event_time = TransformTimeFormat(gameRound[9]) + ":00"
+            event.event_time = gameRound[9].replace('/', '-') + ":00"
 
             #event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-            event.source_updatetime = TransformTimeFormat(jsonData["date"]) + ":00.000"
+            event.source_updatetime = jsonData["date"].replace('/', '-') + ".000"
             
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
             event.live_time = TransformRunTime(gameType, gameRound[10], jsonData["date"])
@@ -549,7 +545,7 @@ def ActionFirst(jsonData):
 
 def onNext(messageUnzip):
     global FP, GAME_LIST
-
+    print(messageUnzip)
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
     FP.write(str(messageDecode) + "\n")
