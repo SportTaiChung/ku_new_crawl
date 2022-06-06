@@ -4,6 +4,7 @@ import js2py
 import numpy
 import json
 import requests
+import datetime
 from utils import getQueryString, getRandomMachineId, getBodyStr
 
 class LoginManager:
@@ -129,4 +130,22 @@ class LoginManager:
             print("Status : " + response.status_code)
             print("header : " + response.headers)
             print("body_text : " + response.text)
-            return {}        
+            return {}  
+            
+    def requestOpenSocket(self, token, SourceType, urlArray, urlSearch):
+        header = {}
+        header['user-agent'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'
+        header["Content-type"] = "application/json;charset=UTF-8"
+        header["Accept"] = "application/json, text/javascript, text/plain, */*; q=0.01"
+        header["Referer"] = "https://dcf.nbb21cf.net/js/v4084/min/XHRWorker.js"
+
+        datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
+        payload = "發送時間: " + str(datetime.datetime.now()) + "\r\ntoken: " + token + "\r\nsource: " + SourceType + "\r\n\r\nWS Connect Start!!!\r\nurlArray: "
+        payload += json.dumps(urlArray) + "\r\nUrlSearch:" + urlSearch + "\r\nLastUrlUpdateTime:0"
+    
+        payload = str(payload.encode("utf-8"))
+        url = "https://dcf.nbb21cf.net/ajax/AjaxLog.aspx?method=CircuitLog&mode=" + SourceType + "&isCompress=0"
+
+        response = self.session_requests.post(url, headers = header, data= payload )
+        if response.status_code == 200:
+            print("requestOpenSocket : " + response.text) 

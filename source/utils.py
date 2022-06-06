@@ -1,5 +1,3 @@
-
-
 def getQueryString(urlStr, key):
     strList = urlStr.split('?')[1]
     itemList = strList.split('&')
