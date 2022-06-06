@@ -34,7 +34,7 @@ def init_session(url):
 def upload_data(channel, data, sport_type_id):
     try:
         exchange = get_exchange_name(str(sport_type_id))
-        channel.basic_publish(exchange='test', routing_key='KU_SC', body=memoryview(data.SerializeToString()))
+        channel.basic_publish(exchange='test', routing_key=exchange, body=memoryview(data.SerializeToString()))
     except Exception:
         traceback.print_exc()
         return False

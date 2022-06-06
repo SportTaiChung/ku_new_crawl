@@ -71,8 +71,8 @@ def TransformGameType(typeId):
         gameName = "冠軍聯賽"
     elif gameType == 52 or gameType == "fi" :
         gameName = "五大聯賽"
-    elif gameType == 12 or gameType == "bk" :
-        gameName = "籃球"
+    elif gameType == 12 or gameType == "bk" : #"籃球"
+        gameName = "basketball"
     elif gameType == 13 or gameType == "bb" :
         gameName = "棒球"
     elif gameType == 14 or gameType == "tn" :
@@ -387,7 +387,7 @@ def TransformRunTime(gameType, timeStr, crawlTime):
             diffTime = int(time.mktime(nowTime)) - int(time.mktime(runTime))
             return str(int(diffTime / 60))
         except ValueError:
-            return timeStr
+            return timeStr if len(timeStr) > 0 else '0'
 
 def addZero(n, t):
     return "0" + str(n) if len(str(n)) < t else str(n)
@@ -428,6 +428,10 @@ def TransformNumToPk(gameType, lineStr):
             return str(r) + ".5" 
         else : 
             return str(r) + "-" + addZero(a, 2)
+
+def TransformTimeFormat(oldTime):
+    oldFormat = time.strptime(oldTime, "%Y/%m/%d %H:%M")
+    return time.strftime('%Y-%m-%d %H:%M', oldFormat)
 
 def ActionFirst(jsonData):
     global datetime_str
@@ -476,15 +480,14 @@ def ActionFirst(jsonData):
             event.ip = "192.168.1.1"
             event.status = '0'
 
-            event.event_time = gameRound[9]
+            event.event_time = TransformTimeFormat(gameRound[9]) + ":00"
 
             #event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
 
-            event.source_updatetime = jsonData["date"]
+            event.source_updatetime = TransformTimeFormat(jsonData["date"]) + ":00.000"
             
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
             event.live_time = TransformRunTime(gameType, gameRound[10], jsonData["date"])
-
 
             event.information.league = GAME_TYPE[gameRound[1]]["name"] 
 
@@ -504,8 +507,8 @@ def ActionFirst(jsonData):
                     event.conner.home = '0'
                     event.conner.away = '0'
 
-            event.score.home = score[0]
-            event.score.away = score[1]
+            event.score.home = score[0] if len(score[0]) > 0 else '0'
+            event.score.away = score[1] if len(score[1]) > 0 else '0'
 
             if oddClass == "0": #全場
                 event.game_type = "full"
@@ -518,65 +521,53 @@ def ActionFirst(jsonData):
             if oddType == 1:
                 lineAt = oddItem[9] # 1: 主讓 , 2: 客讓
                 event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-                event.twZF.homeZF.odds = str(oddItem[13])
+                event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
                 event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-                event.twZF.awayZF.odds = str(oddItem[15])
+                event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #大小
             elif oddType == 2:
                 event.twDS.line = lineStr
-                event.twDS.over = str(oddItem[13])
-                event.twDS.under = str(oddItem[15])
+                event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+                event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #獨贏
             elif oddType == 3:
-                event.de.home = str(oddItem[13])
-                event.de.away = str(oddItem[15])
+                event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+                event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #單雙
             elif oddType == 4:
-                event.sd.home = str(oddItem[13])
-                event.sd.away = str(oddItem[15])
+                event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+                event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
             
             event_proto_list.append(event)
 
     dataList.aphdc.extend(event_proto_list)
-    return dataList
+    return dataList, jsonData["sport"]
 
-'''
-def ActionAdd(jsonData){
-    global GAME_LIST
 
-}
+def onNext(messageUnzip):
+    global FP, GAME_LIST
 
-def ActionDel(jsonData){
-    global GAME_LIST
-
-}
-
-def ActionUpdate(jsonData){
-    global GAME_LIST
-
-}
-'''
-
-def onNext(messageZip):
-    global FP
-
-    messageUnzip = pako_inflate(messageZip)
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
     FP.write(str(messageDecode) + "\n")
     FP.flush()
 
-    if messageJson["action"] == "first" or messageJson["action"] == "cm" : 
-        ActionFirst(messageJson)
+    if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" : 
+        GAME_LIST = messageJson
+        return ActionFirst(messageJson)
     elif messageJson["action"] == "add" : 
-        print(messageJson)
+        return None, 11
+        #print(messageJson)
     elif messageJson["action"] == "del" : 
-        print(messageJson)
+        return None, 11
+        #print(messageJson)
     elif messageJson["action"] == "update" : 
-        print(messageJson)
+        #print(messageJson)
+        return None, 11
     else :
-        print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
+        #print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
+        return None, 11
 

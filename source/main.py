@@ -40,40 +40,43 @@ def randomMachineId():
     return str.lower()
 
 def WRKeepLive(ws):
-    if ws :
+    try :
         print("Send WR keeplive.")
         ws.send('{"action":"checkSN"}')
         r = Timer(keepLive_time, WRKeepLive, (ws,))
         r.start()
-    else:
+    except :
         print("WR keeplive stop.")
 
 def BBKeepLive(ws):
-    if ws :
+    try :
         print("Send BB keeplive.")
         ws.send('{"action":"checkTime"}')
         r = Timer(keepLive_time, BBKeepLive, (ws,))
         r.start()
-    else:
+    except :
         print("BB keeplive stop.")
 
 def on_WR_message(ws, message):
-    data = Action.onNext(message)
+    data = Action.onNext(Action.pako_inflate(message))
 
 def on_BB_message(ws, message):
     global connection, channel, _upload_status, mq_url
-    data = Action.onNext(message)
-
-    try: 
-        if connection.is_closed or channel.is_closed or not _upload_status:
-            if connection.is_open:
-                connection.close()
-            connection, channel = init_session(mq_url)
-    
-        _upload_status = upload_data(channel, data, "11")
-    except:
-        print("Can't connect to MQ.")
-    
+    protobufData, sportId = Action.onNext(Action.pako_inflate(message))
+    if not protobufData == None :
+        try:
+            if connection.is_closed or channel.is_closed or not _upload_status:
+                if connection.is_open:
+                    connection.close()
+           
+                connection, channel = init_session(mq_url)
+            print(protobufData)  
+            _upload_status = upload_data(channel, protobufData, sportId)
+            print(_upload_status)  
+        except:
+            print("Can't connect to MQ.")
+        else:
+            prnt("Send MQ status : " + _upload_status)
 
 def on_WR_error(ws, error):
     print("WR error : ")
@@ -117,19 +120,20 @@ def on_BB_open(ws):
         sendCommand = '{"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + '}'
         BB_Last = sendCommand
     else:
-        sendCommand = '{"action":"cst","module":0,"device":0,"mode":2,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+        sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
     
     print("BB Send : " + sendCommand)
     ws.send(sendCommand)
     BB_index += 1
 
+    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+    BB_index += 1
+    ws.send(sendCommand)
+
     time.sleep(keepLive_time)
     WRKeepLive(ws)
-    r = Timer(30, BB_change, (ws,))
-    r.start()
-
-    sendCommand = '{"action":"cst","module":0,"device":0,"mode":2,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
-    ws.send(sendCommand)
+    # r = Timer(30, BB_change, (ws,))
+    # r.start()
 
 
 def openWebSocket(url, option, protocol, type):
@@ -158,12 +162,12 @@ def openWebSocket(url, option, protocol, type):
             "Pragma: no-cache",
             "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits",
             "Sec-WebSocket-Protocol: " + protocol
-        ],
-        on_open=on_open,
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close
+        ]
     )
+    ws.on_open = on_open
+    ws.on_message = on_message
+    ws.on_error = on_error
+    ws.on_close = on_close
     #ws.run_forever()
     ws.run_forever(origin="https://dsp.nbb21f.net")
 
@@ -274,9 +278,12 @@ def goToLoby(lobyUrl):
         SessionId = dataJson["Account"] + "_" + dataJson["SessionID"];
         print("sessionId : " + SessionId)
 
-        
-        time.sleep(5)
+        print("Ready Connect to Websocket(10)")
+        time.sleep(10)
+        ts = 0.0
         while True:
+            if (time.time() - ts) < 5 :
+                break;
             b = threading.Thread(target = openSocket, args = ("WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"], dataJson["WRProtocol"],))
             b.start()
 
@@ -287,10 +294,14 @@ def goToLoby(lobyUrl):
             requestOpenSocket(SessionId, "WRRS", dataJson["WRWSUrl"], dataJson["WRUrlSearch"])
             requestOpenSocket(SessionId, "BBRS", dataJson["BBWSUrl"], dataJson["BBUrlSearch"])
 
+            ts = time.time()
+
             a.join()
             b.join()
             print("Wait Sleep")
             time.sleep(5)
+
+        print("EXIT !!!!!")
     else :
         print("Status : " + r.status_code)
         print("header : " + r.headers)
@@ -323,11 +334,11 @@ def goToGameLogin():
         goToLoby("https://dcf.nbb21cf.net/" + body[startIndex:endIndex])
 
 
-#userName = "hnbg123456"
-#wd = "aaq13ss"
+userName = "hnbg123456"
+pwd = "aaq13ss"
 
-userName = "78gg787"
-pwd = "878bb87"
+#userName = "78gg787"
+#pwd = "878bb87"
 
 #datetime_dt = datetime.datetime.today()
 #datetime_dt = datetime_dt + datetime.timedelta(hours=8)
@@ -353,8 +364,11 @@ mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_a
 try:
     print("Start connect to MQ.")
     connection, channel = init_session(mq_url)
+    print("MQ connect Success, pls change network.(10)")
+    time.sleep(10)
 except:
     print("MQ can't connect")
+
 
 _upload_status = True
 
