@@ -18,24 +18,27 @@ BB_Last = {}
 
 def on_BB_message(message):
     global connection, channel, _upload_status, mq_url
-    protobufData, sportId = Action.onNext(Action.pako_inflate(message))
+    Action.onNext(Action.pako_inflate(message))
     datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
-    if not protobufData == None :
-        print("[" + str(datetime.datetime.now()) + "]")
-        print(protobufData)
-    #     try:
-    #         if connection.is_closed or channel.is_closed or not _upload_status:
-    #             if connection.is_open:
-    #                 connection.close()
+    pushData = Action.getNowData()
+    for game in pushData:
+        if game == "menu":
+            continue
+        protobufData, gameType = Action.transformToProtobuf(pushData[game])
+        if not protobufData == None :
+            print("[" + str(datetime.datetime.now()) + "]")
+            try:
+                if connection.is_closed or channel.is_closed or not _upload_status:
+                    if connection.is_open:
+                        connection.close()
            
-    #             connection, channel = init_session(mq_url)
-    #         print(protobufData)  
-    #         _upload_status = upload_data(channel, protobufData, sportId)
-    #         print(_upload_status)  
-    #     except:
-    #         print("Can't connect to MQ.")
-    #     else:
-    #         print("Send MQ status : " + _upload_status)
+                    connection, channel = init_session(mq_url)
+                _upload_status = upload_data(channel, protobufData, gameType)
+                print(_upload_status)  
+            except:
+                print("Can't connect to MQ.")
+            else:
+                print("Send MQ status : " + str(_upload_status))
 
 
 def on_WR_open(ws):
@@ -49,7 +52,7 @@ def on_WR_open(ws):
 def BB_change(ws, index):
     global BB_index
     if ws :
-        command = '{"action":"cm","sport":11,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
+        command = '{"action":"ckg","sport":11,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
         print("Send BB change. " + command)
         ws.sendCommand(command)
         BB_index += 1
@@ -74,8 +77,8 @@ def on_BB_open(ws):
 
     BB_Last = sendCommand 
 
-    repeat1 = Timer(30, BB_change, (ws,1,))
-    repeat1.start()
+    #repeat1 = Timer(30, BB_change, (ws,1,))
+    #repeat1.start()
 
     repeat2 = Timer(60, BB_change, (ws,2,))
     repeat2.start()
@@ -108,23 +111,23 @@ def openSocket(SourceType, urlArray, urlSearch, protocol):
 
     print(SourceType + " is closed")
 
-#userName = "hnbg123456"
-#pwd = "aaq13ss"
+userName = "hnbg123456"
+pwd = "aaq13ss"
 
-userName = "78gg787"
-pwd = "878bb87"
+#userName = "78gg787"
+#pwd = "878bb87"
 
 VERIFY = ''
 
 mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
 
-# try:
-#     print("Start connect to MQ, pls change network to VPN.")
-#     connection, channel = init_session(mq_url)
-#     print("MQ connect Success, pls change network to normal.(10)")
-#     time.sleep(10)
-# except:
-#     print("MQ can't connect")
+try:
+    print("Start connect to MQ, pls change network to VPN.")
+    connection, channel = init_session(mq_url)
+    print("MQ connect Success, pls change network to normal.(10)")
+    time.sleep(10)
+except:
+    print("MQ can't connect")
 
 
 _upload_status = True
@@ -134,15 +137,13 @@ if __name__ == '__main__':
     loginResponse = loginManager.run()
     print(loginResponse)
     print("Ready Connect to Websocket(10), pls change network to VPN")
-    # time.sleep(10)
+    time.sleep(10)
     ts = 0.0
 
     BBUrl = loginResponse["BBWSUrl"]
     BBUrlSearch = loginResponse["BBUrlSearch"]
     BBProtocol = loginResponse["BBProtocol"]
     VERIFY = loginResponse["verify"]
-
-    
 
     while True:
         if (time.time() - ts) < 5 :

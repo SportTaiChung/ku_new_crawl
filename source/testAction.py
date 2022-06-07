@@ -50,12 +50,12 @@ class TestActionMethods(unittest.TestCase):
 
     def test_onNext(self):
         self._upload_status = True
-        # mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
-        # self.connection, self.channel = init_session(mq_url)
+        mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
+        self.connection, self.channel = init_session(mq_url)
 
         f = open("raw.log", "r")
         Lines = f.readlines()
-
+        index = 5
         for line in Lines :
             obj = json.loads(line)
             datetime_dt = datetime.datetime.today()
@@ -63,18 +63,25 @@ class TestActionMethods(unittest.TestCase):
             datetime_str = datetime_dt.strftime("%Y/%m/%d %H:%M:%S")
             obj["date"] = datetime_str
             line = json.dumps(obj)
-            gameOddsList, sportType = Action.onNext(line.encode("utf-8"))
-            #if not gameOddsList == None :
-                # if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
-                #     if self.connection.is_open:
-                #         self.connection.close()
-                #     self.connection, self.channel = init_session(mq_url)
+            Action.onNext(line.encode("utf-8"))
+            # index = Action.getNextGameType(11, index)
+            # print(index)
+            pushData = Action.getNowData()
+            for game in pushData:
+                if game == "menu":
+                    continue
+                gameOddsList, sportType = Action.transformToProtobuf(pushData[game])
+                if not gameOddsList == None :
+                    if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
+                        if self.connection.is_open:
+                            self.connection.close()
+                        self.connection, self.channel = init_session(mq_url)
 
-                #print(gameOddsList)
-                # self._upload_status = upload_data(self.channel, gameOddsList, sportType)
-                # print(self._upload_status)
+                    #print(gameOddsList)
+                    self._upload_status = upload_data(self.channel, gameOddsList, sportType)
+                    #print(self._upload_status)
 
-            time.sleep(1)
+            #time.sleep(1)
 
         f.close()
                    
@@ -89,7 +96,7 @@ class TestActionMethods(unittest.TestCase):
     #     datetime_dt = datetime_dt + datetime.timedelta(hours=8)
     #     datetime_str = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")[:-3]
     #     testJsonData["date"] = datetime_str
-    #     gameOddsList, sportType = Action.ActionFirst(testJsonData)
+    #     Action.ActionFirst(testJsonData)
 
     #     if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
     #         if self.connection.is_open:

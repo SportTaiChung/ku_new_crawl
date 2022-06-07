@@ -5,6 +5,7 @@ import datetime
 import APHDC_pb2 as protobuf_spec
 
 GAME_LIST = {}
+GAME_TYPE = {}
 
 datetime_dt = datetime.datetime.today()
 datetime_dt = datetime_dt + datetime.timedelta(hours=14)
@@ -429,7 +430,7 @@ def TransformNumToPk(gameType, lineStr):
             return str(r) + "-" + addZero(a, 2)
 
 def transformToProtobuf(jsonData):
-    global datetime_str
+    global datetime_str, GAME_TYPE
 
     for gameType in jsonData["ally"]:
         gameId = gameType[0]
@@ -490,6 +491,7 @@ def transformToProtobuf(jsonData):
         
             score = gameScoreList[gameRoundId]
 
+            #足球
             if IsSC(gameType) :
                 event.redcard.home = score[2] if len(score[2]) > 0 else '0'
                 event.redcard.away = score[3] if len(score[3]) > 0 else '0'
@@ -499,19 +501,27 @@ def transformToProtobuf(jsonData):
                 if jsonData["type"] == 2: #是否為"角球"
                     event.conner.home = '0'
                     event.conner.away = '0'
+                elif jsonData["type"] == 3: # 特15分鐘
+                    pass
+                elif jsonData["type"] == 4: # 波膽
+                    event.game_type = "pd "
+                elif jsonData["type"] == 5: #入球數
+                    event.game_type = "tg "
+                elif jsonData["type"] == 6: #半全場
+                    event.game_type = "hf "    
 
             event.score.home = score[0] if len(score[0]) > 0 else '0'
             event.score.away = score[1] if len(score[1]) > 0 else '0'
 
             if oddClass == "0": #全場
-                event.game_type = "full"
-            if oddClass == "1": #上半場
-                event.game_type = "1st half"
+                event.game_type += "full"
+            elif oddClass == "1": #上半場
+                event.game_type += "1st half"
 
             lineStr = TransformNumToPk(oddItem[0], oddItem[8])
 
             #讓分
-            if oddType == 1:
+            if oddType == 1 or oddType == 11:
                 lineAt = oddItem[9] # 1: 主讓 , 2: 客讓
                 event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
                 event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
@@ -519,26 +529,63 @@ def transformToProtobuf(jsonData):
                 event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #大小
-            elif oddType == 2:
+            elif oddType == 2 or oddType == 12:
                 event.twDS.line = lineStr
                 event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
                 event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #獨贏
-            elif oddType == 3:
+            elif oddType == 3 or oddType == 13:
                 event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
                 event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #單雙
-            elif oddType == 4:
+            elif oddType == 4 or oddType == 14:
                 event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
                 event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+
+            elif oddType == 61: #波膽 
+                event.multi = "{"
+                for oddItemIndex in range(12, (len(oddItem) - 1), 2):
+                    key = oddItem[oddItemIndex]
+                    odd = oddItem[oddItemIndex + 1]
+                    if key == "99":
+                        event.multi += "\"other\": " + str(odd)
+                    else :    
+                        event.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + str(odd) + ","
+                event.multi += "}"
+
+            elif oddType == 62: #入球數
+                event.multi = "{\"0-1\": \"" + str(oddItem[13]) + "\", \"2-3\": \"" + str(oddItem[15]) + "\", \"4-6\": \"" + str(oddItem[17]) + "\", \"7+\": \"" + str(oddItem[17]) + "\"}"
+
+            elif oddType == 63: #半全場
+                ## 11 : HH, 12:HA, 13: HD, 21 : AH, 22 : AA, 23 : AD, 31 : DH, 32 : DA, 33 : DD
+                ## HH : 13, HA : 15, HD : 17, AH : 19, AA : 21, AD : 23, DH : 25, DA : 27, DD : 29
+                event.multi = "{\"HH\": " + str(oddItem[13]) + ", \"HD\": " + str(oddItem[17]) + ", \"HA\": " + str(oddItem[15]) + ", \"DH\": " + str(oddItem[25]) + ", \"DD\": " + str(oddItem[29]) + ", \"DA\": " + str(oddItem[27]) + ", \"AH\": " + str(oddItem[19]) + ", \"AD\": " + str(oddItem[23]) + ", \"AA\": " + str(oddItem[21]) + "}"    
             
             event_proto_list.append(event)
 
     dataList.aphdc.extend(event_proto_list)
     return dataList, jsonData["sport"]
 
+def getNowData():
+    global GAME_LIST
+    return GAME_LIST
+
+def getNextGameType(gameType, nowIndex):
+    global GAME_LIST
+    if not "menu" in GAME_LIST:
+        return -1    
+    menuList = GAME_LIST["menu"]
+    for menu in menuList:
+        if menu["type"] == gameType:
+            gameCount = len(menu["count"])
+            if gameCount > (nowIndex + 1) and menu["count"][(nowIndex + 1)] > 0:
+                return (nowIndex + 1)
+            elif gameCount < (nowIndex + 1):
+                return 1
+            else :
+                return getNextGameType(gameType, (nowIndex + 1))
 
 def onNext(messageUnzip):
     global FP, GAME_LIST
@@ -554,16 +601,13 @@ def onNext(messageUnzip):
     gameType = str(messageJson["type"]) if "type" in messageJson else '0'
     searchKey = sport + "_" + mode + "_" + gameType
 
-    if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" : 
+    if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" or messageJson["action"] == "ckg": 
         GAME_LIST[searchKey] = messageJson
         GAME_LIST["menu"] = messageJson["menu"]["list"]
-        return GAME_LIST, 11
     elif messageJson["action"] == "add" : 
-        return None, 11
-        #print(messageJson)
+        pass
     elif messageJson["action"] == "del" : 
-        return None, 11
-        #print(messageJson)
+        pass
     elif messageJson["action"] == "update" : 
         if "odds" in messageJson: #更新賠率
             if searchKey in GAME_LIST:
@@ -588,7 +632,7 @@ def onNext(messageUnzip):
 
                                         if "l" in updateItem:
                                             line = updateItem["l"]
-                                            ddItme[8] = line
+                                            oddItme[8] = line
                                         print("Find " + str(pathList) + " and Update " + str(oddItme))
                                         break 
                                 break                            
@@ -598,11 +642,8 @@ def onNext(messageUnzip):
                 print("Can't find key : " + searchKey)     
         elif "menu" in messageJson:
             GAME_LIST["menu"] = messageJson["menu"]["list"]
-        #elif "score" in messageJson:
-
-        print(json.dumps(GAME_LIST))
-        return None, 11
+        elif "score" in messageJson:
+            pass
     else :
-        #print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
-        return None, 11
+        print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
 
