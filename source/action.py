@@ -605,9 +605,40 @@ def onNext(messageUnzip):
         GAME_LIST[searchKey] = messageJson
         GAME_LIST["menu"] = messageJson["menu"]["list"]
     elif messageJson["action"] == "add" : 
-        pass
+        if searchKey in GAME_LIST:
+            gameAllList = GAME_LIST[searchKey]
+            if "game" in messageJson:
+                for newItem in messageJson["game"]:
+                    gameAllList["game"].append(newItem)
+
+            if "ally" in messageJson:
+                for newItem in messageJson["ally"]:
+                    gameAllList["ally"].append(newItem) 
+
+            if "score" in messageJson:
+                for newItem in messageJson["score"]:
+                    gameAllList["score"][newItem] = messageJson["score"][newItem]
+
+            if "odds" in messageJson:
+                for newItem in messageJson["odds"]:
+                    gameAllList["odds"].append(newItem)                 
+
     elif messageJson["action"] == "del" : 
-        pass
+        if "val" in messageJson:
+            if searchKey in GAME_LIST:
+                oddsAllList = GAME_LIST[searchKey]["odds"]
+                deleteList = messageJson["val"]  
+                for deleteItem in deleteList:
+                    for index, oddsList in enumerate(oddsAllList):
+                        if deleteItem[0] == oddsList[0]:
+                            for oddIndex in range(1, len(oddsList)):
+                                oddItme = oddsList[oddIndex]
+                                if deleteItem[1] == oddItme[3] and deleteItem[2] == oddItme[0]:
+                                    print("Find " + str(oddItme) + " and deleted")
+                                    del GAME_LIST[searchKey]["odds"][index][oddIndex]
+                                    break
+                            break                               
+
     elif messageJson["action"] == "update" : 
         if "odds" in messageJson: #更新賠率
             if searchKey in GAME_LIST:
