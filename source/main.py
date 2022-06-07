@@ -21,7 +21,8 @@ def on_BB_message(message):
     protobufData, sportId = Action.onNext(Action.pako_inflate(message))
     datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
     if not protobufData == None :
-        print("[" + str(datetime.datetime.now()) + "]" + protobufData)
+        print("[" + str(datetime.datetime.now()) + "]")
+        print(protobufData)
     #     try:
     #         if connection.is_closed or channel.is_closed or not _upload_status:
     #             if connection.is_open:
@@ -45,15 +46,18 @@ def on_WR_open(ws):
     time.sleep(keepLive_time)
     WRKeepLive(ws)
 
-def BB_change(ws):
+def BB_change(ws, index):
     global BB_index
     if ws :
-        command = '{"action":"cm","sport":11,"mode":2,"type":1,"dc":' + str(BB_index) + '}'
+        command = '{"action":"cm","sport":11,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
         print("Send BB change. " + command)
-        ws.send(command)
+        ws.sendCommand(command)
         BB_index += 1
     else:
         print("BB keeplive stop.")
+
+def on_keepLive(ws):
+    ws.sendCommand('{"action":"checkTime"}')
 
 def on_BB_open(ws):
     print("BB Opened connection")
@@ -61,26 +65,40 @@ def on_BB_open(ws):
     sendCommand = ""
     if bool(BB_Last) == False :
         sendCommand = '{"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + '}'
-        BB_Last = sendCommand
-    else:
-        sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
-    
-    ws.sendCommand(sendCommand)
-    BB_index += 1
-
+        ws.sendCommand(sendCommand)
+        BB_index += 1
+  
     sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+    ws.sendCommand(sendCommand)
     BB_index += 1
 
-    ws.sendCommand(sendCommand)
+    BB_Last = sendCommand 
 
-    # time.sleep(keepLive_time)
-    # BBKeepLive(ws)
+    repeat1 = Timer(30, BB_change, (ws,1,))
+    repeat1.start()
+
+    repeat2 = Timer(60, BB_change, (ws,2,))
+    repeat2.start()
+
+    repeat3 = Timer(90, BB_change, (ws,3,))
+    repeat3.start()
+
+    repeat4 = Timer(120, BB_change, (ws,4,))
+    repeat4.start()
+
+    repeat5 = Timer(150, BB_change, (ws,5,))
+    repeat5.start()
+
+    repeat6 = Timer(180, BB_change, (ws,6,))
+    repeat6.start()        
+    
+    
 
 def openSocket(SourceType, urlArray, urlSearch, protocol):
     socketList = []
 
     for index, url in enumerate(urlArray):
-        socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message)
+        socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message, on_keepLive=on_keepLive)
         a = threading.Thread(target = socket.connect)
         a.start()
         socketList.append(a)

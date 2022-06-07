@@ -1,5 +1,6 @@
 import websocket
 from enum import Enum
+from threading import Timer
 
 class KuWebSocket():
     class Status(Enum):
@@ -12,9 +13,8 @@ class KuWebSocket():
 
     keepLiveTime = 25
     _status = Status.NONE
-    keepLiveMessage = ""
 
-    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None):
+    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None):
         self.url = "wss://" + url + "/" + urlSearch
         self.protocol = protocol
         self.KuWebSocket = websocket.WebSocketApp(
@@ -37,6 +37,7 @@ class KuWebSocket():
         self._on_message = on_message
         self._on_error = on_error
         self._on_close = on_close
+        self._on_keepLive = on_keepLive
         self._status = self.Status.INITED
 
     def on_close(self, ws, close_status_code, close_msg):
@@ -49,20 +50,39 @@ class KuWebSocket():
     def on_error(self, ws, error):
         print("[" + str(self.url) + "] error : ")
         print(error)
+
         if not self._on_error == None :
             self._on_error(error)
 
     def on_message(self, ws, message):
         print("[" + str(self.url) + "] Recv : ")
         print(message)
+
         if not self._on_message == None :
             self._on_message(message)
 
     def on_open(self, ws):
         self._status = self.Status.CONNECTED
         print("[" + str(self.url) + "] Opened connected.")
+        
         if not self._on_open == None :
             self._on_open(self)
+
+        repeat = Timer(self.keepLiveTime, self.keepLive)
+        repeat.start()
+
+    def keepLive(self):
+        try:
+            if self._status == self.Status.CONNECTED :
+                print("[" + str(self.url) + "] keepLive.")
+                if not self._on_keepLive == None :
+                     self._on_keepLive(self)
+
+                repeat = Timer(self.keepLiveTime, self.keepLive)
+                repeat.start()
+        except :
+            print("[" + str(self.url) + "] keepLive Stop.")
+
 
     def sendCommand(self, message):
         try :

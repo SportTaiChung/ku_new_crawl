@@ -4,7 +4,6 @@ import json
 import datetime
 import APHDC_pb2 as protobuf_spec
 
-GAME_TYPE = {}
 GAME_LIST = {}
 
 datetime_dt = datetime.datetime.today()
@@ -429,10 +428,8 @@ def TransformNumToPk(gameType, lineStr):
         else : 
             return str(r) + "-" + addZero(a, 2)
 
-def ActionFirst(jsonData):
+def transformToProtobuf(jsonData):
     global datetime_str
-
-    menuList = jsonData["menu"]["list"]
 
     for gameType in jsonData["ally"]:
         gameId = gameType[0]
@@ -545,15 +542,22 @@ def ActionFirst(jsonData):
 
 def onNext(messageUnzip):
     global FP, GAME_LIST
-    print(messageUnzip)
+    #print(messageUnzip)
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
     FP.write(str(messageDecode) + "\n")
     FP.flush()
+    
+    
+    sport = str(messageJson["sport"]) if "sport" in messageJson else '0'
+    mode = str(messageJson["mode"]) if "mode" in messageJson else '0'
+    gameType = str(messageJson["type"]) if "type" in messageJson else '0'
+    searchKey = sport + "_" + mode + "_" + gameType
 
     if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" : 
-        GAME_LIST = messageJson
-        return ActionFirst(messageJson)
+        GAME_LIST[searchKey] = messageJson
+        GAME_LIST["menu"] = messageJson["menu"]["list"]
+        return GAME_LIST, 11
     elif messageJson["action"] == "add" : 
         return None, 11
         #print(messageJson)
@@ -561,7 +565,42 @@ def onNext(messageUnzip):
         return None, 11
         #print(messageJson)
     elif messageJson["action"] == "update" : 
-        #print(messageJson)
+        if "odds" in messageJson: #更新賠率
+            if searchKey in GAME_LIST:
+                oddsAllList = GAME_LIST[searchKey]["odds"]
+                updateList = messageJson["odds"]
+                for updateItem in updateList:
+                    if "path" in updateItem :
+                        pathList = updateItem["path"]
+                        for oddsList in oddsAllList:
+                            if pathList[0] == oddsList[0]:
+                                for oddIndex in range(1, len(oddsList)):
+                                    oddItme = oddsList[oddIndex]
+                                    if pathList[1] == oddItme[3] and pathList[2] == oddItme[0]:
+                                        if "o" in updateItem:
+                                            odd = updateItem["o"]
+                                            if odd[0] == "1" :
+                                                oddItme[13] = odd[1]
+                                            elif odd[0] == "2" :
+                                                oddItme[15] = odd[1]
+                                            elif odd[0] == "3" :
+                                                oddItme[17] = odd[1]
+
+                                        if "l" in updateItem:
+                                            line = updateItem["l"]
+                                            ddItme[8] = line
+                                        print("Find " + str(pathList) + " and Update " + str(oddItme))
+                                        break 
+                                break                            
+                    else :
+                        print("Can't find key[path] in " + updateItem)                    
+            else:
+                print("Can't find key : " + searchKey)     
+        elif "menu" in messageJson:
+            GAME_LIST["menu"] = messageJson["menu"]["list"]
+        #elif "score" in messageJson:
+
+        print(json.dumps(GAME_LIST))
         return None, 11
     else :
         #print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
