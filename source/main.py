@@ -13,7 +13,7 @@ from kuWebSocket import KuWebSocket
 
 WR_index = 1
 BB_index = 1
-
+typeIndex = 1
 BB_Last = {}
 
 def on_BB_message(message):
@@ -60,7 +60,12 @@ def BB_change(ws, index):
         print("BB keeplive stop.")
 
 def on_keepLive(ws):
+    global typeIndex
     ws.sendCommand('{"action":"checkTime"}')
+
+    typeIndex = getNextGameType(11, typeIndex)
+    repeat = Timer(30, BB_change, (ws, typeIndex,))
+    repeat.start()
 
 def on_BB_open(ws):
     print("BB Opened connection")
@@ -77,26 +82,6 @@ def on_BB_open(ws):
 
     BB_Last = sendCommand 
 
-    #repeat1 = Timer(30, BB_change, (ws,1,))
-    #repeat1.start()
-
-    repeat2 = Timer(60, BB_change, (ws,2,))
-    repeat2.start()
-
-    repeat3 = Timer(90, BB_change, (ws,3,))
-    repeat3.start()
-
-    repeat4 = Timer(120, BB_change, (ws,4,))
-    repeat4.start()
-
-    repeat5 = Timer(150, BB_change, (ws,5,))
-    repeat5.start()
-
-    repeat6 = Timer(180, BB_change, (ws,6,))
-    repeat6.start()        
-    
-    
-
 def openSocket(SourceType, urlArray, urlSearch, protocol):
     socketList = []
 
@@ -111,11 +96,11 @@ def openSocket(SourceType, urlArray, urlSearch, protocol):
 
     print(SourceType + " is closed")
 
-userName = "hnbg123456"
-pwd = "aaq13ss"
+#userName = "hnbg123456"
+#pwd = "aaq13ss"
 
-#userName = "78gg787"
-#pwd = "878bb87"
+userName = "78gg787"
+pwd = "878bb87"
 
 VERIFY = ''
 
@@ -154,7 +139,7 @@ if __name__ == '__main__':
         # # requestOpenSocket(SessionId, "WRRS", WRUrl, WRUrlSearch)
         # # requestOpenSocket(SessionId, "BBRS", BBUrl, BBUrlSearch)
 
-        # ts = time.time()       
+        ts = time.time()       
         print("Wait Sleep")
         time.sleep(5)
 
