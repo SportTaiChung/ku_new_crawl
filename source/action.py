@@ -3,6 +3,7 @@ import zlib
 import json
 import datetime
 import APHDC_pb2 as protobuf_spec
+from constants import GameType, langFont
 
 GAME_LIST = {}
 GAME_TYPE = {}
@@ -17,23 +18,6 @@ def pako_inflate(data):
 
     return decompressed_data
 
-class langFont:
-    Font_SCStatus = ["未開賽", "上半場", "中場", "下半場", "LIVE", "結束"]
-    Font_BKStatus = ["未開賽", "第1節", "第2節", "第3節", "第4節", "LIVE", "中場", "暫停", "上半場", "下半場", "加時", "結束", "中斷"]
-    Font_BBStatus = ["未開賽", "1上", "1下", "2上", "2下", "3上", "3下", "4上", "4下", "5上", "5下", "6上", "6下", "7上", "7下", "8上", "8下", "9上", "9下", "LIVE", "OT上", "OT下", "結束", "10上", "10下", "11上", "11下", "12上", "12下", "13>上", "13下", "14上", "14下", "15上", "15下", "16上", "16下", "17上", "17下", "18上", "18下", "19上", "19下", "20上", "20下", "21上", "21下", "22上", "22下", "23上", "23下", "24上", "24下", "25上", "25下", "26上", "26下", "27上", "27下", "28上", "28下", "29上", "29下", "30上", "30下", "31上", "31下", "32上", "32下", "33上", "33下", "34上", "34下", "35上", "35下", "36上", "36下", "37上", "37下", "38上", "38下", "39上", "39下", "40上", "40下", "41上", "41下", "42上", "42下", "43上", "43下", "44上", "44下", "45上", "45下", "46上", "46下", "47上", "47下", "48上", "48下", "49上", "49下", "50上", "50下"]
-    Font_TNStatus = ["未開賽", "第1盤", "第2盤", "第3盤", "第4盤", "第5盤", "LIVE", "結束", "中斷"]
-    Font_IHStatus = ["未開賽", "第1節", "第2節", "第3節", "加時", "LIVE", "中場", "結束", "中斷"]
-    Font_VLStatus = ["未開賽", "第1局", "第2局", "第3局", "第4局", "第5局", "第6>局", "第7局", "LIVE", "結束", "中斷"]
-    Font_BMStatus = ["未開賽", "第1局", "第2局", "第3局", "第4局", "第5局", "LIVE", "結束", "中斷"]
-    Font_ESStatus = ["未開賽", "第1局", "第2局", "第3局", "第4局", "第5局", "第6>局", "第7局", "LIVE", "結束", "中斷"]
-    Font_AFStatus = ["未開賽", "第1節", "第2節", "第3節", "第4節", "中場", "暫停", "上半", "下半", "加時", "LIVE", "結束", "中斷"]
-    Font_PBStatus = ["未開賽", "LIVE"]
-    Font_TTStatus = ["未開賽", "第1局", "第2局", "第3局", "第4局", "第5局", "第6>局", "第7局", "LIVE", "結束", "中斷"]
-    Font_HBStatus = ["未開賽", "上半場", "中場", "下半場", "加時", "LIVE", "結束", "中斷"]
-    Font_WPStatus = ["未開賽", "第1節", "第2節", "第3節", "第4節", "暫停", "上半", "中場", "下半", "加時", "LIVE", "結束", "中斷"]
-    Font_OPStatus = ["未開賽", "LIVE"]
-    Font_BXStatus = ["未開賽"]
-
 #Test
 def IsSC(type):
     try:
@@ -41,74 +25,6 @@ def IsSC(type):
     except ValueError:
         return False
 
-#Test
-def AllyNameProcess(id, name):
-    return name + " - 加時賽" if id.endswith("3") else name
-
-def TransformGameType(typeId, gameDisplayName):
-    gameName = ""
-    if typeId.isdigit():
-        gameType = int(typeId)
-    else :
-        gameType = typeId
-
-    if gameType == 100 or gameType == "cs" :
-        gameName = "即將開賽"
-    elif gameType == 11 or gameType == "sc" : #足球
-        gameName = "soccer"
-    elif gameType == 26 or gameType == "eu" : #歐洲冠軍聯賽
-        gameName = "UCL"
-    elif gameType == 27 or gameType == "wd" : #世界杯
-        gameName = "wsc"
-    elif gameType == 51 or gameType == "ch" :
-        gameName = "冠軍聯賽"
-    elif gameType == 52 or gameType == "fi" :
-        gameName = "五大聯賽"
-    elif gameType == 12 or gameType == "bk" : #"籃球"
-        if "NBA" in gameDisplayName:
-            gameName = "basketball"
-        else :    
-            gameName = "otherbasketball"
-    elif gameType == 13 or gameType == "bb" :
-        gameName = "棒球"
-    elif gameType == 14 or gameType == "tn" :
-        gameName = "網球"
-    elif gameType == 15 or gameType == "ih" :
-        gameName = "冰球"
-    elif gameType == 16 or gameType == "vl" :
-        gameName = "排球"
-    elif gameType == 17 or gameType == "bm" :
-        gameName = "羽毛球"
-    elif gameType == 18 or gameType == "es" :
-        gameName = "電子競技"
-    elif gameType == 19 or gameType == "as" :
-        gameName = "美足"
-    elif gameType == 20 or gameType == "pb" :
-        gameName = "撞球"
-    elif gameType == 21 or gameType == "tt" :
-        gameName = "乒乓球"
-    elif gameType == 22 or gameType == "hb" :
-        gameName = "手球"
-    elif gameType == 23 or gameType == "wp" :
-        gameName = "水球"
-    elif gameType == 99 or gameType == "fv" :
-        gameName = "收藏夾"
-    elif gameType == 53 or gameType == "op" :
-        gameName = "冬季奧運會"
-    elif gameType == 24 or gameType == "ot" :
-        gameName = "其它"
-    elif gameType == 28 or gameType == "bx" :
-        gameName = "拳擊"
-    elif gameType == 54 or gameType == "tv" :
-        gameName = "轉播賽事"
-    elif gameType == 10 or gameType == "pass" :
-        gameName = "過關"
-    else :
-        gameName = ""
-
-    return gameName
-
-#Test
 def TransformStatus(gameType, timeOption):
     global langFont
     o = {
@@ -372,6 +288,80 @@ def TransformStatus(gameType, timeOption):
     };
     gameType = "sc" if IsSC(gameType) else gameType 
     return o[gameType][timeOption] if o[gameType] and o[gameType][timeOption] else ""
+
+#Test
+def AllyNameProcess(id, name):
+    return name + " - 加時賽" if id.endswith("3") else name
+
+def TransformGameType(typeId, gameDisplayName):
+    gameName = None
+    if typeId.isdigit():
+        gameType = int(typeId)
+    else :
+        gameType = typeId
+
+    if gameType == 100 or gameType == "cs" :  #"即將開賽"
+        gameName = GameType.other
+    elif gameType == 11 or gameType == "sc" : #足球
+        gameName = GameType.soccer
+    elif gameType == 26 or gameType == "eu" : #歐洲冠軍聯賽
+        gameName = GameType.UCL
+    elif gameType == 27 or gameType == "wd" : #世界杯
+        gameName = GameType.wsc
+    elif gameType == 51 or gameType == "ch" : #"冠軍聯賽"
+        gameName = GameType.UCL
+    elif gameType == 52 or gameType == "fi" : #"五大聯賽"
+        gameName = GameType.UCL
+    elif gameType == 12 or gameType == "bk" : #"籃球"
+        if "NBA" in gameDisplayName:
+            gameName = GameType.basketball
+        else :    
+            gameName = GameType.otherbasketball
+    elif gameType == 13 or gameType == "bb" :  #"棒球"
+        if '美國職棒' in gameDisplayName or 'MLB' in gameDisplayName:
+            gameName = GameType.mlb
+        elif '日本職業棒球' in gameDisplayName or 'NPB' in gameDisplayName:
+            gameName = GameType.npb
+        elif 'CPBL' in league:
+            gameName = GameType.cpbl
+        else:    
+            gameName = GameType.kbo
+    elif gameType == 14 or gameType == "tn" :  #"網球"
+        gameName = GameType.tennis
+    elif gameType == 15 or gameType == "ih" :  #"冰球"
+        gameName = GameType.hockey
+    elif gameType == 16 or gameType == "vl" :  #"排球"
+        gameName = GameType.volleyball
+    elif gameType == 17 or gameType == "bm" :  #"羽毛球"
+        gameName = GameType.other
+    elif gameType == 18 or gameType == "es" :  #"電子競技"
+        gameName = GameType.eSport
+    elif gameType == 19 or gameType == "as" :  #"美足"
+        gameName = GameType.football
+    elif gameType == 20 or gameType == "pb" :  #"撞球"
+        gameName = GameType.other
+    elif gameType == 21 or gameType == "tt" :  #"乒乓球"
+        gameName = GameType.pingpong
+    elif gameType == 22 or gameType == "hb" :  #"手球"
+        gameName = GameType.other
+    elif gameType == 23 or gameType == "wp" :  #"水球"
+        gameName = GameType.other
+    elif gameType == 99 or gameType == "fv" :  #"收藏夾"
+        gameName = GameType.other
+    elif gameType == 53 or gameType == "op" :  #"冬季奧運會"
+        gameName = GameType.other
+    elif gameType == 24 or gameType == "ot" :  #"其它"
+        gameName = GameType.other
+    elif gameType == 28 or gameType == "bx" :  #"拳擊""
+        gameName = GameType.other
+    elif gameType == 54 or gameType == "tv" :  #"轉播賽事"
+        gameName = GameType.other
+    elif gameType == 10 or gameType == "pass" :  #"過關"
+        gameName = GameType.other
+    else :
+        gameName = GameType.other
+
+    return gameName.value
 
 def TransformRunTime(gameType, timeStr, crawlTime):
     if "-60" == timeStr :
@@ -727,6 +717,8 @@ def onNext(messageUnzip):
             GAME_LIST["menu"] = messageJson["menu"]["list"]
         elif "score" in messageJson:
             pass
+    elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]: 
+        pass
     else :
         print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
 
