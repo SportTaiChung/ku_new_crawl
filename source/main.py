@@ -13,12 +13,17 @@ from kuWebSocket import KuWebSocket
 
 WR_index = 1
 BB_index = 1
-typeIndex = 1
+typeIndex = 0
 BB_Last = {}
 
 def on_BB_message(message):
-    global connection, channel, _upload_status, mq_url
-    Action.onNext(Action.pako_inflate(message))
+    global connection, channel, _upload_status, mq_url, debug
+    decodeStr = Action.pako_inflate(message)
+
+    debug.write(decodeStr + b'\n')
+    debug.flush()
+
+    Action.onNext(decodeStr)
     datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
     pushData = Action.getNowData()
     for game in pushData:
@@ -52,18 +57,18 @@ def on_WR_open(ws):
 def BB_change(ws, index):
     global BB_index
     if ws :
-        command = '{"action":"ckg","sport":11,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
+        command = '{"action":"ckg","sport":12,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
         print("Send BB change. " + command)
         ws.sendCommand(command)
         BB_index += 1
     else:
-        print("BB keeplive stop.")
+        print("BB change stop.")
 
 def on_keepLive(ws):
     global typeIndex
     ws.sendCommand('{"action":"checkTime"}')
 
-    typeIndex = getNextGameType(11, typeIndex)
+    typeIndex = Action.getNextGameType(12, "1", typeIndex)
     repeat = Timer(30, BB_change, (ws, typeIndex,))
     repeat.start()
 
@@ -76,7 +81,7 @@ def on_BB_open(ws):
         ws.sendCommand(sendCommand)
         BB_index += 1
   
-    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":12,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
     ws.sendCommand(sendCommand)
     BB_index += 1
 
@@ -96,11 +101,11 @@ def openSocket(SourceType, urlArray, urlSearch, protocol):
 
     print(SourceType + " is closed")
 
-#userName = "hnbg123456"
-#pwd = "aaq13ss"
+userName = "hnbg123456"
+pwd = "aaq13ss"
 
-userName = "78gg787"
-pwd = "878bb87"
+#userName = "78gg787"
+#pwd = "878bb87"
 
 VERIFY = ''
 
@@ -117,9 +122,18 @@ except:
 
 _upload_status = True
 
+datetime_dt = datetime.datetime.today()
+datetime_dt = datetime_dt + datetime.timedelta(hours=8)
+datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+fileName = "debug_" + datetime_str
+
 if __name__ == '__main__':
+
+    debug = open(fileName + ".log", "ab")
+
     loginManager = LoginManager(userName, pwd)
     loginResponse = loginManager.run()
+
     print(loginResponse)
     print("Ready Connect to Websocket(10), pls change network to VPN")
     time.sleep(10)
@@ -142,4 +156,6 @@ if __name__ == '__main__':
         ts = time.time()       
         print("Wait Sleep")
         time.sleep(5)
+
+    debug.close()    
 

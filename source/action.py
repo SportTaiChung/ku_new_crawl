@@ -7,12 +7,6 @@ import APHDC_pb2 as protobuf_spec
 GAME_LIST = {}
 GAME_TYPE = {}
 
-datetime_dt = datetime.datetime.today()
-datetime_dt = datetime_dt + datetime.timedelta(hours=14)
-datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
-fileName = "debug_" + datetime_str
-FP = open(fileName + ".log", "a")
-
 def pako_inflate(data):
 
     decompress = zlib.decompressobj(15)
@@ -40,7 +34,6 @@ class langFont:
     Font_OPStatus = ["未開賽", "LIVE"]
     Font_BXStatus = ["未開賽"]
 
-
 #Test
 def IsSC(type):
     try:
@@ -52,7 +45,7 @@ def IsSC(type):
 def AllyNameProcess(id, name):
     return name + " - 加時賽" if id.endswith("3") else name
 
-def TransformGameType(typeId):
+def TransformGameType(typeId, gameDisplayName):
     gameName = ""
     if typeId.isdigit():
         gameType = int(typeId)
@@ -72,7 +65,10 @@ def TransformGameType(typeId):
     elif gameType == 52 or gameType == "fi" :
         gameName = "五大聯賽"
     elif gameType == 12 or gameType == "bk" : #"籃球"
-        gameName = "basketball"
+        if "NBA" in gameDisplayName:
+            gameName = "basketball"
+        else :    
+            gameName = "otherbasketball"
     elif gameType == 13 or gameType == "bb" :
         gameName = "棒球"
     elif gameType == 14 or gameType == "tn" :
@@ -403,10 +399,11 @@ def TransformNumToPk(gameType, lineStr):
 
     try:
         checkArray.index(gameType)
-        r = int(int(lineStr) / 1e3)
-        a = int(lineStr) % 1e3
+        t = abs(int(lineStr))
+        r = int(t / 1e3)
+        a = t % 1e3
         if 0 == a or 500 == a : 
-            return str(int(lineStr) / 1e3) + "" 
+            return str(t / 1e3) + "" 
         elif 250 == a : 
             return str(r) + "/" + str(r + .5) 
         elif 750 == a : 
@@ -416,8 +413,8 @@ def TransformNumToPk(gameType, lineStr):
 
     except ValueError:
         t = round(abs(int(lineStr)) / 1e3 * 200);
-        r = int(lineStr) / 200;
-        a = int(lineStr) % 200
+        r = int(t / 200);
+        a = t % 200
         if 100 < a : 
             a = 200 - a
             r += 1
@@ -460,6 +457,7 @@ def transformToProtobuf(jsonData):
         gameRound = list(filter(lambda x: x[0] == gameRoundId, gameRoundList))[0]
 
         gameType = str(GAME_TYPE[gameRound[1]]["type"])
+        gameDisplayName = GAME_TYPE[gameRound[1]]["name"]
 
         for index in range(1, len(odds)):
             oddItem = odds[index]
@@ -468,7 +466,7 @@ def transformToProtobuf(jsonData):
             oddType = int(oddType[1:len(oddType)])
             event = protobuf_spec.ApHdc()        
             event.source = "KU"
-            event.game_class = TransformGameType(gameType) 
+            event.game_class = TransformGameType(gameType, gameDisplayName) 
             event.raw_event_id = gameRoundId
             event.game_id = gameRoundId
             event.ip = "192.168.1.1"
@@ -476,6 +474,10 @@ def transformToProtobuf(jsonData):
 
             event.event_time = gameRound[9].replace('/', '-') + ":00"
 
+            # For debug
+            # datetime_dt = datetime.datetime.today()
+            # datetime_dt = datetime_dt + datetime.timedelta(hours=14)
+            # datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
             #event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
 
             event.source_updatetime = jsonData["date"].replace('/', '-') + ".000"
@@ -505,34 +507,67 @@ def transformToProtobuf(jsonData):
                     pass
                 elif jsonData["type"] == 4: # 波膽
                     event.game_type = "pd "
+                    event.information.league += " - 波膽"
                 elif jsonData["type"] == 5: #入球數
                     event.game_type = "tg "
+                    event.information.league += " - 入球數"
                 elif jsonData["type"] == 6: #半全場
-                    event.game_type = "hf "    
+                    event.game_type = "hf "
+                    event.information.league += " - 半全場"
+
+            if event.live == "true":
+                event.game_type += "live "
+
+            if oddClass == "0": #全場
+                event.game_type += "full"
+                event.information.league += " - 全場"
+            elif oddClass == "1": #上半場
+                event.game_type += "1st half"
+                event.information.league += " - 上半場"
+            elif oddClass == "2": #下半場
+                event.game_type += "2nd half"    
+                event.information.league += " - 下半場"            
+            elif oddClass == "3": #第一節
+                event.game_type += "1q"
+                event.information.league += " - 第一節"
+            elif oddClass == "4": #第二節
+                event.game_type += "2q"  
+                event.information.league += " - 第二節"              
+            elif oddClass == "5": #第三節
+                event.game_type += "3q"
+                event.information.league += " - 第三節"
+            elif oddClass == "6": #第四節
+                event.game_type += "4q"
+                event.information.league += " - 第四節"
+            elif oddClass == "7": #三分球總數
+                event.game_type += "full"
+                event.information.league += " - 三分球總數"
+
 
             event.score.home = score[0] if len(score[0]) > 0 else '0'
             event.score.away = score[1] if len(score[1]) > 0 else '0'
 
-            if oddClass == "0": #全場
-                event.game_type += "full"
-            elif oddClass == "1": #上半場
-                event.game_type += "1st half"
-
             lineStr = TransformNumToPk(oddItem[0], oddItem[8])
 
             #讓分
-            if oddType == 1 or oddType == 11:
-                lineAt = oddItem[9] # 1: 主讓 , 2: 客讓
+            if oddType == 1 or oddType == 11 :
+                lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
                 event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
                 event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
                 event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
                 event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #大小
-            elif oddType == 2 or oddType == 12:
+            elif oddType == 2 or oddType == 12 or oddType == 5 or oddType == 7:
                 event.twDS.line = lineStr
                 event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
                 event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+                #客隊大小
+                if oddType == 5 :
+                    event.information.league += " - 客隊大小"
+                #主隊大小    
+                if oddType == 7 :
+                    event.information.league += " - 主隊大小"
 
             #獨贏
             elif oddType == 3 or oddType == 13:
@@ -540,9 +575,29 @@ def transformToProtobuf(jsonData):
                 event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
             #單雙
-            elif oddType == 4 or oddType == 14:
+            elif oddType == 4 or oddType == 14 or oddType == 6 or oddType == 8:
                 event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
                 event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+                #客隊單雙    
+                if oddType == 6 :
+                    event.information.league += " - 客隊單雙"
+
+                #主隊單雙    
+                if oddType == 8 :
+                    event.information.league += " - 主隊單雙"                    
+
+            #第一個三分球
+            elif oddType == 10 :
+                pass
+            #首分
+            elif oddType == 21 :
+                pass
+            #尾分
+            elif oddType == 22 :   
+                pass 
+            #單節最高分
+            elif oddType == 23 :
+                pass
 
             elif oddType == 61: #波膽 
                 event.multi = "{"
@@ -572,10 +627,10 @@ def getNowData():
     global GAME_LIST
     return GAME_LIST
 
-def getNextGameType(gameType, nowIndex):
+def getNextGameType(gameType, gameMode, nowIndex):
     global GAME_LIST
     if not "menu" in GAME_LIST:
-        return -1    
+        return 1
     menuList = GAME_LIST["menu"]
     for menu in menuList:
         if menu["type"] == gameType:
@@ -585,20 +640,17 @@ def getNextGameType(gameType, nowIndex):
             elif gameCount < (nowIndex + 1):
                 return 1
             else :
-                return getNextGameType(gameType, (nowIndex + 1))
+                return getNextGameType(gameType, gameMode, (nowIndex + 1))
 
 def onNext(messageUnzip):
-    global FP, GAME_LIST
-    #print(messageUnzip)
+    global GAME_LIST
+    
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
-    FP.write(str(messageDecode) + "\n")
-    FP.flush()
     
-    
-    sport = str(messageJson["sport"]) if "sport" in messageJson else '0'
-    mode = str(messageJson["mode"]) if "mode" in messageJson else '0'
-    gameType = str(messageJson["type"]) if "type" in messageJson else '0'
+    sport = str(messageJson["sport"]) if "sport" in messageJson else '-1'
+    mode = str(messageJson["mode"]) if "mode" in messageJson else '-1'
+    gameType = str(messageJson["type"]) if "type" in messageJson else '-1'
     searchKey = sport + "_" + mode + "_" + gameType
 
     if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" or messageJson["action"] == "ckg": 
