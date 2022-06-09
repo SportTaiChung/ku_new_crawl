@@ -57,7 +57,7 @@ def on_WR_open(ws):
 def BB_change(ws, index):
     global BB_index
     if ws :
-        command = '{"action":"ckg","sport":12,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
+        command = '{"action":"ckg","sport":13,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
         print("Send BB change. " + command)
         ws.sendCommand(command)
         BB_index += 1
@@ -68,7 +68,7 @@ def on_keepLive(ws):
     global typeIndex
     ws.sendCommand('{"action":"checkTime"}')
 
-    typeIndex = Action.getNextGameType(12, "1", typeIndex)
+    typeIndex = Action.getNextGameType(13, "1", typeIndex)
     repeat = Timer(30, BB_change, (ws, typeIndex,))
     repeat.start()
 
@@ -81,7 +81,7 @@ def on_BB_open(ws):
         ws.sendCommand(sendCommand)
         BB_index += 1
   
-    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":12,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":1,"stick":1}'
+    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":13,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":0,"stick":1}'
     ws.sendCommand(sendCommand)
     BB_index += 1
 

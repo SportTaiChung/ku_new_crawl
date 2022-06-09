@@ -4,6 +4,7 @@ import json
 import datetime
 import APHDC_pb2 as protobuf_spec
 from constants import GameType, langFont
+from soccer import soccerParser
 
 GAME_LIST = {}
 GAME_TYPE = {}
@@ -375,47 +376,6 @@ def TransformRunTime(gameType, timeStr, crawlTime):
         except ValueError:
             return timeStr if len(timeStr) > 0 else '0'
 
-def addZero(n, t):
-    return "0" + str(n) if len(str(n)) < t else str(n)
-
-def TransformNumToPk(gameType, lineStr):
-    if lineStr == "":
-        return "0" 
-
-    if -1 == lineStr:
-        return "0"
-
-    checkArray = ["11001", "11002", "11011", "11012", "11021", "11022", "11064", "11065", "11101", "11102", "11111", "11112", "11121", "11122", "11164", "11165", "11201", "11202", "11211", "11212", "11221", "11222", "11231", "11232", "11241", "11242", "11251", "11252", "11301", "11302", "11311", "11312", "11321", "11322", "11331", "11332", "11341", "11342", "11351", "11352", "11401", "11402", "11411", "11412", "11421", "11422", "11431", "11432", "11441", "11442", "11451", "11452", "11701", "11702", "11015", "11016", "11115", "11116", "26001", "26002", "26011", "26012", "26021", "26022", "26064", "26065", "26101", "26102", "26111", "26112", "26121", "26122", "26164", "26165", "26201", "26202", "26211", "26212", "26221", "26222", "26231", "26232", "26241", "26242", "26251", "26252", "26301", "26302", "26311", "26312", "26321", "26322", "26331", "26332", "26341", "26342", "26351", "26352", "26401", "26402", "26411", "26412", "26421", "26422", "26431", "26432", "26441", "26442", "26451", "26452", "26701", "26702", "26015", "26016", "26115", "26116", "27001", "27002", "27011", "27012", "27021", "27022", "27064", "27065", "27101", "27102", "27111", "27112", "27121", "27122", "27164", "27165", "27201", "27202", "27211", "27212", "27221", "27222", "27231", "27232", "27241", "27242", "27251", "27252", "27301", "27302", "27311", "27312", "27321", "27322", "27331", "27332", "27341", "27342", "27351", "27352", "27401", "27402", "27411", "27412", "27421", "27422", "27431", "27432", "27441", "27442", "27451", "27452", "27701", "27702", "27015", "27016", "27115", "27116"]
-
-    try:
-        checkArray.index(gameType)
-        t = abs(int(lineStr))
-        r = int(t / 1e3)
-        a = t % 1e3
-        if 0 == a or 500 == a : 
-            return str(t / 1e3) + "" 
-        elif 250 == a : 
-            return str(r) + "/" + str(r + .5) 
-        elif 750 == a : 
-            return str(r + .5) + "/" + str(r + 1) 
-        else:
-            return "0"
-
-    except ValueError:
-        t = round(abs(int(lineStr)) / 1e3 * 200);
-        r = int(t / 200);
-        a = t % 200
-        if 100 < a : 
-            a = 200 - a
-            r += 1
-            return str(r) + "+" + addZero(a, 2) 
-        elif 0 == a : 
-            return str(r) + "" 
-        elif 100 == a : 
-            return str(r) + ".5" 
-        else : 
-            return str(r) + "-" + addZero(a, 2)
-
 def transformToProtobuf(jsonData):
     global datetime_str, GAME_TYPE
 
@@ -451,25 +411,22 @@ def transformToProtobuf(jsonData):
 
         for index in range(1, len(odds)):
             oddItem = odds[index]
-            oddType = oddItem[0][len(gameType):]
-            oddClass = oddType[0:1]
-            oddType = int(oddType[1:len(oddType)])
             event = protobuf_spec.ApHdc()        
             event.source = "KU"
             event.game_type = ""
             event.game_class = TransformGameType(gameType, gameDisplayName) 
             event.raw_event_id = gameRoundId
-            event.game_id = gameRoundId
+            event.game_id = gameRoundId + oddItem[0]
             event.ip = "192.168.1.1"
             event.status = '0'
 
-            event.event_time = gameRound[9].replace('/', '-') + ":00"
+            #event.event_time = gameRound[9].replace('/', '-') + ":00"
 
-            # For debug
-            # datetime_dt = datetime.datetime.today()
-            # datetime_dt = datetime_dt + datetime.timedelta(hours=14)
-            # datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
-            #event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
+            #For debug
+            datetime_dt = datetime.datetime.today()
+            datetime_dt = datetime_dt + datetime.timedelta(hours=14)
+            datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+            event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
 
             event.source_updatetime = jsonData["date"].replace('/', '-') + ".000"
             
@@ -490,219 +447,217 @@ def transformToProtobuf(jsonData):
                 event.redcard.away = score[3] if len(score[3]) > 0 else '0'
                 event.yellowcard.home = '0'
                 event.yellowcard.away = '0'
+                event = soccerParser(event, oddItem)
             
-                if jsonData["type"] == 2: #是否為"角球"
-                    event.conner.home = '0'
-                    event.conner.away = '0'
-                elif jsonData["type"] == 3: # 特15分鐘
-                    pass
-                elif jsonData["type"] == 4: # 波膽
-                    event.game_type = "pd "
-                    event.information.league += " - 波膽"
-                elif jsonData["type"] == 5: #入球數
-                    event.game_type = "tg "
-                    event.information.league += " - 入球數"
-                elif jsonData["type"] == 6: #半全場
-                    event.game_type = "hf "
-                    event.information.league += " - 半全場"
+                # if jsonData["type"] == 2: #是否為"角球"
+                #     event.conner.home = '0'
+                #     event.conner.away = '0'
+                # elif jsonData["type"] == 3: # 特15分鐘
+                #     pass
+                # elif jsonData["type"] == 4: # 波膽
+                #     event.game_type = "pd "
+                #     event.information.league += " - 波膽"
+                # elif jsonData["type"] == 5: #入球數
+                #     event.game_type = "tg "
+                #     event.information.league += " - 入球數"
+                # elif jsonData["type"] == 6: #半全場
+                #     event.game_type = "hf "
+                #     event.information.league += " - 半全場"
 
             if event.live == "true":
                 event.game_type += "live "
 
             #棒球以外
-            if not gameType == "13":
-                if oddClass == "0": #全場
-                    event.game_type += "full"
-                    event.information.league += " - 全場"
-                elif oddClass == "1": #上半場
-                    event.game_type += "1st half"
-                    event.information.league += " - 上半場"
-                elif oddClass == "2": #下半場
-                    event.game_type += "2nd half"    
-                    event.information.league += " - 下半場"            
-                elif oddClass == "3": #第一節
-                    event.game_type += "1q"
-                    event.information.league += " - 第一節"
-                elif oddClass == "4": #第二節
-                    event.game_type += "2q"  
-                    event.information.league += " - 第二節"              
-                elif oddClass == "5": #第三節
-                    event.game_type += "3q"
-                    event.information.league += " - 第三節"
-                elif oddClass == "6": #第四節
-                    event.game_type += "4q"
-                    event.information.league += " - 第四節"
-                elif oddClass == "7": #三分球總數
-                    event.game_type += "full"
-                    event.information.league += " - 三分球總數"
+            # if not gameType == "13":
+            #     if oddClass == "0": #全場
+            #         event.game_type += "full"
+            #         event.information.league += " - 全場"
+            #     elif oddClass == "1": #上半場
+            #         event.game_type += "1st half"
+            #         event.information.league += " - 上半場"
+            #     elif oddClass == "2": #下半場
+            #         event.game_type += "2nd half"    
+            #         event.information.league += " - 下半場"            
+            #     elif oddClass == "3": #第一節
+            #         event.game_type += "1q"
+            #         event.information.league += " - 第一節"
+            #     elif oddClass == "4": #第二節
+            #         event.game_type += "2q"  
+            #         event.information.league += " - 第二節"              
+            #     elif oddClass == "5": #第三節
+            #         event.game_type += "3q"
+            #         event.information.league += " - 第三節"
+            #     elif oddClass == "6": #第四節
+            #         event.game_type += "4q"
+            #         event.information.league += " - 第四節"
+            #     elif oddClass == "7": #三分球總數
+            #         event.game_type += "full"
+            #         event.information.league += " - 三分球總數"
 
 
             event.score.home = score[0] if len(score[0]) > 0 else '0'
             event.score.away = score[1] if len(score[1]) > 0 else '0'
-
-            lineStr = TransformNumToPk(oddItem[0], oddItem[8])
-            lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
             
-            #讓分
-            if oddType == 1 or oddType == 11 :
-                #棒球
-                if gameType == 13:
-                    event.game_type += "full"
-                    if oddClass == 3:
-                        event.information.league += " - 全場 - 首分"
-                        event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                        event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-                    else:    
-                        if oddClass == 0:  
-                            event.information.league += " - 全場"
-                        elif oddClass == 1:
-                            event.information.league += " - 第一局"
+            
+            # #讓分
+            # if oddType == 1 or oddType == 11 :
+            #     #棒球
+            #     if gameType == 13:
+            #         event.game_type += "full"
+            #         if oddClass == 3:
+            #             event.information.league += " - 全場 - 首分"
+            #             event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #             event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            #         else:    
+            #             if oddClass == 0:  
+            #                 event.information.league += " - 全場"
+            #             elif oddClass == 1:
+            #                 event.information.league += " - 第一局"
 
-                        event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-                        event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                        event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-                        event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'                            
+            #             event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
+            #             event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #             event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
+            #             event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'                            
 
-                else:
-                    event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-                    event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                    event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-                    event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'        
+            #     else:
+            #         event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
+            #         event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #         event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
+            #         event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'        
                         
 
-            #大小
-            elif oddType == 2 or oddType == 12 or oddType == 5 or oddType == 7:
-                #棒球
-                if gameType == 13:
-                    event.game_type += "full"
-                    if oddClass == 3:
-                        event.information.league += " - 全場 - 尾分"
-                        event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                        event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-                    else :    
-                        if oddClass == 0:  
-                            event.information.league += " - 全場"
-                        elif oddClass == 1:
-                            event.information.league += " - 第一局"   
+            # #大小
+            # elif oddType == 2 or oddType == 12 or oddType == 5 or oddType == 7:
+            #     #棒球
+            #     if gameType == 13:
+            #         event.game_type += "full"
+            #         if oddClass == 3:
+            #             event.information.league += " - 全場 - 尾分"
+            #             event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #             event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            #         else :    
+            #             if oddClass == 0:  
+            #                 event.information.league += " - 全場"
+            #             elif oddClass == 1:
+            #                 event.information.league += " - 第一局"   
                         
-                        #一輸二贏
-                        if oddType == 5 :
-                            event.information.league += " - " + lineStr
-                            event.esre.let = (1 if lineAt == 1 else 2)
-                            event.esre.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                            event.esre.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'   
-                        else :
-                            if oddType == 7 :
-                                event.information.league += " - 主隊大小"
-                            event.twDS.line = lineStr    
-                            event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                            event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-                else :
-                    event.twDS.line = lineStr
-                    event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                    event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-                    #客隊大小
-                    if oddType == 5 :
-                        event.information.league += " - 客隊大小"
-                    #主隊大小    
-                    if oddType == 7 :
-                        event.information.league += " - 主隊大小"
+            #             #一輸二贏
+            #             if oddType == 5 :
+            #                 event.information.league += " - " + lineStr
+            #                 event.esre.let = (1 if lineAt == 1 else 2)
+            #                 event.esre.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #                 event.esre.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'   
+            #             else :
+            #                 if oddType == 7 :
+            #                     event.information.league += " - 主隊大小"
+            #                 event.twDS.line = lineStr    
+            #                 event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #                 event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            #     else :
+            #         event.twDS.line = lineStr
+            #         event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #         event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            #         #客隊大小
+            #         if oddType == 5 :
+            #             event.information.league += " - 客隊大小"
+            #         #主隊大小    
+            #         if oddType == 7 :
+            #             event.information.league += " - 主隊大小"
 
-            #獨贏
-            elif oddType == 3 or oddType == 13:
-                event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-                #棒球
-                if gameType == 13:
-                    event.game_type += "full"
-                    event.information.league += " - 全場"
+            # #獨贏
+            # elif oddType == 3 or oddType == 13:
+            #     event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #     event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            #     #棒球
+            #     if gameType == 13:
+            #         event.game_type += "full"
+            #         event.information.league += " - 全場"
 
-            #單雙
-            elif oddType == 4 or oddType == 14 or oddType == 6 or oddType == 8:
-                event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-                #棒球
-                if gameType == 13:
-                    event.game_type += "full"
-                    event.information.league += " - 全場"
-                    if oddType == 6 :
-                        event.information.league += " - 單隊總得分 - 客隊大小"
-                        event.twDS.line = lineStr
-                        event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                        event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            # #單雙
+            # elif oddType == 4 or oddType == 14 or oddType == 6 or oddType == 8:
+            #     event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #     event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            #     #棒球
+            #     if gameType == 13:
+            #         event.game_type += "full"
+            #         event.information.league += " - 全場"
+            #         if oddType == 6 :
+            #             event.information.league += " - 單隊總得分 - 客隊大小"
+            #             event.twDS.line = lineStr
+            #             event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #             event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
-                else:    
-                    #客隊單雙    
-                    if oddType == 6 :
-                        event.information.league += " - 客隊單雙"
+            #     else:    
+            #         #客隊單雙    
+            #         if oddType == 6 :
+            #             event.information.league += " - 客隊單雙"
 
-                    #主隊單雙    
-                    if oddType == 8 :
-                        event.information.league += " - 主隊單雙"  
+            #         #主隊單雙    
+            #         if oddType == 8 :
+            #             event.information.league += " - 主隊單雙"  
 
-            #棒球上半場-讓球
-            elif oddType == 51 :
-                event.game_type += "1st half"
-                event.information.league += " - 上半場"
-                event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-                event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-                event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            # #棒球上半場-讓球
+            # elif oddType == 51 :
+            #     event.game_type += "1st half"
+            #     event.information.league += " - 上半場"
+            #     event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
+            #     event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #     event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
+            #     event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
-            #棒球上半場-大小
-            elif oddType == 52 :
-                event.game_type += "1st half"
-                event.information.league += " - 上半場"
-                event.twDS.line = lineStr
-                event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            # #棒球上半場-大小
+            # elif oddType == 52 :
+            #     event.game_type += "1st half"
+            #     event.information.league += " - 上半場"
+            #     event.twDS.line = lineStr
+            #     event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #     event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
-            #棒球上半場-獨贏
-            elif oddType == 53 :
-                event.game_type += "1st half"
-                event.information.league += " - 上半場"
-                event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            # #棒球上半場-獨贏
+            # elif oddType == 53 :
+            #     event.game_type += "1st half"
+            #     event.information.league += " - 上半場"
+            #     event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #     event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
-            #棒球上半場-單雙
-            elif oddType == 54 :
-                event.game_type += "1st half"
-                event.information.league += " - 上半場"
-                event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-                event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+            # #棒球上半場-單雙
+            # elif oddType == 54 :
+            #     event.game_type += "1st half"
+            #     event.information.league += " - 上半場"
+            #     event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+            #     event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
 
-            #第一個三分球
-            elif oddType == 10 :
-                pass
-            #首分
-            elif oddType == 21 :
-                pass
-            #尾分
-            elif oddType == 22 :   
-                pass 
-            #單節最高分
-            elif oddType == 23 :
-                pass
+            # #第一個三分球
+            # elif oddType == 10 :
+            #     pass
+            # #首分
+            # elif oddType == 21 :
+            #     pass
+            # #尾分
+            # elif oddType == 22 :   
+            #     pass 
+            # #單節最高分
+            # elif oddType == 23 :
+            #     pass
 
-            elif oddType == 61: #波膽 
-                event.multi = "{"
-                for oddItemIndex in range(12, (len(oddItem) - 1), 2):
-                    key = oddItem[oddItemIndex]
-                    odd = oddItem[oddItemIndex + 1]
-                    if key == "99":
-                        event.multi += "\"other\": " + str(odd)
-                    else :    
-                        event.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + str(odd) + ","
-                event.multi += "}"
+            # elif oddType == 61: #波膽 
+            #     event.multi = "{"
+            #     for oddItemIndex in range(12, (len(oddItem) - 1), 2):
+            #         key = oddItem[oddItemIndex]
+            #         odd = oddItem[oddItemIndex + 1]
+            #         if key == "99":
+            #             event.multi += "\"other\": " + str(odd)
+            #         else :    
+            #             event.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + str(odd) + ","
+            #     event.multi += "}"
 
-            elif oddType == 62: #入球數
-                event.multi = "{\"0-1\": \"" + str(oddItem[13]) + "\", \"2-3\": \"" + str(oddItem[15]) + "\", \"4-6\": \"" + str(oddItem[17]) + "\", \"7+\": \"" + str(oddItem[17]) + "\"}"
+            # elif oddType == 62: #入球數
+            #     event.multi = "{\"0-1\": \"" + str(oddItem[13]) + "\", \"2-3\": \"" + str(oddItem[15]) + "\", \"4-6\": \"" + str(oddItem[17]) + "\", \"7+\": \"" + str(oddItem[17]) + "\"}"
 
-            elif oddType == 63: #半全場
-                ## 11 : HH, 12:HA, 13: HD, 21 : AH, 22 : AA, 23 : AD, 31 : DH, 32 : DA, 33 : DD
-                ## HH : 13, HA : 15, HD : 17, AH : 19, AA : 21, AD : 23, DH : 25, DA : 27, DD : 29
-                event.multi = "{\"HH\": " + str(oddItem[13]) + ", \"HD\": " + str(oddItem[17]) + ", \"HA\": " + str(oddItem[15]) + ", \"DH\": " + str(oddItem[25]) + ", \"DD\": " + str(oddItem[29]) + ", \"DA\": " + str(oddItem[27]) + ", \"AH\": " + str(oddItem[19]) + ", \"AD\": " + str(oddItem[23]) + ", \"AA\": " + str(oddItem[21]) + "}"    
-
+            # elif oddType == 63: #半全場
+            #     ## 11 : HH, 12:HA, 13: HD, 21 : AH, 22 : AA, 23 : AD, 31 : DH, 32 : DA, 33 : DD
+            #     ## HH : 13, HA : 15, HD : 17, AH : 19, AA : 21, AD : 23, DH : 25, DA : 27, DD : 29
+            #     event.multi = "{\"HH\": " + str(oddItem[13]) + ", \"HD\": " + str(oddItem[17]) + ", \"HA\": " + str(oddItem[15]) + ", \"DH\": " + str(oddItem[25]) + ", \"DD\": " + str(oddItem[29]) + ", \"DA\": " + str(oddItem[27]) + ", \"AH\": " + str(oddItem[19]) + ", \"AD\": " + str(oddItem[23]) + ", \"AA\": " + str(oddItem[21]) + "}"    
             event_proto_list.append(event)
 
     dataList.aphdc.extend(event_proto_list)

@@ -4,6 +4,7 @@ import action as Action
 import datetime
 import time
 from upload import init_session, upload_data
+from utils import TransformNumToPk, addZero
 
 class TestActionMethods(unittest.TestCase):
 
@@ -30,17 +31,17 @@ class TestActionMethods(unittest.TestCase):
         self.assertEqual(Action.TransformStatus("bb", 151), "50下")
 
     def test_addZero(self):
-        self.assertEqual(Action.addZero(5, 2), "05")
-        self.assertEqual(Action.addZero(11, 2), "11")
+        self.assertEqual(addZero(5, 2), "05")
+        self.assertEqual(addZero(11, 2), "11")
 
     def test_TransformNumToPk(self):
-        self.assertEqual(Action.TransformNumToPk("12001", "5000"), "5")
-        self.assertEqual(Action.TransformNumToPk("12301", "1500"), "1.5")
-        self.assertEqual(Action.TransformNumToPk("12302", "45500"), "45.5")
-        self.assertEqual(Action.TransformNumToPk("12304", "0"), "0")
-        self.assertEqual(Action.TransformNumToPk("12102", "89500"), "89.5")
-        self.assertEqual(Action.TransformNumToPk("13002", "6750"), "7+50")
-        self.assertEqual(Action.TransformNumToPk("13051", "200"), "0-40")
+        self.assertEqual(TransformNumToPk("12001", "5000"), "5")
+        self.assertEqual(TransformNumToPk("12301", "1500"), "1.5")
+        self.assertEqual(TransformNumToPk("12302", "45500"), "45.5")
+        self.assertEqual(TransformNumToPk("12304", "0"), "0")
+        self.assertEqual(TransformNumToPk("12102", "89500"), "89.5")
+        self.assertEqual(TransformNumToPk("13002", "6750"), "7+50")
+        self.assertEqual(TransformNumToPk("13051", "200"), "0-40")
 
     def test_onNext(self):
         self._upload_status = True
@@ -58,26 +59,26 @@ class TestActionMethods(unittest.TestCase):
             obj["date"] = datetime_str
             line = json.dumps(obj)
             Action.onNext(line.encode("utf-8"))
+            if obj["action"] == "first" or obj["action"] == "cm" or obj["action"] == "cst" or obj["action"] == "ckg": 
+                pushData = Action.getNowData()
+                # index = Action.getNextGameType(12, "1", index)
+                # print(index)
+                for game in pushData:
+                    if game == "menu":
+                        continue
+                    gameOddsList, sportType = Action.transformToProtobuf(pushData[game])
+                    if not gameOddsList == None :
+                        #print(gameOddsList)
+                        # pass
+                        if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
+                            if self.connection.is_open:
+                                self.connection.close()
+                            self.connection, self.channel = init_session(mq_url)
 
-            pushData = Action.getNowData()
-            # index = Action.getNextGameType(12, "1", index)
-            # print(index)
-            for game in pushData:
-                if game == "menu":
-                    continue
-                gameOddsList, sportType = Action.transformToProtobuf(pushData[game])
-                if not gameOddsList == None :
-                    print(gameOddsList)
-                    # pass
-                    if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
-                        if self.connection.is_open:
-                            self.connection.close()
-                        self.connection, self.channel = init_session(mq_url)
+                        self._upload_status = upload_data(self.channel, gameOddsList, sportType)
+                        #print(self._upload_status)
 
-                    self._upload_status = upload_data(self.channel, gameOddsList, sportType)
-                    print(self._upload_status)
-
-            #time.sleep(1)
+                #time.sleep(1)
         f.close()       
 
 if __name__ == '__main__':
