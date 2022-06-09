@@ -39,6 +39,8 @@ class TestActionMethods(unittest.TestCase):
         self.assertEqual(Action.TransformNumToPk("12302", "45500"), "45.5")
         self.assertEqual(Action.TransformNumToPk("12304", "0"), "0")
         self.assertEqual(Action.TransformNumToPk("12102", "89500"), "89.5")
+        self.assertEqual(Action.TransformNumToPk("13002", "6750"), "7+50")
+        self.assertEqual(Action.TransformNumToPk("13051", "200"), "0-40")
 
     def test_onNext(self):
         self._upload_status = True
@@ -62,18 +64,16 @@ class TestActionMethods(unittest.TestCase):
             # print(index)
             for game in pushData:
                 if game == "menu":
-                    print(pushData[game])
                     continue
                 gameOddsList, sportType = Action.transformToProtobuf(pushData[game])
                 if not gameOddsList == None :
                     print(gameOddsList)
-                    pass
+                    # pass
                     if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
                         if self.connection.is_open:
                             self.connection.close()
                         self.connection, self.channel = init_session(mq_url)
 
-                    print(gameOddsList)
                     self._upload_status = upload_data(self.channel, gameOddsList, sportType)
                     print(self._upload_status)
 
