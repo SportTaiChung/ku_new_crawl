@@ -5,6 +5,7 @@ import datetime
 import APHDC_pb2 as protobuf_spec
 from constants import GameType, langFont
 from soccer import soccerParser
+from baseball import baseballParser
 
 GAME_LIST = {}
 GAME_TYPE = {}
@@ -441,6 +442,9 @@ def transformToProtobuf(jsonData):
         
             score = gameScoreList[gameRoundId]
 
+            event.score.home = score[0] if len(score[0]) > 0 else '0'
+            event.score.away = score[1] if len(score[1]) > 0 else '0'
+
             #足球
             if IsSC(gameType) :
                 event.redcard.home = score[2] if len(score[2]) > 0 else '0'
@@ -448,55 +452,25 @@ def transformToProtobuf(jsonData):
                 event.yellowcard.home = '0'
                 event.yellowcard.away = '0'
                 event = soccerParser(event, oddItem)
-            
-                # if jsonData["type"] == 2: #是否為"角球"
-                #     event.conner.home = '0'
-                #     event.conner.away = '0'
-                # elif jsonData["type"] == 3: # 特15分鐘
-                #     pass
-                # elif jsonData["type"] == 4: # 波膽
-                #     event.game_type = "pd "
-                #     event.information.league += " - 波膽"
-                # elif jsonData["type"] == 5: #入球數
-                #     event.game_type = "tg "
-                #     event.information.league += " - 入球數"
-                # elif jsonData["type"] == 6: #半全場
-                #     event.game_type = "hf "
-                #     event.information.league += " - 半全場"
+
+            #籃球    
+            elif gameType == 12:
+                pass
+                #event = basketballParser(event, oddItem)
+
+            #棒球
+            elif gameType == "13":
+                event = baseballParser(event, oddItem)
+
+            #網球
+            elif gameType == 14:
+                pass    
 
             if event.live == "true":
                 event.game_type += "live "
 
             #棒球以外
             # if not gameType == "13":
-            #     if oddClass == "0": #全場
-            #         event.game_type += "full"
-            #         event.information.league += " - 全場"
-            #     elif oddClass == "1": #上半場
-            #         event.game_type += "1st half"
-            #         event.information.league += " - 上半場"
-            #     elif oddClass == "2": #下半場
-            #         event.game_type += "2nd half"    
-            #         event.information.league += " - 下半場"            
-            #     elif oddClass == "3": #第一節
-            #         event.game_type += "1q"
-            #         event.information.league += " - 第一節"
-            #     elif oddClass == "4": #第二節
-            #         event.game_type += "2q"  
-            #         event.information.league += " - 第二節"              
-            #     elif oddClass == "5": #第三節
-            #         event.game_type += "3q"
-            #         event.information.league += " - 第三節"
-            #     elif oddClass == "6": #第四節
-            #         event.game_type += "4q"
-            #         event.information.league += " - 第四節"
-            #     elif oddClass == "7": #三分球總數
-            #         event.game_type += "full"
-            #         event.information.league += " - 三分球總數"
-
-
-            event.score.home = score[0] if len(score[0]) > 0 else '0'
-            event.score.away = score[1] if len(score[1]) > 0 else '0'
             
             
             # #讓分
@@ -639,25 +613,6 @@ def transformToProtobuf(jsonData):
             # #單節最高分
             # elif oddType == 23 :
             #     pass
-
-            # elif oddType == 61: #波膽 
-            #     event.multi = "{"
-            #     for oddItemIndex in range(12, (len(oddItem) - 1), 2):
-            #         key = oddItem[oddItemIndex]
-            #         odd = oddItem[oddItemIndex + 1]
-            #         if key == "99":
-            #             event.multi += "\"other\": " + str(odd)
-            #         else :    
-            #             event.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + str(odd) + ","
-            #     event.multi += "}"
-
-            # elif oddType == 62: #入球數
-            #     event.multi = "{\"0-1\": \"" + str(oddItem[13]) + "\", \"2-3\": \"" + str(oddItem[15]) + "\", \"4-6\": \"" + str(oddItem[17]) + "\", \"7+\": \"" + str(oddItem[17]) + "\"}"
-
-            # elif oddType == 63: #半全場
-            #     ## 11 : HH, 12:HA, 13: HD, 21 : AH, 22 : AA, 23 : AD, 31 : DH, 32 : DA, 33 : DD
-            #     ## HH : 13, HA : 15, HD : 17, AH : 19, AA : 21, AD : 23, DH : 25, DA : 27, DD : 29
-            #     event.multi = "{\"HH\": " + str(oddItem[13]) + ", \"HD\": " + str(oddItem[17]) + ", \"HA\": " + str(oddItem[15]) + ", \"DH\": " + str(oddItem[25]) + ", \"DD\": " + str(oddItem[29]) + ", \"DA\": " + str(oddItem[27]) + ", \"AH\": " + str(oddItem[19]) + ", \"AD\": " + str(oddItem[23]) + ", \"AA\": " + str(oddItem[21]) + "}"    
             event_proto_list.append(event)
 
     dataList.aphdc.extend(event_proto_list)
