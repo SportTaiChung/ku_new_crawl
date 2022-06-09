@@ -454,7 +454,7 @@ def transformToProtobuf(jsonData):
                 event = soccerParser(event, oddItem)
 
             #籃球    
-            elif gameType == 12:
+            elif gameType == "12":
                 pass
                 #event = basketballParser(event, oddItem)
 

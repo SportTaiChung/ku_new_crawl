@@ -68,7 +68,7 @@ class TestActionMethods(unittest.TestCase):
                         continue
                     gameOddsList, sportType = Action.transformToProtobuf(pushData[game])
                     if not gameOddsList == None :
-                        #print(gameOddsList)
+                       # print(gameOddsList)
                         # pass
                         if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
                             if self.connection.is_open:

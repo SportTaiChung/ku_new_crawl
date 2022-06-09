@@ -39,9 +39,6 @@ def soccerParser(eventBuf, oddItem):
         eventBuf.game_type = "1st half"
         eventBuf.information.league += " - 上半場"
 
-    zfArray = ["11001", "11011", "11021", "11066", "11070", "11071", "11101", "11111", "11121", "11167", "11201", "11211", "11221", "11231", "11241", "11251"]
-    dsArray = ["11002", "11012", "11022", "11064", "11065", "11102", "11112", "11122", "11164", "11165", "11202", "11212", "11222", "11232", "11242", "11252"]
-    deArray = ["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253"]
     #11001 - 全場-讓球
     #11011 - 全場-角球數-讓球
     #11021 - 全場-罰牌數-讓球
@@ -58,7 +55,7 @@ def soccerParser(eventBuf, oddItem):
     #11231 - 45:01 - 59:59 -讓球
     #11241 - 60:00 - 74:59 -讓球
     #11251 - 74:00 - 全場 -讓球
-    if searchItemfromArray(zfArray, oddsType) >= 0 :
+    if searchItemfromArray(["11001", "11011", "11021", "11066", "11070", "11071", "11101", "11111", "11121", "11167", "11201", "11211", "11221", "11231", "11241", "11251"], oddsType) >= 0 :
 
         eventBuf.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
         eventBuf.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
@@ -105,7 +102,7 @@ def soccerParser(eventBuf, oddItem):
     #11232 - 45:01 - 59:59 -大小
     #11242 - 60:00 - 74:59 -大小
     #11252 - 74:00 - 全場 -大小
-    elif searchItemfromArray(dsArray, oddsType) >= 0 : 
+    elif searchItemfromArray(["11002", "11012", "11022", "11064", "11065", "11102", "11112", "11122", "11164", "11165", "11202", "11212", "11222", "11232", "11242", "11252"], oddsType) >= 0 : 
         if oddsType == "11002" or oddsType == "11102" or oddsType == "11202" or oddsType == "11212" or oddsType == "11222" or oddsType == "11232" or oddsType == "11242" or oddsType == "11252":
             eventBuf.information.league += " - 大小"
 
@@ -137,7 +134,7 @@ def soccerParser(eventBuf, oddItem):
     #11233 - 45:01 - 59:59 -獨贏
     #11243 - 60:00 - 74:59 -獨贏
     #11253 - 74:00 - 全場  -獨贏
-    elif searchItemfromArray(deArray, oddsType) >= 0 :
+    elif searchItemfromArray(["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253"], oddsType) >= 0 :
         if oddsType == "11003" or oddsType == "11103" or oddsType == "11203" or oddsType == "11213" or oddsType == "11223" or oddsType == "11233" or oddsType == "11243" or oddsType == "11253":
             eventBuf.information.league += " - 獨贏" 
 
