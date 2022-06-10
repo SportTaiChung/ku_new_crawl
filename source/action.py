@@ -11,6 +11,7 @@ from tennis import tennisParser
 from hockey import hockeyParser
 from football import footballParser
 from volleyball import volleyballParser
+from badminton import badmintonParser
 
 GAME_LIST = {}
 GAME_TYPE = {}
@@ -478,6 +479,10 @@ def transformToProtobuf(jsonData):
             #排球
             elif gameType == "16":
                 event = volleyballParser(event, oddItem)
+
+            #羽毛球
+            elif gameType == "17":
+                event = badmintonParser(event, oddItem)
 
             #美足
             elif gameType == "19":
