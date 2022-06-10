@@ -491,7 +491,11 @@ def transformToProtobuf(jsonData):
 
             #美足
             elif gameType == "19":
-                event = footballParser(event, oddItem)  
+                event = footballParser(event, oddItem) 
+
+            #乒乓球
+            elif gameType == "21":
+                event = pingpongParser(event, oddItem)
 
       
             if event.live == "true":
