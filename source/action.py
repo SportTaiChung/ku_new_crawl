@@ -5,6 +5,7 @@ import datetime
 import APHDC_pb2 as protobuf_spec
 from constants import GameType, langFont
 from soccer import soccerParser
+from basketball import basketballParser
 from baseball import baseballParser
 
 GAME_LIST = {}
@@ -456,7 +457,7 @@ def transformToProtobuf(jsonData):
             #籃球    
             elif gameType == "12":
                 pass
-                #event = basketballParser(event, oddItem)
+                event = basketballParser(event, oddItem)
 
             #棒球
             elif gameType == "13":
@@ -467,152 +468,8 @@ def transformToProtobuf(jsonData):
                 pass    
 
             if event.live == "true":
-                event.game_type += "live "
+                event.game_type += " live"
 
-            #棒球以外
-            # if not gameType == "13":
-            
-            
-            # #讓分
-            # if oddType == 1 or oddType == 11 :
-            #     #棒球
-            #     if gameType == 13:
-            #         event.game_type += "full"
-            #         if oddClass == 3:
-            #             event.information.league += " - 全場 - 首分"
-            #             event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #             event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-            #         else:    
-            #             if oddClass == 0:  
-            #                 event.information.league += " - 全場"
-            #             elif oddClass == 1:
-            #                 event.information.league += " - 第一局"
-
-            #             event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-            #             event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #             event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-            #             event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'                            
-
-            #     else:
-            #         event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-            #         event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #         event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-            #         event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'        
-                        
-
-            # #大小
-            # elif oddType == 2 or oddType == 12 or oddType == 5 or oddType == 7:
-            #     #棒球
-            #     if gameType == 13:
-            #         event.game_type += "full"
-            #         if oddClass == 3:
-            #             event.information.league += " - 全場 - 尾分"
-            #             event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #             event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-            #         else :    
-            #             if oddClass == 0:  
-            #                 event.information.league += " - 全場"
-            #             elif oddClass == 1:
-            #                 event.information.league += " - 第一局"   
-                        
-            #             #一輸二贏
-            #             if oddType == 5 :
-            #                 event.information.league += " - " + lineStr
-            #                 event.esre.let = (1 if lineAt == 1 else 2)
-            #                 event.esre.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #                 event.esre.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'   
-            #             else :
-            #                 if oddType == 7 :
-            #                     event.information.league += " - 主隊大小"
-            #                 event.twDS.line = lineStr    
-            #                 event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #                 event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-            #     else :
-            #         event.twDS.line = lineStr
-            #         event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #         event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-            #         #客隊大小
-            #         if oddType == 5 :
-            #             event.information.league += " - 客隊大小"
-            #         #主隊大小    
-            #         if oddType == 7 :
-            #             event.information.league += " - 主隊大小"
-
-            # #獨贏
-            # elif oddType == 3 or oddType == 13:
-            #     event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #     event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-            #     #棒球
-            #     if gameType == 13:
-            #         event.game_type += "full"
-            #         event.information.league += " - 全場"
-
-            # #單雙
-            # elif oddType == 4 or oddType == 14 or oddType == 6 or oddType == 8:
-            #     event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #     event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-            #     #棒球
-            #     if gameType == 13:
-            #         event.game_type += "full"
-            #         event.information.league += " - 全場"
-            #         if oddType == 6 :
-            #             event.information.league += " - 單隊總得分 - 客隊大小"
-            #             event.twDS.line = lineStr
-            #             event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #             event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-
-            #     else:    
-            #         #客隊單雙    
-            #         if oddType == 6 :
-            #             event.information.league += " - 客隊單雙"
-
-            #         #主隊單雙    
-            #         if oddType == 8 :
-            #             event.information.league += " - 主隊單雙"  
-
-            # #棒球上半場-讓球
-            # elif oddType == 51 :
-            #     event.game_type += "1st half"
-            #     event.information.league += " - 上半場"
-            #     event.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-            #     event.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #     event.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-            #     event.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-
-            # #棒球上半場-大小
-            # elif oddType == 52 :
-            #     event.game_type += "1st half"
-            #     event.information.league += " - 上半場"
-            #     event.twDS.line = lineStr
-            #     event.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #     event.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-
-            # #棒球上半場-獨贏
-            # elif oddType == 53 :
-            #     event.game_type += "1st half"
-            #     event.information.league += " - 上半場"
-            #     event.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #     event.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-
-            # #棒球上半場-單雙
-            # elif oddType == 54 :
-            #     event.game_type += "1st half"
-            #     event.information.league += " - 上半場"
-            #     event.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-            #     event.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-
-            # #第一個三分球
-            # elif oddType == 10 :
-            #     pass
-            # #首分
-            # elif oddType == 21 :
-            #     pass
-            # #尾分
-            # elif oddType == 22 :   
-            #     pass 
-            # #單節最高分
-            # elif oddType == 23 :
-            #     pass
             event_proto_list.append(event)
 
     dataList.aphdc.extend(event_proto_list)
