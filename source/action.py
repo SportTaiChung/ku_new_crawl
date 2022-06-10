@@ -12,6 +12,7 @@ from hockey import hockeyParser
 from football import footballParser
 from volleyball import volleyballParser
 from badminton import badmintonParser
+from eSport import eSportParser
 
 GAME_LIST = {}
 GAME_TYPE = {}
@@ -484,12 +485,15 @@ def transformToProtobuf(jsonData):
             elif gameType == "17":
                 event = badmintonParser(event, oddItem)
 
+            #電子競技
+            elif gameType == "18":
+                event = eSportParser(event, oddItem)
+
             #美足
             elif gameType == "19":
                 event = footballParser(event, oddItem)  
 
       
-
             if event.live == "true":
                 event.game_type += " live"
 
