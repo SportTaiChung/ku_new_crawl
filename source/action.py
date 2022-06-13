@@ -627,7 +627,7 @@ def onNext(messageUnzip):
         elif "score" in messageJson:
             pass
 
-    elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]: 
+    elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over", "ban"]: 
         pass
         
     else :

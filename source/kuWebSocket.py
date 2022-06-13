@@ -32,6 +32,7 @@ class KuWebSocket():
             ]
         )
         self.crawlIndex = crawlIndex
+        self._logPrefix = crawlIndex
         self.KuWebSocket.on_open =  self.on_open
         self.KuWebSocket.on_message = self.on_message
         self.KuWebSocket.on_error = self.on_error

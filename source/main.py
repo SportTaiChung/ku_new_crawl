@@ -35,7 +35,7 @@ def sendToMQ(ws):
                 print("Can't connect to MQ.")
             else:
                 print("Send MQ status : " + str(_upload_status))
-                
+
     repeat = Timer(60, sendToMQ, (ws,))
     repeat.start()            
 
@@ -71,7 +71,7 @@ def BB_change(ws, sport, gameType):
         repeat = Timer(30, BB_change, (ws, sport, gameType,))
         repeat.start()    
     except:
-        print("BB change stop.")
+        print("[" + sport + "]BB change stop.")
 
 def on_keepLive(ws, sport):
     ws.sendCommand('{"action":"checkTime"}')
