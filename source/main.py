@@ -11,9 +11,6 @@ from upload import init_session, upload_data
 from loginManager import LoginManager
 from kuWebSocket import KuWebSocket
 
-WR_index = 1
-BB_index = 1
-typeIndex = 0
 BB_Last = {}
 
 def on_BB_message(message):
@@ -30,7 +27,7 @@ def on_BB_message(message):
         if game == "menu":
             continue
         protobufData, gameType = Action.transformToProtobuf(pushData[game])
-        if not protobufData == None :
+        if not protobufData == None and len(protobufData) > 0:
             print("[" + str(datetime.datetime.now()) + "]")
             try:
                 if connection.is_closed or channel.is_closed or not _upload_status:
@@ -45,56 +42,56 @@ def on_BB_message(message):
             else:
                 print("Send MQ status : " + str(_upload_status))
 
-
 def on_WR_open(ws):
     print("WR Opened connection")
-    global WR_index
-    ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(WR_index) + ',"stick":1}')
-    WR_index += 1
+    ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
     time.sleep(keepLive_time)
-    WRKeepLive(ws)
 
-def BB_change(ws, index):
-    global BB_index
-    if ws :
-        command = '{"action":"ckg","sport":13,"mode":1,"type":' + str(index) + ',"dc":' + str(BB_index) + '}'
-        print("Send BB change. " + command)
-        ws.sendCommand(command)
-        BB_index += 1
-    else:
+def BB_change(ws, sport, gameType):
+    
+    try:
+        gameType = Action.getNextGameType(sport, "1", gameType)
+        if gameType > 0:
+            command = '{"action":"ckg","sport":' + sport + ',"mode":1,"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
+            print("Send BB change. " + command)
+            ws.sendCommand(command)
+        else:
+            print("Not found game.")
+
+        repeat = Timer(30, BB_change, (ws, sport, gameType,))
+        repeat.start()    
+    except:
         print("BB change stop.")
 
-def on_keepLive(ws):
-    global typeIndex
+def on_keepLive(ws, sport):
     ws.sendCommand('{"action":"checkTime"}')
 
-    # typeIndex = Action.getNextGameType(13, "1", typeIndex)
-    # repeat = Timer(30, BB_change, (ws, typeIndex,))
-    # repeat.start()
-
-def on_BB_open(ws):
+def on_BB_open(ws, sport):
     print("BB Opened connection")
-    global BB_index, BB_Last, VERIFY
+    global BB_Last, VERIFY
     sendCommand = ""
     if bool(BB_Last) == False :
-        sendCommand = '{"action":"first","module":0,"device":0,"mode":-1,"sport":-1,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + '}'
+        sendCommand = '{"action":"first","module":0,"device":0,"mode":1,"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + '}'
         ws.sendCommand(sendCommand)
-        BB_index += 1
   
-    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":0,"stick":1}'
+    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + ',"type":1,"stick":1}'
     ws.sendCommand(sendCommand)
-    BB_index += 1
 
     BB_Last = sendCommand 
 
+    repeat = Timer(30, BB_change, (ws, sport, 0,))
+    repeat.start()
+
 def openSocket(SourceType, urlArray, urlSearch, protocol):
     socketList = []
+    crawlList = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "26", "27"]
 
-    for index, url in enumerate(urlArray):
-        socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message, on_keepLive=on_keepLive)
-        a = threading.Thread(target = socket.connect)
-        a.start()
-        socketList.append(a)
+    for crawlIndex in crawlList:
+        for index, url in enumerate(urlArray):
+            socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message, on_keepLive=on_keepLive, crawlIndex=crawlIndex)
+            a = threading.Thread(target = socket.connect)
+            a.start()
+            socketList.append(a)
 
     for socket in socketList:
         socket.join()
@@ -118,7 +115,6 @@ try:
     time.sleep(10)
 except:
     print("MQ can't connect")
-
 
 _upload_status = True
 

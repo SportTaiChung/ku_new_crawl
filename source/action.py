@@ -522,7 +522,8 @@ def getNowData():
 def getNextGameType(gameType, gameMode, nowIndex):
     global GAME_LIST
     if not "menu" in GAME_LIST:
-        return 1
+        return 0
+
     menuList = GAME_LIST["menu"]
     for menu in menuList:
         if menu["type"] == gameType:
@@ -530,9 +531,11 @@ def getNextGameType(gameType, gameMode, nowIndex):
             if gameCount > (nowIndex + 1) and menu["count"][(nowIndex + 1)] > 0:
                 return (nowIndex + 1)
             elif gameCount < (nowIndex + 1):
-                return 1
+                return 0
             else :
                 return getNextGameType(gameType, gameMode, (nowIndex + 1))
+        else :
+            return -1        
 
 def onNext(messageUnzip):
     global GAME_LIST
@@ -548,6 +551,7 @@ def onNext(messageUnzip):
     if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" or messageJson["action"] == "ckg": 
         GAME_LIST[searchKey] = messageJson
         GAME_LIST["menu"] = messageJson["menu"]["list"]
+
     elif messageJson["action"] == "add" : 
         if searchKey in GAME_LIST:
             gameAllList = GAME_LIST[searchKey]
@@ -614,13 +618,17 @@ def onNext(messageUnzip):
                     else :
                         print("Can't find key[path] in " + updateItem)                    
             else:
-                print("Can't find key : " + searchKey)     
+                print("Can't find key : " + searchKey)
+
         elif "menu" in messageJson:
             GAME_LIST["menu"] = messageJson["menu"]["list"]
+
         elif "score" in messageJson:
             pass
+
     elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]: 
         pass
+        
     else :
         print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
 

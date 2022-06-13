@@ -93,9 +93,9 @@ def baseballParser(eventBuf, oddItem):
     if searchItemfromArray(["13001", "13032", "13051", "13071", "13111", "13211"], oddsType) >= 0:
 
         eventBuf.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-        eventBuf.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
+        eventBuf.twZF.homeZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
         eventBuf.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-        eventBuf.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0' 
+        eventBuf.twZF.awayZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0' 
 
     #13002 全場-大小
     #13006 全場-單隊總得分-客隊大小
@@ -110,8 +110,8 @@ def baseballParser(eventBuf, oddItem):
     elif searchItemfromArray(["13002", "13006", "13007", "13012", "13032", "13052", "13072", "13112", "13212", "13321"], oddsType) >= 0:
 
         eventBuf.twDS.line = lineStr    
-        eventBuf.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf.twDS.over = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf.twDS.under = str(oddItem[13]) if len(str(oddItem[14])) > 0 else '0'
 
     #13003 全場-獨贏
     #13053 上半場-獨贏
@@ -121,8 +121,8 @@ def baseballParser(eventBuf, oddItem):
     #13302 全場-尾分
     elif searchItemfromArray(["13003", "13053", "13113", "13213", "13301", "13302"], oddsType) >= 0:
 
-        eventBuf.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf.de.home = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf.de.away = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
 
         if len(oddItem) >= 17:
             eventBuf.draw = str(oddItem[17]) if len(str(oddItem[17])) > 0 else '0' 
@@ -133,15 +133,15 @@ def baseballParser(eventBuf, oddItem):
     #13074 1~7局-單雙
     elif searchItemfromArray(["13004", "13034", "13054", "13074"], oddsType) >= 0:
 
-        eventBuf.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf.sd.home = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf.sd.away = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
 
     #13005 全場-一輸二贏
     elif searchItemfromArray(["13005"], oddsType) >= 0:
 
         eventBuf.esre.let = (1 if lineAt == 1 else 2)
-        eventBuf.esre.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.esre.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'             
+        eventBuf.esre.home = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf.esre.away = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'             
 
 
     return eventBuf, oddsKey   

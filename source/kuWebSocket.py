@@ -13,8 +13,9 @@ class KuWebSocket():
 
     keepLiveTime = 25
     _status = Status.NONE
+    _messageIndex  = 1
 
-    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None):
+    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11"):
         self.url = "wss://" + url + "/" + urlSearch
         self.protocol = protocol
         self.KuWebSocket = websocket.WebSocketApp(
@@ -29,6 +30,7 @@ class KuWebSocket():
                 "Sec-WebSocket-Protocol: " + protocol
             ]
         )
+        self.crawlIndex = crawlIndex
         self.KuWebSocket.on_open =  self.on_open
         self.KuWebSocket.on_message = self.on_message
         self.KuWebSocket.on_error = self.on_error
@@ -66,7 +68,7 @@ class KuWebSocket():
         print("[" + str(self.url) + "] Opened connected.")
         
         if not self._on_open == None :
-            self._on_open(self)
+            self._on_open(self, self.crawlIndex)
 
         repeat = Timer(self.keepLiveTime, self.keepLive)
         repeat.start()
@@ -76,7 +78,7 @@ class KuWebSocket():
             if self._status == self.Status.CONNECTED :
                 print("[" + str(self.url) + "] keepLive.")
                 if not self._on_keepLive == None :
-                     self._on_keepLive(self)
+                     self._on_keepLive(self, self.crawlIndex)
 
                 repeat = Timer(self.keepLiveTime, self.keepLive)
                 repeat.start()
@@ -89,6 +91,7 @@ class KuWebSocket():
             if self._status == self.Status.CONNECTED and len(message) > 0 :
                 print("[" + str(self.url) + "] Send : " + message)
                 self.KuWebSocket.send(message)
+                self._messageIndex += 1
                 return True
             else :
                 print("[" + str(self.url) + "] WebSocket Status : " + self._status)
@@ -97,6 +100,9 @@ class KuWebSocket():
             print("[" + str(self.url) + "] Send message file.[" + message + "]")
             self._status = self.Status.CLOSE
             return False
+
+    def getMessageIndex(self):
+        return self._messageIndex
 
     def getStatus(self):
         return self.status

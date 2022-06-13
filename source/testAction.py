@@ -42,11 +42,12 @@ class TestActionMethods(unittest.TestCase):
         self.assertEqual(TransformNumToPk("12102", "89500"), "89.5")
         self.assertEqual(TransformNumToPk("13002", "6750"), "7+50")
         self.assertEqual(TransformNumToPk("13051", "200"), "0-40")
+        self.assertEqual(TransformNumToPk("14002", "22500"), "22.5")
 
     def test_onNext(self):
         self._upload_status = True
         mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
-        #self.connection, self.channel = init_session(mq_url)
+        self.connection, self.channel = init_session(mq_url)
 
         f = open("raw.log", "rb")
         Lines = f.readlines()
@@ -62,7 +63,7 @@ class TestActionMethods(unittest.TestCase):
         
             
         pushData = Action.getNowData()
-        # index = Action.getNextGameType(12, "1", index)
+        # index = Action.getNextGameType(11, "1", 1)
         # print(index)
         for game in pushData:
             if game == "menu":
@@ -70,19 +71,19 @@ class TestActionMethods(unittest.TestCase):
                     
             gameOddsList, sportType = Action.transformToProtobuf(pushData[game])
             if not gameOddsList == None :
-                #print(gameOddsList)
-                # if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
-                #     if self.connection.is_open:
-                #             elf.connection.close()
-                #     self.connection, self.channel = init_session(mq_url)
+                print(gameOddsList)
+                if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
+                    if self.connection.is_open:
+                            elf.connection.close()
+                    self.connection, self.channel = init_session(mq_url)
 
-                # self._upload_status = upload_data(self.channel, gameOddsList, sportType)
-                # print(self._upload_status)
+                self._upload_status = upload_data(self.channel, gameOddsList, sportType)
+                print(self._upload_status)
 
 
                 pass         
 
-        # print(json.dumps(Action.getNowData()))
+        #print(json.dumps(Action.getNowData()))
         f.close()       
 
 if __name__ == '__main__':
