@@ -1,14 +1,11 @@
-
-from utils import TransformNumToPk, searchItemfromArray
+from utils import searchItemfromArray
+from upload import protobufUtils
 
 def soccerParser(eventBuf, oddItem):
     soccerDefault = 11000
     oddsType = oddItem[0]
 
     oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
-
-    lineStr = TransformNumToPk(oddsType, oddItem[8])
-    lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
 
     gameClass = int(oddsType) - soccerDefault
 
@@ -58,6 +55,14 @@ def soccerParser(eventBuf, oddItem):
     elif searchItemfromArray(["11021", "11121", "11022", "11122", "11023", "11123", "11024", "11124"], oddsType) >= 0:
         eventBuf.information.league += " - 罰牌數"
         oddsKey += "_2"
+     
+    elif oddsType == "11064" or oddsType == "11164":
+        eventBuf.information.league += " - 單隊總得分 - 主隊大小"
+        oddsKey += "_6"
+
+    elif oddsType == "11065" or oddsType == "11165":
+        eventBuf.information.league += " - 單隊總得分 - 客隊大小"
+        oddsKey += "_7"    
     
 
     #11001 - 全場-讓球
@@ -78,8 +83,7 @@ def soccerParser(eventBuf, oddItem):
     #11251 - 74:00 - 全場 -讓球
     if searchItemfromArray(["11001", "11011", "11021", "11066", "11070", "11071", "11101", "11111", "11121", "11167", "11201", "11211", "11221", "11231", "11241", "11251"], oddsType) >= 0 :
 
-        eventBuf.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-        eventBuf.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
+        eventBuf = protobufUtils.setSpread(eventBuf, oddItem) 
 
         if oddsType == "11066" or oddsType == "11167":
             eventBuf.information.league += "  - 其他玩法 - 兩隊是否都進球"
@@ -99,9 +103,6 @@ def soccerParser(eventBuf, oddItem):
             eventBuf.twZF.awayZF.line = "下半場"
             oddsKey += "_5"
 
-        eventBuf.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-
     #11002 - 全場-大小 
     #11012 - 全場-角球數-大小
     #11022 - 全場-罰牌數-大小
@@ -119,18 +120,7 @@ def soccerParser(eventBuf, oddItem):
     #11242 - 60:00 - 74:59 -大小
     #11252 - 74:00 - 全場 -大小
     elif searchItemfromArray(["11002", "11012", "11022", "11064", "11065", "11102", "11112", "11122", "11164", "11165", "11202", "11212", "11222", "11232", "11242", "11252"], oddsType) >= 0 : 
- 
-        if oddsType == "11064" or oddsType == "11164":
-            eventBuf.information.league += " - 單隊總得分 - 主隊大小"
-            oddsKey += "_6"
-
-        elif oddsType == "11065" or oddsType == "11165":
-            eventBuf.information.league += " - 單隊總得分 - 客隊大小"
-            oddsKey += "_7"
-
-        eventBuf.twDS.line = lineStr
-        eventBuf.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf = protobufUtils.setTotal(eventBuf, oddItem) 
 
     #11003 - 全場-獨贏
     #11013 - 全場-角球數-獨贏
@@ -145,13 +135,7 @@ def soccerParser(eventBuf, oddItem):
     #11243 - 60:00 - 74:59 -獨贏
     #11253 - 74:00 - 全場  -獨贏
     elif searchItemfromArray(["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253"], oddsType) >= 0 :
-
-        homeOdd = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        awayOdd = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'       
-        eventBuf.de.home = homeOdd
-        eventBuf.de.away = awayOdd
-        if len(oddItem) >= 17:
-            eventBuf.draw = str(oddItem[17]) if len(str(oddItem[17])) > 0 else '0'
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
 
     #11004 - 全場-單雙
     #11014 - 全場-角球數-單雙
@@ -160,9 +144,7 @@ def soccerParser(eventBuf, oddItem):
     #11114 - 上半場-角球數-單雙
     #11124 - 上半場-罰牌數-單雙
     elif oddsType == "11004" or oddsType == "11014" or oddsType == "11024" or oddsType == "11104" or oddsType == "11114" or oddsType == "11124": 
-
-        eventBuf.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf = protobufUtils.serParity(eventBuf, oddItem)
 
     #11061 - 波膽-全場
     #11161 - 波膽-上半場

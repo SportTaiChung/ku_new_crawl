@@ -1,4 +1,5 @@
-from utils import TransformNumToPk, searchItemfromArray
+from utils import searchItemfromArray
+from upload import protobufUtils
 
 def badmintonParser(eventBuf, oddItem):
     soccerDefault = 17000
@@ -6,8 +7,6 @@ def badmintonParser(eventBuf, oddItem):
 
     oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
 
-    lineStr = TransformNumToPk(oddsType, oddItem[8])
-    lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
     gameClass = int(oddsType) - soccerDefault
 
     if gameClass < 10:
@@ -29,31 +28,20 @@ def badmintonParser(eventBuf, oddItem):
     #17011 總分-讓球
     #17101 第一局-讓球
     if searchItemfromArray(["17001", "17101", "17011"], oddsType) >= 0:
-
-        eventBuf.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-        eventBuf.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-        eventBuf.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0' 
+        eventBuf = protobufUtils.setSpread(eventBuf, oddItem)
 
     #17012 總分-大小
     #17102 第一局-大小
     elif searchItemfromArray(["17012", "17102"], oddsType) >= 0:
-
-        eventBuf.twDS.line = lineStr    
-        eventBuf.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'   
+        eventBuf = protobufUtils.setTotal(eventBuf, oddItem) 
 
     #17103 第一局-獨贏
     elif searchItemfromArray(["17103"], oddsType) >= 0:
-
-        eventBuf.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
 
     #17014 總分-單雙
     #17104 上半場-單雙
     elif searchItemfromArray(["17004", "17104"], oddsType) >= 0: 
-
-        eventBuf.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'            
+        eventBuf = protobufUtils.serParity(eventBuf, oddItem)           
  
     return eventBuf, oddsKey

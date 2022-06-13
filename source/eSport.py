@@ -1,13 +1,11 @@
-from utils import TransformNumToPk, searchItemfromArray
+from utils import searchItemfromArray
+from upload import protobufUtils
 
 def eSportParser(eventBuf, oddItem):
     soccerDefault = 180000
     oddsType = oddItem[0]
 
     oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
-
-    lineStr = TransformNumToPk(oddsType, oddItem[8])
-    lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
 
     gameClass = int(oddsType) - soccerDefault
 
@@ -100,11 +98,7 @@ def eSportParser(eventBuf, oddItem):
                             "180205", "180209", "180221", "180225", \
                             "180305", "180309", "180321", "180325" \
                             ], oddsType) >= 0:
-
-        eventBuf.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
-        eventBuf.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.twZF.awayZF.line = ("+" if lineAt == 1 else "-") + lineStr
-        eventBuf.twZF.awayZF.odds = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0' 
+        eventBuf = protobufUtils.setSpread(eventBuf, oddItem) 
 
     #180002 局數-大小
 
@@ -133,10 +127,7 @@ def eSportParser(eventBuf, oddItem):
                               "180206", "180210", "180222", "180226", "180291", \
                               "180306", "180310", "180322", "180326", "180391" \
                             ], oddsType) >= 0:
-
-        eventBuf.twDS.line = lineStr    
-        eventBuf.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.twDS.under = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'   
+        eventBuf = protobufUtils.setTotal(eventBuf, oddItem) 
 
     #180003 局數-獨贏
 
@@ -165,12 +156,7 @@ def eSportParser(eventBuf, oddItem):
                               "180201", "180271", "180272", "180278", "180280", "180281", \
                               "180301", "180371", "180372", "180378", "180380", "180381" \
                             ], oddsType) >= 0:
-
-        eventBuf.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
-
-        if len(oddItem) >= 17:
-            eventBuf.draw = str(oddItem[17]) if len(str(oddItem[17])) > 0 else '0'         
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)        
 
     #180108 第一局-擊殺英雄總數-單雙
     #180112 第一局-摧毀防禦塔總數-單雙
@@ -194,8 +180,6 @@ def eSportParser(eventBuf, oddItem):
                               "180308", "180312", "180324", "180328", \
                               "180152", "180252", "180352" \
                               ], oddsType) >= 0:
-
-        eventBuf.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
-        eventBuf.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'            
+        eventBuf = protobufUtils.serParity(eventBuf, oddItem)           
  
     return eventBuf, oddsKey

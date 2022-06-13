@@ -13,6 +13,7 @@ from football import footballParser
 from volleyball import volleyballParser
 from badminton import badmintonParser
 from eSport import eSportParser
+from pingpong import pingpongParser
 
 GAME_LIST = {}
 GAME_TYPE = {}

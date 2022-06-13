@@ -14,6 +14,7 @@ class KuWebSocket():
     keepLiveTime = 25
     _status = Status.NONE
     _messageIndex  = 1
+    _logPrefix = self.crawlIndex
 
     def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11"):
         self.url = "wss://" + url + "/" + urlSearch
@@ -44,28 +45,28 @@ class KuWebSocket():
 
     def on_close(self, ws, close_status_code, close_msg):
         self._status = self.Status.CLOSE
-        print("[" + str(self.url) + "] Closed : ")
+        print("[" + str(self._logPrefix) + "] Closed : ")
         print(close_msg)
         if not self._on_close == None :
             self._on_close(close_msg)
         
     def on_error(self, ws, error):
-        print("[" + str(self.url) + "] error : ")
+        print("[" + str(self._logPrefix) + "] error : ")
         print(error)
 
         if not self._on_error == None :
             self._on_error(error)
 
     def on_message(self, ws, message):
-        print("[" + str(self.url) + "] Recv : ")
-        print(message)
+        # print("[" + str(self._logPrefix) + "] Recv : ")
+        # print(message)
 
         if not self._on_message == None :
             self._on_message(message)
 
     def on_open(self, ws):
         self._status = self.Status.CONNECTED
-        print("[" + str(self.url) + "] Opened connected.")
+        print("[" + str(self._logPrefix) + "] Opened connected.")
         
         if not self._on_open == None :
             self._on_open(self, self.crawlIndex)
@@ -76,28 +77,28 @@ class KuWebSocket():
     def keepLive(self):
         try:
             if self._status == self.Status.CONNECTED :
-                print("[" + str(self.url) + "] keepLive.")
+                print("[" + str(self._logPrefix) + "] keepLive.")
                 if not self._on_keepLive == None :
                      self._on_keepLive(self, self.crawlIndex)
 
                 repeat = Timer(self.keepLiveTime, self.keepLive)
                 repeat.start()
         except :
-            print("[" + str(self.url) + "] keepLive Stop.")
+            print("[" + str(self._logPrefix) + "] keepLive Stop.")
 
 
     def sendCommand(self, message):
         try :
             if self._status == self.Status.CONNECTED and len(message) > 0 :
-                print("[" + str(self.url) + "] Send : " + message)
+                print("[" + str(self._logPrefix) + "] Send : " + message)
                 self.KuWebSocket.send(message)
                 self._messageIndex += 1
                 return True
             else :
-                print("[" + str(self.url) + "] WebSocket Status : " + self._status)
+                print("[" + str(self._logPrefix) + "] WebSocket Status : " + self._status)
                 return False
         except :
-            print("[" + str(self.url) + "] Send message file.[" + message + "]")
+            print("[" + str(self._logPrefix) + "] Send message file.[" + message + "]")
             self._status = self.Status.CLOSE
             return False
 
@@ -108,6 +109,6 @@ class KuWebSocket():
         return self.status
 
     def connect(self):
-        print("[" + str(self.url) + "] Start Connect.")
+        print("[" + str(self._logPrefix) + "] Start Connect.")
         self._status = self.Status.OPEN
         self.KuWebSocket.run_forever(origin="https://dsp.nbb21f.net")

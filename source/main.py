@@ -27,7 +27,7 @@ def on_BB_message(message):
         if game == "menu":
             continue
         protobufData, gameType = Action.transformToProtobuf(pushData[game])
-        if not protobufData == None and len(protobufData) > 0:
+        if not protobufData == None :
             print("[" + str(datetime.datetime.now()) + "]")
             try:
                 if connection.is_closed or channel.is_closed or not _upload_status:
