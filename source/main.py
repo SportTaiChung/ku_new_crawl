@@ -68,9 +68,9 @@ def on_keepLive(ws):
     global typeIndex
     ws.sendCommand('{"action":"checkTime"}')
 
-    typeIndex = Action.getNextGameType(13, "1", typeIndex)
-    repeat = Timer(30, BB_change, (ws, typeIndex,))
-    repeat.start()
+    # typeIndex = Action.getNextGameType(13, "1", typeIndex)
+    # repeat = Timer(30, BB_change, (ws, typeIndex,))
+    # repeat.start()
 
 def on_BB_open(ws):
     print("BB Opened connection")
@@ -81,7 +81,7 @@ def on_BB_open(ws):
         ws.sendCommand(sendCommand)
         BB_index += 1
   
-    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":13,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":0,"stick":1}'
+    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":11,"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(BB_index) + ',"type":0,"stick":1}'
     ws.sendCommand(sendCommand)
     BB_index += 1
 

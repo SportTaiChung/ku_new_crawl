@@ -404,7 +404,7 @@ def transformToProtobuf(jsonData):
 
     gameRoundList = jsonData["game"]
 
-    event_proto_list = []
+    event_proto_list = {}
 
     dataList = protobuf_spec.ApHdcArr()
 
@@ -419,23 +419,22 @@ def transformToProtobuf(jsonData):
 
         for index in range(1, len(odds)):
             oddItem = odds[index]
-
+            oddsKey = None
             event = protobuf_spec.ApHdc()        
             event.source = "KU"
             event.game_type = ""
             event.game_class = TransformGameType(gameType, gameDisplayName) 
             event.raw_event_id = gameRoundId
-            event.game_id = gameRoundId + oddItem[0]
             event.ip = "192.168.1.1"
             event.status = '0'
 
-            #event.event_time = gameRound[9].replace('/', '-') + ":00"
+            event.event_time = gameRound[9].replace('/', '-') + ":00"
 
             #For debug
-            datetime_dt = datetime.datetime.today()
-            datetime_dt = datetime_dt + datetime.timedelta(hours=14)
-            datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
-            event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
+            # datetime_dt = datetime.datetime.today()
+            # datetime_dt = datetime_dt + datetime.timedelta(hours=14)
+            # datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+            # event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
 
             event.source_updatetime = jsonData["date"].replace('/', '-') + ".000"
             
@@ -459,52 +458,61 @@ def transformToProtobuf(jsonData):
                 event.redcard.away = score[3] if len(score[3]) > 0 else '0'
                 event.yellowcard.home = '0'
                 event.yellowcard.away = '0'
-                event = soccerParser(event, oddItem)
+                event, oddsKey = soccerParser(event, oddItem)
 
             #籃球    
             elif gameType == "12":
                 pass
-                event = basketballParser(event, oddItem)
+                event, oddsKey = basketballParser(event, oddItem)
 
             #棒球
             elif gameType == "13":
-                event = baseballParser(event, oddItem)
+                event, oddsKey = baseballParser(event, oddItem)
 
             #網球
             elif gameType == "14":
-                event = tennisParser(event, oddItem)
+                event, oddsKey = tennisParser(event, oddItem)
 
             #冰球
             elif gameType == "15":
-                event = hockeyParser(event, oddItem)
+                event, oddsKey = hockeyParser(event, oddItem)
 
             #排球
             elif gameType == "16":
-                event = volleyballParser(event, oddItem)
+                event, oddsKey = volleyballParser(event, oddItem)
 
             #羽毛球
             elif gameType == "17":
-                event = badmintonParser(event, oddItem)
+                event, oddsKey = badmintonParser(event, oddItem)
 
             #電子競技
             elif gameType == "18":
-                event = eSportParser(event, oddItem)
+                event, oddsKey = eSportParser(event, oddItem)
 
             #美足
             elif gameType == "19":
-                event = footballParser(event, oddItem) 
+                event, oddsKey = footballParser(event, oddItem) 
 
             #乒乓球
             elif gameType == "21":
-                event = pingpongParser(event, oddItem)
+                event, oddsKey = pingpongParser(event, oddItem)
 
-      
             if event.live == "true":
                 event.game_type += " live"
 
-            event_proto_list.append(event)
+            if oddsKey == None :
+                event.game_id = gameRoundId
+            else:
+                event.game_id = oddsKey
 
-    dataList.aphdc.extend(event_proto_list)
+            if oddsKey in event_proto_list:
+                event_proto_list[oddsKey].MergeFrom(event)
+            else :
+                event_proto_list[oddsKey] = event
+
+    for eventItem in event_proto_list:
+        dataList.aphdc.append(event_proto_list[eventItem])
+
     return dataList, jsonData["sport"]
 
 def getNowData():

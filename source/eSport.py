@@ -4,6 +4,8 @@ def eSportParser(eventBuf, oddItem):
     soccerDefault = 180000
     oddsType = oddItem[0]
 
+    oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
+
     lineStr = TransformNumToPk(oddsType, oddItem[8])
     lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
 
@@ -12,18 +14,67 @@ def eSportParser(eventBuf, oddItem):
     if gameClass < 100:
         eventBuf.game_type = "full"
         eventBuf.information.league += " - 局數"
+        oddsKey += "_0"
 
     elif gameClass < 200:
          eventBuf.game_type = "1q"
          eventBuf.information.league += " - 第一局"
+         oddsKey += "_1"
 
     elif gameClass < 300:
         eventBuf.game_type = "2q"
         eventBuf.information.league += " - 第二局"
+        oddsKey += "_3"
 
     else :    
         eventBuf.game_type = "3q"
         eventBuf.information.league += " - 第三局"
+        oddsKey += "_4"
+
+
+    if searchItemfromArray(["180105", "180205", "180305", "180106", "180206", "180306", "180108", "180208", "180308"], oddsType) >= 0:
+        eventBuf.information.league += " - 擊殺英雄總數"
+        oddsKey += "_1"
+
+    elif searchItemfromArray(["180109", "180209", "180309", "180110", "180210", "180310", "180112", "180212", "180312"], oddsType) >= 0:
+        eventBuf.information.league += " - 摧毀防禦塔總數"
+        oddsKey += "_2"
+
+    elif searchItemfromArray(["180121", "180221", "180321", "180122", "180222", "180322", "180124", "180224", "180324"], oddsType) >= 0:
+        eventBuf.information.league += " - 殺死小龍總數"
+        oddsKey += "_3"
+
+    elif searchItemfromArray(["180125", "180225", "180325", "180126", "180226", "180326", "180128", "180228", "180328"], oddsType) >= 0:
+        eventBuf.information.league += " - 殺死大龍總數"
+        oddsKey += "_4"
+
+    elif searchItemfromArray(["180149", "180249", "180349", "180150", "180250", "180350", "180152", "180252", "180352"], oddsType) >= 0:
+        eventBuf.information.league += " - 回合總數"
+        oddsKey += "_5"
+
+    elif searchItemfromArray(["180191", "180291", "180391"], oddsType) >= 0:
+        eventBuf.information.league += " - 戰時間(分鐘)"
+        oddsKey += "_6"
+
+    elif searchItemfromArray(["180171", "180271", "180371"], oddsType) >= 0:
+        eventBuf.information.league += " - 殺死首條小龍"
+        oddsKey += "_7"
+
+    elif searchItemfromArray(["180172", "180272", "180372"], oddsType) >= 0:
+        eventBuf.information.league += " - 殺死首條大龍"
+        oddsKey += "_8"
+
+    elif searchItemfromArray(["180178", "180278", "180378"], oddsType) >= 0:
+        eventBuf.information.league += " - 摧毀首個水晶"  
+        oddsKey += "_9"
+
+    elif searchItemfromArray(["180180", "180280", "180380"], oddsType) >= 0:
+        eventBuf.information.league += " - 摧毀首個防禦塔"
+        oddsKey += "_10"
+
+    elif searchItemfromArray(["180181", "180281", "180381"], oddsType) >= 0:
+        eventBuf.information.league += " - 第一滴血"
+        oddsKey += "_11"
 
     #180001 局數-讓球
 
@@ -49,23 +100,6 @@ def eSportParser(eventBuf, oddItem):
                             "180205", "180209", "180221", "180225", \
                             "180305", "180309", "180321", "180325" \
                             ], oddsType) >= 0:
-        if oddsType == "180105" or oddsType == "180205" or oddsType == "180305":
-            eventBuf.information.league += " - 擊殺英雄總數"
-
-        elif oddsType == "180109" or oddsType == "180209" or oddsType == "180309":
-            eventBuf.information.league += " - 摧毀防禦塔總數"    
-
-        elif oddsType == "180121" or oddsType == "180221" or oddsType == "180321":
-            eventBuf.information.league += " - 殺死小龍總數"
-
-        elif oddsType == "180125" or oddsType == "180225" or oddsType == "180325":
-            eventBuf.information.league += " - 殺死大龍總數"
-
-        elif oddsType == "180149" or oddsType == "180249" or oddsType == "180349":
-            eventBuf.information.league += " - 回合總數"
-    
-
-        eventBuf.information.league += " - 讓球"
 
         eventBuf.twZF.homeZF.line = ("-" if lineAt == 1 else "+") + lineStr
         eventBuf.twZF.homeZF.odds = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
@@ -99,25 +133,6 @@ def eSportParser(eventBuf, oddItem):
                               "180206", "180210", "180222", "180226", "180291", \
                               "180306", "180310", "180322", "180326", "180391" \
                             ], oddsType) >= 0:
-        if oddsType == "180106" or oddsType == "180206" or oddsType == "180306":
-            eventBuf.information.league += " - 擊殺英雄總數"
-
-        elif oddsType == "180110" or oddsType == "180210" or oddsType == "180310":
-            eventBuf.information.league += " - 摧毀防禦塔總數" 
-
-        elif oddsType == "180122" or oddsType == "180222" or oddsType == "180322":
-            eventBuf.information.league += " - 殺死小龍總數" 
-
-        elif oddsType == "180126" or oddsType == "180226" or oddsType == "180326":
-            eventBuf.information.league += " - 殺死大龍總數"
-
-        elif oddsType == "180191" or oddsType == "180291" or oddsType == "180391":
-            eventBuf.information.league += " - 戰時間(分鐘)"
-
-        elif oddsType == "180150" or oddsType == "180250" or oddsType == "180350":
-            eventBuf.information.league += " - 回合總數"                                
-
-        eventBuf.information.league += " - 大小"
 
         eventBuf.twDS.line = lineStr    
         eventBuf.twDS.over = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
@@ -150,29 +165,12 @@ def eSportParser(eventBuf, oddItem):
                               "180201", "180271", "180272", "180278", "180280", "180281", \
                               "180301", "180371", "180372", "180378", "180380", "180381" \
                             ], oddsType) >= 0:
-        if oddsType == "180101" or oddsType == "180201" or oddsType == "180301":
-            pass 
-
-        elif oddsType == "180171" or oddsType == "180271" or oddsType == "180371":
-            eventBuf.information.league += " - 殺死首條小龍"
-
-        elif oddsType == "180172" or oddsType == "180272" or oddsType == "180372":
-            eventBuf.information.league += " - 殺死首條大龍"
-
-        elif oddsType == "180178" or oddsType == "180278" or oddsType == "180378":
-            eventBuf.information.league += " - 摧毀首個水晶"  
-
-        elif oddsType == "180180" or oddsType == "180280" or oddsType == "180380":
-            eventBuf.information.league += " - 摧毀首個防禦塔"         
-
-        elif oddsType == "180181" or oddsType == "180281" or oddsType == "180381":
-            eventBuf.information.league += " - 第一滴血"      
-
-        else :    
-            eventBuf.information.league += " - 獨贏" 
 
         eventBuf.de.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
         eventBuf.de.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'
+
+        if len(oddItem) >= 17:
+            eventBuf.draw = str(oddItem[17]) if len(str(oddItem[17])) > 0 else '0'         
 
     #180108 第一局-擊殺英雄總數-單雙
     #180112 第一局-摧毀防禦塔總數-單雙
@@ -196,24 +194,8 @@ def eSportParser(eventBuf, oddItem):
                               "180308", "180312", "180324", "180328", \
                               "180152", "180252", "180352" \
                               ], oddsType) >= 0:
-        if oddsType == "180108" or oddsType == "180208" or oddsType == "180308":
-            eventBuf.information.league += " - 擊殺英雄總數"
-
-        elif oddsType == "180112" or oddsType == "180212" or oddsType == "180312":
-            eventBuf.information.league += " - 摧毀防禦塔總數"    
-
-        elif oddsType == "180124" or oddsType == "180224" or oddsType == "180324":
-            eventBuf.information.league += " - 殺死小龍總數" 
-
-        elif oddsType == "180128" or oddsType == "180228" or oddsType == "180328":
-            eventBuf.information.league += " - 殺死大龍總數"  
-
-        elif oddsType == "180152" or oddsType == "180252" or oddsType == "180352":
-            eventBuf.information.league += " - 回合總數"    
-
-        eventBuf.information.league += " - 單雙"  
 
         eventBuf.sd.home = str(oddItem[13]) if len(str(oddItem[13])) > 0 else '0'
         eventBuf.sd.away = str(oddItem[15]) if len(str(oddItem[15])) > 0 else '0'            
  
-    return eventBuf     
+    return eventBuf, oddsKey
