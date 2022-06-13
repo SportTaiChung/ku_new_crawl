@@ -4,6 +4,8 @@ def tennisParser(eventBuf, oddItem):
     soccerDefault = 14000
     oddsType = oddItem[0]
 
+    lineStr = TransformNumToPk(oddsType, oddItem[8])
+    lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
     eventBuf.game_type = "full"
 
     #14001 全場-讓球

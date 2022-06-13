@@ -4,6 +4,9 @@ def volleyballParser(eventBuf, oddItem):
     soccerDefault = 16000
     oddsType = oddItem[0]
 
+    lineStr = TransformNumToPk(oddsType, oddItem[8])
+    lineAt = oddItem[9] # 1: 主讓 , 0: 客讓
+    
     gameClass = int(oddsType) - soccerDefault
 
     if gameClass < 10:

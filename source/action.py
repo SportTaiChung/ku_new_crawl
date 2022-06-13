@@ -419,6 +419,7 @@ def transformToProtobuf(jsonData):
 
         for index in range(1, len(odds)):
             oddItem = odds[index]
+
             event = protobuf_spec.ApHdc()        
             event.source = "KU"
             event.game_type = ""
@@ -452,8 +453,8 @@ def transformToProtobuf(jsonData):
             event.score.home = score[0] if len(score[0]) > 0 else '0'
             event.score.away = score[1] if len(score[1]) > 0 else '0'
 
-            #足球
-            if IsSC(gameType) :
+            #足球(11)
+            if IsSC(gameType) : 
                 event.redcard.home = score[2] if len(score[2]) > 0 else '0'
                 event.redcard.away = score[3] if len(score[3]) > 0 else '0'
                 event.yellowcard.home = '0'
