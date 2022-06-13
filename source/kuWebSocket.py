@@ -14,7 +14,7 @@ class KuWebSocket():
     keepLiveTime = 25
     _status = Status.NONE
     _messageIndex  = 1
-    _logPrefix = self.crawlIndex
+    _logPrefix = 0
 
     def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11"):
         self.url = "wss://" + url + "/" + urlSearch

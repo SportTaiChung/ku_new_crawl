@@ -13,14 +13,8 @@ from kuWebSocket import KuWebSocket
 
 BB_Last = {}
 
-def on_BB_message(message):
-    global connection, channel, _upload_status, mq_url, debug
-    decodeStr = Action.pako_inflate(message)
-
-    debug.write(decodeStr + b'\n')
-    debug.flush()
-
-    Action.onNext(decodeStr)
+def sendToMQ(ws):
+    global connection, channel, _upload_status, mq_url
     datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
     pushData = Action.getNowData()
     for game in pushData:
@@ -41,6 +35,22 @@ def on_BB_message(message):
                 print("Can't connect to MQ.")
             else:
                 print("Send MQ status : " + str(_upload_status))
+                
+    repeat = Timer(60, sendToMQ, (ws,))
+    repeat.start()            
+
+def on_BB_message(message):
+    
+    decodeStr = Action.pako_inflate(message)
+
+    debug.write(decodeStr + b'\n')
+    debug.flush()
+
+    Action.onNext(decodeStr)
+
+    datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
+    print("[" + str(datetime.datetime.now()) + "]")
+
 
 def on_WR_open(ws):
     print("WR Opened connection")
@@ -56,7 +66,7 @@ def BB_change(ws, sport, gameType):
             print("Send BB change. " + command)
             ws.sendCommand(command)
         else:
-            print("Not found game.")
+            print("Not found game.[" + sport + "][" + gameType + "]")
 
         repeat = Timer(30, BB_change, (ws, sport, gameType,))
         repeat.start()    
@@ -82,6 +92,9 @@ def on_BB_open(ws, sport):
     repeat = Timer(30, BB_change, (ws, sport, 0,))
     repeat.start()
 
+    repeat = Timer(60, sendToMQ, (ws,))
+    repeat.start()
+
 def openSocket(SourceType, urlArray, urlSearch, protocol):
     socketList = []
     crawlList = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "26", "27"]
@@ -98,11 +111,11 @@ def openSocket(SourceType, urlArray, urlSearch, protocol):
 
     print(SourceType + " is closed")
 
-userName = "hnbg123456"
-pwd = "aaq13ss"
+#userName = "hnbg123456"
+#pwd = "aaq13ss"
 
-#userName = "78gg787"
-#pwd = "878bb87"
+userName = "78gg787"
+pwd = "878bb87"
 
 VERIFY = ''
 
