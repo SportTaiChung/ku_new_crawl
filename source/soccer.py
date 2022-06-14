@@ -144,7 +144,7 @@ def soccerParser(eventBuf, oddItem):
     #11506 - 全場-第一個角球
     #11531 - 全場-第一個進球
     elif searchItemfromArray(["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253", "11506", "11531"], oddsType) >= 0 :
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
 
     #11004 - 全場-單雙
     #11014 - 全場-角球數-單雙
