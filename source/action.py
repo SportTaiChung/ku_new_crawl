@@ -518,9 +518,9 @@ def transformToProtobuf(jsonData):
 
 def getNowData():
     global GAME_LIST
-    return GAME_LIST
+    return GAME_LIST.copy()
 
-def getNextGameType(gameType, gameMode, nowIndex):
+def getNextGameType(gameType, nowIndex):
     global GAME_LIST
     if not "menu" in GAME_LIST:
         return 0
@@ -534,9 +534,9 @@ def getNextGameType(gameType, gameMode, nowIndex):
             elif gameCount < (nowIndex + 1):
                 return 0
             else :
-                return getNextGameType(gameType, gameMode, (nowIndex + 1))
-        else :
-            return -1        
+                return getNextGameType(gameType, (nowIndex + 1))
+
+    return -1   
 
 def onNext(messageUnzip):
     global GAME_LIST

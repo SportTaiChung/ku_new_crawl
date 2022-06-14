@@ -63,7 +63,7 @@ def on_WR_open(ws):
 def BB_change(ws, sport, gameType):
     
     try:
-        gameType = Action.getNextGameType(sport, "1", gameType)
+        gameType = Action.getNextGameType(sport, gameType)
         if gameType > 0:
             command = '{"action":"ckg","sport":' + sport + ',"mode":1,"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
             print("Send BB change. " + command)
