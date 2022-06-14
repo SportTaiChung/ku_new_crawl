@@ -13,16 +13,16 @@ from kuWebSocket import KuWebSocket
 
 BB_Last = {}
 
-def sendToMQ(ws):
+def sendToMQ():
     global connection, channel, _upload_status, mq_url
     datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
+    print("[" + str(datetime.datetime.now()) + "]Start Send To MQ." )
     pushData = Action.getNowData()
     for game in pushData:
         if game == "menu":
             continue
         protobufData, gameType = Action.transformToProtobuf(pushData[game])
-        if not protobufData == None :
-            print("[" + str(datetime.datetime.now()) + "]")
+        if not protobufData == None and protobufData:
             try:
                 if connection.is_closed or channel.is_closed or not _upload_status:
                     if connection.is_open:
@@ -35,8 +35,11 @@ def sendToMQ(ws):
                 print("Can't connect to MQ.")
             else:
                 print("Send MQ status : " + str(_upload_status))
+        else :
+            print("[" + str(datetime.datetime.now()) + "] Data is empty." )        
 
-    repeat = Timer(60, sendToMQ, (ws,))
+    print("[" + str(datetime.datetime.now()) + "]End Send To MQ." )
+    repeat = Timer(60, sendToMQ)
     repeat.start()            
 
 def on_BB_message(message):
@@ -49,11 +52,11 @@ def on_BB_message(message):
     Action.onNext(decodeStr)
 
     datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
-    print("[" + str(datetime.datetime.now()) + "]")
+    print("[" + str(datetime.datetime.now()) + "]" + str(decodeStr))
 
 
 def on_WR_open(ws):
-    print("WR Opened connection")
+    print("Opened connection")
     ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
     time.sleep(keepLive_time)
 
@@ -71,13 +74,13 @@ def BB_change(ws, sport, gameType):
         repeat = Timer(30, BB_change, (ws, sport, gameType,))
         repeat.start()    
     except:
-        print("[" + sport + "]BB change stop.")
+        print("[" + sport + "] Change stop.")
 
 def on_keepLive(ws, sport):
     ws.sendCommand('{"action":"checkTime"}')
 
 def on_BB_open(ws, sport):
-    print("BB Opened connection")
+    print("[" + sport + "] Opened connection")
     global BB_Last, VERIFY
     sendCommand = ""
     if bool(BB_Last) == False :
@@ -92,9 +95,6 @@ def on_BB_open(ws, sport):
     repeat = Timer(30, BB_change, (ws, sport, 0,))
     repeat.start()
 
-    repeat = Timer(60, sendToMQ, (ws,))
-    repeat.start()
-
 def openSocket(SourceType, urlArray, urlSearch, protocol):
     socketList = []
     crawlList = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "26", "27"]
@@ -105,6 +105,8 @@ def openSocket(SourceType, urlArray, urlSearch, protocol):
             a = threading.Thread(target = socket.connect)
             a.start()
             socketList.append(a)
+
+    sendToMQ()
 
     for socket in socketList:
         socket.join()

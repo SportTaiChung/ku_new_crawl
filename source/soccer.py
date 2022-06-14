@@ -62,8 +62,15 @@ def soccerParser(eventBuf, oddItem):
 
     elif oddsType == "11065" or oddsType == "11165":
         eventBuf.information.league += " - 單隊總得分 - 客隊大小"
-        oddsKey += "_7"    
-    
+        oddsKey += "_7"
+
+    elif oddsType == "11506":
+        eventBuf.information.league += " - 第一個角球"
+        oddsKey += "_8"
+
+    elif oddsType == "11531":
+        eventBuf.information.league += " - 第一個進球"
+        oddsKey += "_9"    
 
     #11001 - 全場-讓球
     #11011 - 全場-角球數-讓球
@@ -134,7 +141,9 @@ def soccerParser(eventBuf, oddItem):
     #11233 - 45:01 - 59:59 -獨贏
     #11243 - 60:00 - 74:59 -獨贏
     #11253 - 74:00 - 全場  -獨贏
-    elif searchItemfromArray(["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253"], oddsType) >= 0 :
+    #11506 - 全場-第一個角球
+    #11531 - 全場-第一個進球
+    elif searchItemfromArray(["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253", "11506", "11531"], oddsType) >= 0 :
         eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
 
     #11004 - 全場-單雙
