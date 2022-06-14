@@ -113,11 +113,11 @@ def openSocket(SourceType, urlArray, urlSearch, protocol):
 
     print(SourceType + " is closed")
 
-#userName = "hnbg123456"
-#pwd = "aaq13ss"
+userName = "hnbg123456"
+pwd = "aaq13ss"
 
-userName = "78gg787"
-pwd = "878bb87"
+#userName = "78gg787"
+#pwd = "878bb87"
 
 VERIFY = ''
 

@@ -86,6 +86,21 @@ class TestActionMethods(unittest.TestCase):
         #print(json.dumps(Action.getNowData()))
         f.close()       
 
+    def test_getNextGameType(self):
+        f = open("raw.log", "rb")
+        Lines = f.readlines()
+        index = 5
+        for line in Lines :
+            obj = json.loads(line)
+            datetime_dt = datetime.datetime.today()
+            datetime_dt = datetime_dt + datetime.timedelta(hours=8)
+            datetime_str = datetime_dt.strftime("%Y/%m/%d %H:%M:%S")
+            obj["date"] = datetime_str
+            line = json.dumps(obj)
+            Action.onNext(line.encode("utf-8"))  
+
+        Action.getNextGameType(11, "1", 0)  
+
 if __name__ == '__main__':
     unittest.main()
 '''
