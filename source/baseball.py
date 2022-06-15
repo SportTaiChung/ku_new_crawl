@@ -19,22 +19,22 @@ def baseballParser(eventBuf, oddItem):
     gameClass = int(oddsType) - soccerDefault
 
     if gameClass < 30:
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 全場"
         oddsKey += "_0"
 
     elif gameClass < 50  :
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 1~3局"
         oddsKey += "_1"
 
     elif gameClass < 70  :
-        eventBuf.game_type = "1st half"
+        eventBuf.game_type = "live 1st half" if eventBuf.live == "true" else "1st half"
         eventBuf.information.league += " - 上半場" 
         oddsKey += "_2"   
 
     elif gameClass < 100  :
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 1~7局"
         oddsKey += "_3"
 
@@ -89,7 +89,7 @@ def baseballParser(eventBuf, oddItem):
         oddsKey += "_5"    
 
     elif gameClass < 400  : 
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         oddsKey += "_6"
 
 

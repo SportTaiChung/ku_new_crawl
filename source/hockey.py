@@ -7,7 +7,7 @@ def hockeyParser(eventBuf, oddItem):
 
     oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
 
-    eventBuf.game_type = "full"
+    eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
     oddsKey += "_0"
 
     #15001 全場-讓球

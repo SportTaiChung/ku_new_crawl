@@ -10,12 +10,12 @@ def tennisParser(eventBuf, oddItem):
     gameClass = int(oddsType) - soccerDefault
     
     if gameClass < 10:
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 局數"
         oddsKey += "_0"
 
     elif gameClass < 100:
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 盤數"
         oddsKey += "_1"
 

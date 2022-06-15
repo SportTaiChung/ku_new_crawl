@@ -10,12 +10,12 @@ def volleyballParser(eventBuf, oddItem):
     gameClass = int(oddsType) - soccerDefault
 
     if gameClass < 10:
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 局數"
         oddsKey += "_0"
 
     elif gameClass < 100:
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 總分"
         oddsKey += "_1"
 
@@ -74,7 +74,7 @@ def volleyballParser(eventBuf, oddItem):
     #16502 第五局-大小
     #16602 第六局-大小
     #16702 第七局-大小
-    elif searchItemfromArray(["16012", "16102", , "16202", "16302", "16402", "16502", "16602", "16702"], oddsType) >= 0:
+    elif searchItemfromArray(["16012", "16102", "16202", "16302", "16402", "16502", "16602", "16702"], oddsType) >= 0:
         eventBuf = protobufUtils.setTotal(eventBuf, oddItem) 
 
     #16103 第一局-獨贏

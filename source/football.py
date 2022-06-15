@@ -10,12 +10,12 @@ def footballParser(eventBuf, oddItem):
     gameClass = int(oddsType) - soccerDefault
 
     if gameClass < 100 :
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 全場"
         oddsKey += "_0"
 
     elif gameClass < 200 :
-        eventBuf.game_type = "1st half"
+        eventBuf.game_type = "live 1st half" if eventBuf.live == "true" else "1st half"
         eventBuf.information.league += " - 上半場"
         oddsKey += "_1"
 

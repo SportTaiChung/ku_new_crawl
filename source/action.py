@@ -498,9 +498,6 @@ def transformToProtobuf(jsonData):
             elif gameType == "21":
                 event, oddsKey = pingpongParser(event, oddItem)
 
-            if event.live == "true":
-                event.game_type += " live"
-
             if oddsKey == None :
                 event.game_id = gameRoundId
             else:

@@ -10,12 +10,12 @@ def soccerParser(eventBuf, oddItem):
     gameClass = int(oddsType) - soccerDefault
 
     if gameClass < 100:
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         eventBuf.information.league += " - 全場"
         oddsKey += "_0"
 
     elif gameClass > 200  :
-        eventBuf.game_type = "full"
+        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
         gameClassSlice = gameClass - 200
         
         if gameClassSlice < 10 :
@@ -43,7 +43,7 @@ def soccerParser(eventBuf, oddItem):
             oddsKey += "_7"
 
     elif gameClass > 100  :    
-        eventBuf.game_type = "1st half"
+        eventBuf.game_type = "live 1st half" if eventBuf.live == "true" else "1st half"
         eventBuf.information.league += " - 上半場"
         oddsKey += "_1"
 
@@ -158,7 +158,7 @@ def soccerParser(eventBuf, oddItem):
     #11061 - 波膽-全場
     #11161 - 波膽-上半場
     elif oddsType == "11061" or oddsType == "11161":  
-        eventBuf.game_type = "pd " + eventBuf.game_type
+        eventBuf.game_type = "pd " + "" if eventBuf.live == "true" else "live " + eventBuf.game_type
         eventBuf.information.league += " - 波膽"
         oddsKey += "_7"
 
@@ -175,7 +175,7 @@ def soccerParser(eventBuf, oddItem):
     #11062 - 入球數-全場
     #11162 - 入球數-上半場
     elif oddsType == "11062" or oddsType == "11162":
-        eventBuf.game_type = "tg " + eventBuf.game_type
+        eventBuf.game_type = "tg " + "" if eventBuf.live == "true" else "live " + eventBuf.game_type
         eventBuf.information.league += " - 入球數"
         oddsKey += "_8"
 
@@ -183,7 +183,7 @@ def soccerParser(eventBuf, oddItem):
 
     #11063 - 半全場
     elif oddsType == "11063":
-        eventBuf.game_type = "hf " + eventBuf.game_type
+        eventBuf.game_type = "hf " + "" if eventBuf.live == "true" else "live " + eventBuf.game_type
         eventBuf.information.league += " - 半全場" 
         oddsKey += "_9"
 
