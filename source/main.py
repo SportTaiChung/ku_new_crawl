@@ -19,7 +19,7 @@ def sendToMQ():
     print("[" + str(datetime.datetime.now()) + "]Start Send To MQ." )
     pushData = Action.getNowData()
     for game in pushData:
-        if game == "menu":
+        if "menu" in game:
             continue
         protobufData, gameType = Action.transformToProtobuf(pushData[game])
         if not protobufData == None and protobufData:
@@ -60,42 +60,42 @@ def on_WR_open(ws):
     ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
     time.sleep(keepLive_time)
 
-def BB_change(ws, sport, gameType):
+def BB_change(ws, sport, gameType, mode):
     
     try:
-        gameType = Action.getNextGameType(sport, gameType)
+        gameType = Action.getNextGameType(sport, gameType, mode)
         if gameType > 0:
-            command = '{"action":"ckg","sport":' + sport + ',"mode":1,"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
+            command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
             print("Send BB change. " + command)
             ws.sendCommand(command)
         else:
-            print("Not found game.[" + sport + "][" + str(gameType + 1) + "]")
+            print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
-        repeat = Timer(30, BB_change, (ws, sport, gameType,))
+        repeat = Timer(30, BB_change, (ws, sport, gameType, mode,))
         repeat.start()    
     except:
-        print("[" + sport + "] Change stop.")
+        print("[" + sport + "][" + mode + "] Change stop.")
 
 def on_keepLive(ws, sport):
     ws.sendCommand('{"action":"checkTime"}')
 
-def on_BB_open(ws, sport):
+def on_BB_open(ws, sport, mode):
     print("[" + sport + "] Opened connection")
     global BB_Last, VERIFY
     sendCommand = ""
     if bool(BB_Last) == False :
-        sendCommand = '{"action":"first","module":0,"device":0,"mode":1,"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + '}'
+        sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + '}'
         ws.sendCommand(sendCommand)
   
-    sendCommand = '{"action":"cst","module":0,"device":0,"mode":1,"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + ',"type":1,"stick":1}'
+    sendCommand = '{"action":"cst","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + ',"type":1,"stick":1}'
     ws.sendCommand(sendCommand)
 
     BB_Last = sendCommand 
 
-    repeat = Timer(30, BB_change, (ws, sport, 0,))
+    repeat = Timer(30, BB_change, (ws, sport, 0, mode,))
     repeat.start()
 
-def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex):
+def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex, crawlMode):
     socketList = []
     ts = 0.0
 
@@ -106,7 +106,7 @@ def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex):
         ts = time.time()
 
         for index, url in enumerate(urlArray):
-            socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message, on_keepLive=on_keepLive, crawlIndex=crawlIndex)
+            socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message, on_keepLive=on_keepLive, crawlIndex=crawlIndex, crawlMode=crawlMode)
             a = threading.Thread(target = socket.connect)
             a.start()
             socketList.append(a)
@@ -114,7 +114,7 @@ def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex):
         for socket in socketList:
             socket.join()
 
-    print(SourceType + "[" + crawlIndex + "] is closed.")
+    print(SourceType + "[" + crawlIndex + "][" + crawlMode + "] is closed.")
 
 #userName = "hnbg123456"
 #pwd = "aaq13ss"
@@ -157,13 +157,15 @@ if __name__ == '__main__':
     BBProtocol = loginResponse["BBProtocol"]
     VERIFY = loginResponse["verify"]
 
+    crawlModeList = ["0", "1", "2"]
     crawlList = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "26", "27"]
     threadList = []
 
-    for crawlIndex in crawlList:
-        thread = threading.Thread(target = openSocket, args = ("BBRS", BBUrl, BBUrlSearch, BBProtocol, crawlIndex,))
-        thread.start()
-        threadList.append(thread)
+    for crawlMode in crawlModeList:
+        for crawlIndex in crawlList:
+            thread = threading.Thread(target = openSocket, args = ("BBRS", BBUrl, BBUrlSearch, BBProtocol, crawlIndex, crawlMode,))
+            thread.start()
+            threadList.append(thread)
 
     sendToMQ()
 

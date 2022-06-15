@@ -16,7 +16,7 @@ class KuWebSocket():
     _messageIndex  = 1
     _logPrefix = 0
 
-    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11"):
+    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11", crawlMode="1"):
         self.url = "wss://" + url + "/" + urlSearch
         self.protocol = protocol
         self.KuWebSocket = websocket.WebSocketApp(
@@ -33,6 +33,7 @@ class KuWebSocket():
         )
         self.crawlIndex = crawlIndex
         self._logPrefix = crawlIndex
+        self.crawlMode = crawlMode
         self.KuWebSocket.on_open =  self.on_open
         self.KuWebSocket.on_message = self.on_message
         self.KuWebSocket.on_error = self.on_error
@@ -70,7 +71,7 @@ class KuWebSocket():
         print("[" + str(self._logPrefix) + "] Opened connected.")
         
         if not self._on_open == None :
-            self._on_open(self, self.crawlIndex)
+            self._on_open(self, self.crawlIndex, self.crawlMode)
 
         repeat = Timer(self.keepLiveTime, self.keepLive)
         repeat.start()

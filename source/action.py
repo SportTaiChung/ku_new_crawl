@@ -517,12 +517,13 @@ def getNowData():
     global GAME_LIST
     return GAME_LIST.copy()
 
-def getNextGameType(gameType, nowIndex):
+def getNextGameType(gameType, nowIndex, gameMode):
     allData = getNowData()
-    if not "menu" in allData:
+    menuKey = "menu" + gameMode
+    if not menuKey in allData:
         return 0
 
-    menuList = allData["menu"]
+    menuList = allData[menuKey]
     for menu in menuList:
         if str(menu["type"]) == str(gameType):
             gameCount = len(menu["count"])
@@ -531,7 +532,7 @@ def getNextGameType(gameType, nowIndex):
             elif gameCount < (nowIndex + 1):
                 return 0
             else :
-                return getNextGameType(gameType, (nowIndex + 1))
+                return getNextGameType(gameType, (nowIndex + 1), gameMode)
 
     return -1   
 
@@ -548,7 +549,7 @@ def onNext(messageUnzip):
 
     if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" or messageJson["action"] == "ckg": 
         GAME_LIST[searchKey] = messageJson
-        GAME_LIST["menu"] = messageJson["menu"]["list"]
+        GAME_LIST["menu" + mode]= messageJson["menu"]["list"]
 
     elif messageJson["action"] == "add" : 
         if searchKey in GAME_LIST:
@@ -619,7 +620,7 @@ def onNext(messageUnzip):
                 print("Can't find key : " + searchKey)
 
         elif "menu" in messageJson:
-            GAME_LIST["menu"] = messageJson["menu"]["list"]
+            GAME_LIST["menu" + mode] = messageJson["menu"]["list"]
 
         elif "score" in messageJson:
             pass

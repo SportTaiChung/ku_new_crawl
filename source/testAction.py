@@ -67,22 +67,18 @@ class TestActionMethods(unittest.TestCase):
         # index = Action.getNextGameType(11, "1", 1)
         # print(index)
         for game in pushData:
-            if game == "menu":
+            if "menu" in game:
                 continue
                     
             gameOddsList, sportType = Action.transformToProtobuf(pushData[game])
-            if not gameOddsList == None :
-                print(gameOddsList)
+            if not gameOddsList == None and gameOddsList:
                 if self.connection.is_closed or self.channel.is_closed or not self._upload_status:
                     if self.connection.is_open:
                             elf.connection.close()
                     self.connection, self.channel = init_session(mq_url)
 
                 self._upload_status = upload_data(self.channel, gameOddsList, sportType)
-                print(self._upload_status)
-
-
-            pass         
+                print(self._upload_status)         
 
         #print(json.dumps(Action.getNowData()))
              
