@@ -21,11 +21,31 @@ def tennisParser(eventBuf, oddItem):
 
     elif gameClass < 200:
         eventBuf.game_type = "1q"
-        eventBuf.information.league += " - 第一局"
+        eventBuf.information.league += " - 第一盤"
         oddsKey += "_2"
+
+    elif gameClass < 300:
+        eventBuf.game_type = "2q"
+        eventBuf.information.league += " - 第二盤"
+        oddsKey += "_3"
+
+    elif gameClass < 400:
+        eventBuf.game_type = "3q"
+        eventBuf.information.league += " - 第三盤"
+        oddsKey += "_4"
+
+    elif gameClass < 500:
+        eventBuf.game_type = "4set"
+        eventBuf.information.league += " - 第四盤"
+        oddsKey += "_5"
+
+    elif gameClass < 600:
+        eventBuf.game_type = "5set"
+        eventBuf.information.league += " - 第五盤"
+        oddsKey += "_6"                
     
     #14001 局數-讓球
-    if searchItemfromArray(["14001"], oddsType) >= 0:
+    if searchItemfromArray(["14001", "14101", "14201", "14301" ,"14401" ,"14501"], oddsType) >= 0:
         eventBuf = protobufUtils.setSpread(eventBuf, oddItem) 
 
     #14002 局數-大小

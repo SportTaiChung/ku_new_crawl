@@ -38,10 +38,50 @@ def baseballParser(eventBuf, oddItem):
         eventBuf.information.league += " - 1~7局"
         oddsKey += "_3"
 
-    elif gameClass < 200  :
+    elif gameClass < 120  :
         eventBuf.game_type = "1q"  
         eventBuf.information.league += " - 第一局 - 得分"
-        oddsKey += "_4"
+        oddsKey += "_4_1"
+
+    elif gameClass < 130  :
+        eventBuf.game_type = "2q"  
+        eventBuf.information.league += " - 第二局 - 得分"
+        oddsKey += "_4_2"
+
+    elif gameClass < 140  :
+        eventBuf.game_type = "3q"  
+        eventBuf.information.league += " - 第三局 - 得分"
+        oddsKey += "_4_3"
+
+    elif gameClass < 150  :
+        eventBuf.game_type = "4set"  
+        eventBuf.information.league += " - 第四局 - 得分"
+        oddsKey += "_4_4"
+
+    elif gameClass < 160  :
+        eventBuf.game_type = "5set"  
+        eventBuf.information.league += " - 第五局 - 得分"
+        oddsKey += "_4_5"
+
+    elif gameClass < 170  :
+        eventBuf.game_type = "6set"  
+        eventBuf.information.league += " - 第六局 - 得分"
+        oddsKey += "_4_6"
+
+    elif gameClass < 180  :
+        eventBuf.game_type = "7set"  
+        eventBuf.information.league += " - 第七局 - 得分"
+        oddsKey += "_4_7"
+
+    elif gameClass < 190  :
+        eventBuf.game_type = "8set"  
+        eventBuf.information.league += " - 第八局 - 得分"
+        oddsKey += "_4_8"
+
+    elif gameClass < 200  :
+        eventBuf.game_type = "9set"  
+        eventBuf.information.league += " - 第九局 - 得分"
+        oddsKey += "_4_9"
 
     elif gameClass < 300  :
         eventBuf.game_type = "1q"  
@@ -88,7 +128,15 @@ def baseballParser(eventBuf, oddItem):
     #13071 1~7局-讓球
     #13111 第一局-得分-讓球
     #13211 第一局-安打-讓球
-    if searchItemfromArray(["13001", "13032", "13051", "13071", "13111", "13211"], oddsType) >= 0:
+    #13121 第二局-得分-讓球
+    #13131 第三局-得分-讓球
+    #13141 第四局-得分-讓球
+    #13151 第五局-得分-讓球
+    #13161 第六局-得分-讓球
+    #13171 第七局-得分-讓球
+    #13181 第八局-得分-讓球
+    #13191 第九局-得分-讓球
+    if searchItemfromArray(["13001", "13032", "13051", "13071", "13111", "13211", "13121", "13131", "13141", "13151", "13161", "13171", "13181", "13191"], oddsType) >= 0:
         eventBuf = protobufUtils.setSpread(eventBuf, oddItem, True)
 
     #13002 全場-大小
@@ -101,7 +149,15 @@ def baseballParser(eventBuf, oddItem):
     #13112 第一局-得分-大小
     #13212 第一局-安打-大小
     #13321 全場-(得分+安打+失誤)總和
-    elif searchItemfromArray(["13002", "13006", "13007", "13012", "13032", "13052", "13072", "13112", "13212", "13321"], oddsType) >= 0:
+    #13122 第二局-得分-大小
+    #13132 第三局-得分-大小
+    #13142 第四局-得分-大小
+    #13152 第五局-得分-大小
+    #13162 第六局-得分-大小
+    #13172 第七局-得分-大小
+    #13182 第八局-得分-大小
+    #13192 第九局-得分-大小
+    elif searchItemfromArray(["13002", "13006", "13007", "13012", "13032", "13052", "13072", "13112", "13212", "13321", "13122", "13132", "13142", "13152", "13162", "13172", "13182", "13192"], oddsType) >= 0:
         eventBuf = protobufUtils.setTotal(eventBuf, oddItem)
 
     #13003 全場-獨贏
