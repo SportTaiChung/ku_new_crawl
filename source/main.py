@@ -69,7 +69,7 @@ def BB_change(ws, sport, gameType):
             print("Send BB change. " + command)
             ws.sendCommand(command)
         else:
-            print("Not found game.[" + sport + "][" + gameType + "]")
+            print("Not found game.[" + sport + "][" + str(gameType + 1) + "]")
 
         repeat = Timer(30, BB_change, (ws, sport, gameType,))
         repeat.start()    
@@ -95,29 +95,32 @@ def on_BB_open(ws, sport):
     repeat = Timer(30, BB_change, (ws, sport, 0,))
     repeat.start()
 
-def openSocket(SourceType, urlArray, urlSearch, protocol):
+def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex):
     socketList = []
-    crawlList = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "26", "27"]
+    ts = 0.0
 
-    for crawlIndex in crawlList:
+    while True:
+        if (time.time() - ts) < 5 :
+            break
+
+        ts = time.time()
+
         for index, url in enumerate(urlArray):
             socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message, on_keepLive=on_keepLive, crawlIndex=crawlIndex)
             a = threading.Thread(target = socket.connect)
             a.start()
             socketList.append(a)
 
-    sendToMQ()
+        for socket in socketList:
+            socket.join()
 
-    for socket in socketList:
-        socket.join()
+    print(SourceType + "[" + crawlIndex + "] is closed.")
 
-    print(SourceType + " is closed")
+#userName = "hnbg123456"
+#pwd = "aaq13ss"
 
-userName = "hnbg123456"
-pwd = "aaq13ss"
-
-#userName = "78gg787"
-#pwd = "878bb87"
+userName = "78gg787"
+pwd = "878bb87"
 
 VERIFY = ''
 
@@ -148,25 +151,24 @@ if __name__ == '__main__':
     print(loginResponse)
     print("Ready Connect to Websocket(10), pls change network to VPN")
     time.sleep(10)
-    ts = 0.0
 
     BBUrl = loginResponse["BBWSUrl"]
     BBUrlSearch = loginResponse["BBUrlSearch"]
     BBProtocol = loginResponse["BBProtocol"]
     VERIFY = loginResponse["verify"]
 
-    while True:
-        if (time.time() - ts) < 5 :
-            break;
+    crawlList = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "26", "27"]
+    threadList = []
 
-        openSocket("BBRS", BBUrl, BBUrlSearch, BBProtocol)
-        # # time.sleep(1)
-        # # requestOpenSocket(SessionId, "WRRS", WRUrl, WRUrlSearch)
-        # # requestOpenSocket(SessionId, "BBRS", BBUrl, BBUrlSearch)
+    for crawlIndex in crawlList:
+        thread = threading.Thread(target = openSocket, args = ("BBRS", BBUrl, BBUrlSearch, BBProtocol, crawlIndex,))
+        thread.start()
+        threadList.append(thread)
 
-        ts = time.time()       
-        print("Wait Sleep")
-        time.sleep(5)
+    sendToMQ()
+
+    for thread in threadList:
+        thread.join()
 
     debug.close()    
 

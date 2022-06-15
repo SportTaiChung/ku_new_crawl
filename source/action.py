@@ -521,13 +521,13 @@ def getNowData():
     return GAME_LIST.copy()
 
 def getNextGameType(gameType, nowIndex):
-    global GAME_LIST
-    if not "menu" in GAME_LIST:
+    allData = getNowData()
+    if not "menu" in allData:
         return 0
 
-    menuList = GAME_LIST["menu"]
+    menuList = allData["menu"]
     for menu in menuList:
-        if menu["type"] == gameType:
+        if str(menu["type"]) == str(gameType):
             gameCount = len(menu["count"])
             if gameCount > (nowIndex + 1) and menu["count"][(nowIndex + 1)] > 0:
                 return (nowIndex + 1)

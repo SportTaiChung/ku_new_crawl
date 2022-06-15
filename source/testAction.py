@@ -60,7 +60,8 @@ class TestActionMethods(unittest.TestCase):
             obj["date"] = datetime_str
             line = json.dumps(obj)
             Action.onNext(line.encode("utf-8"))
-        
+            
+        f.close()
             
         pushData = Action.getNowData()
         # index = Action.getNextGameType(11, "1", 1)
@@ -81,10 +82,10 @@ class TestActionMethods(unittest.TestCase):
             #     print(self._upload_status)
 
 
-                pass         
+            pass         
 
         #print(json.dumps(Action.getNowData()))
-        f.close()       
+             
 
     def test_getNextGameType(self):
         f = open("raw.log", "rb")
@@ -98,13 +99,14 @@ class TestActionMethods(unittest.TestCase):
             obj["date"] = datetime_str
             line = json.dumps(obj)
             Action.onNext(line.encode("utf-8"))  
+        f.close()
 
         self.assertEqual(Action.getNextGameType(11, 0), 1)
         self.assertEqual(Action.getNextGameType(11, 1), 2)
         self.assertEqual(Action.getNextGameType(11, 2), 3)
         self.assertEqual(Action.getNextGameType(11, 3), 4)
         self.assertEqual(Action.getNextGameType(11, 4), 5)
-        f.close()  
+          
 
 if __name__ == '__main__':
     unittest.main()
