@@ -97,11 +97,11 @@ class TestActionMethods(unittest.TestCase):
             Action.onNext(line.encode("utf-8"))  
         f.close()
 
-        # self.assertEqual(Action.getNextGameType(11, 0), 1)
-        # self.assertEqual(Action.getNextGameType(11, 1), 2)
-        # self.assertEqual(Action.getNextGameType(11, 2), 3)
-        # self.assertEqual(Action.getNextGameType(11, 3), 4)
-        # self.assertEqual(Action.getNextGameType(11, 4), 5)
+        # self.assertEqual(Action.getNextGameType(11, 0), "0", 1)
+        # self.assertEqual(Action.getNextGameType(11, 1), "1", 2)
+        # self.assertEqual(Action.getNextGameType(11, 2), "2", 3)
+        # self.assertEqual(Action.getNextGameType(11, 3), "0", 4)
+        # self.assertEqual(Action.getNextGameType(11, 4), "0", 5)
           
 
 if __name__ == '__main__':

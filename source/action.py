@@ -519,7 +519,7 @@ def getNowData():
 
 def getNextGameType(gameType, nowIndex, gameMode):
     allData = getNowData()
-    menuKey = "menu" + gameMode
+    menuKey = "menu" + str(gameMode)
     if not menuKey in allData:
         return 0
 
