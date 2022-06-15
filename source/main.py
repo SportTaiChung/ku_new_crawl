@@ -66,7 +66,7 @@ def BB_change(ws, sport, gameType, mode):
         gameType = Action.getNextGameType(sport, gameType, mode)
         if gameType > 0:
             command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
-            print("Send BB change. " + command)
+            print("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
             ws.sendCommand(command)
         else:
             print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
@@ -80,7 +80,7 @@ def on_keepLive(ws, sport):
     ws.sendCommand('{"action":"checkTime"}')
 
 def on_BB_open(ws, sport, mode):
-    print("[" + sport + "] Opened connection")
+    print("[" + sport + "][" + crawlMode + "] Opened connection")
     global BB_Last, VERIFY
     sendCommand = ""
     if bool(BB_Last) == False :
@@ -116,11 +116,11 @@ def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex, crawlMode)
 
     print(SourceType + "[" + crawlIndex + "][" + crawlMode + "] is closed.")
 
-#userName = "hnbg123456"
-#pwd = "aaq13ss"
+userName = "hnbg123456"
+pwd = "aaq13ss"
 
-userName = "78gg787"
-pwd = "878bb87"
+#userName = "78gg787"
+#pwd = "878bb87"
 
 VERIFY = ''
 
