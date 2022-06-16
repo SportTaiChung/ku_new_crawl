@@ -1,180 +1,66 @@
+from argparse import ArgumentParser
+import yaml
+from crawler_runner import CrawlerRunner
 
-import threading
-import datetime
-import json
-from threading import Timer
-import calendar
-import time
-import traceback
-
-import action as Action
-from upload import init_session, upload_data
-from loginManager import LoginManager
-from kuWebSocket import KuWebSocket
-
-BB_Last = {}
-
-def sendToMQ():
-    global connection, channel, _upload_status, mq_url
-    datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
-    print("[" + str(datetime.datetime.now()) + "]Start Send To MQ." )
-    pushData = Action.getNowData()
-    for game in pushData:
-        if "menu" in game:
-            continue
-        protobufData, gameType = Action.transformToProtobuf(pushData[game])
-        if not protobufData == None and protobufData:
-            try:
-                if connection.is_closed or channel.is_closed or not _upload_status:
-                    if connection.is_open:
-                        connection.close()
-           
-                    connection, channel = init_session(mq_url)
-                _upload_status = upload_data(channel, protobufData, gameType)
-                print(_upload_status)  
-            except Exception:
-                traceback.print_exc()
-                print("Can't connect to MQ.")
-            else:
-                print("Send MQ status : " + str(_upload_status))
-        else :
-            print("[" + str(datetime.datetime.now()) + "] Data is empty." )        
-
-    print("[" + str(datetime.datetime.now()) + "]End Send To MQ." )
-    repeat = Timer(60, sendToMQ)
-    repeat.start()            
-
-def on_BB_message(message):
-    
-    decodeStr = Action.pako_inflate(message)
-
-    debug.write(decodeStr + b'\n')
-    debug.flush()
-
-    Action.onNext(decodeStr)
-
-    datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
-    print("[" + str(datetime.datetime.now()) + "]" + str(decodeStr))
-
-
-def on_WR_open(ws):
-    print("Opened connection")
-    ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
-    time.sleep(keepLive_time)
-
-def BB_change(ws, sport, gameType, mode):
-    
-    try:
-        gameType = Action.getNextGameType(sport, gameType, mode)
-        if gameType > 0:
-            command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
-            print("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
-            ws.sendCommand(command)
-        else Exception:
-            traceback.print_exc()
-            print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
-
-        repeat = Timer(30, BB_change, (ws, sport, gameType, mode,))
-        repeat.start()    
-    except:
-        print("[" + sport + "][" + mode + "] Change stop.")
-
-def on_keepLive(ws, sport):
-    ws.sendCommand('{"action":"checkTime"}')
-
-def on_BB_open(ws, sport, mode):
-    print("[" + sport + "][" + crawlMode + "] Opened connection")
-    global BB_Last, VERIFY
-    sendCommand = ""
-    if bool(BB_Last) == False :
-        sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + '}'
-        ws.sendCommand(sendCommand)
-  
-    sendCommand = '{"action":"cst","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + VERIFY + '","dc":' + str(ws.getMessageIndex()) + ',"type":1,"stick":1}'
-    ws.sendCommand(sendCommand)
-
-    BB_Last = sendCommand 
-
-    repeat = Timer(30, BB_change, (ws, sport, 0, mode,))
-    repeat.start()
-
-def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex, crawlMode):
-    socketList = []
-    ts = 0.0
-
-    while True:
-        if (time.time() - ts) < 5 :
-            break
-
-        ts = time.time()
-
-        for index, url in enumerate(urlArray):
-            socket = KuWebSocket(url, urlSearch, protocol, on_open=on_BB_open, on_message=on_BB_message, on_keepLive=on_keepLive, crawlIndex=crawlIndex, crawlMode=crawlMode)
-            a = threading.Thread(target = socket.connect)
-            a.start()
-            socketList.append(a)
-
-        for socket in socketList:
-            socket.join()
-
-    print(SourceType + "[" + crawlIndex + "][" + crawlMode + "] is closed.")
-
-#userName = "hnbg123456"
-#pwd = "aaq13ss"
-
-userName = "78gg787"
-pwd = "878bb87"
-
-VERIFY = ''
-
-mq_url = 'amqp://test:qwerasdf@211.75.222.147:5672/%2F?heartbeat=60&connection_attempts=3&retry_delay=3&socket_timeout=3'
-
-try:
-    print("Start connect to MQ, pls change network to VPN.")
-    connection, channel = init_session(mq_url)
-    print("MQ connect Success, pls change network to normal.(10)")
-    time.sleep(10)
-except Exception:
-    traceback.print_exc()
-    print("MQ can't connect")
-
-_upload_status = True
-
-datetime_dt = datetime.datetime.today()
-datetime_dt = datetime_dt + datetime.timedelta(hours=8)
-datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
-fileName = "debug_" + datetime_str
+def parse_args():
+    parser = ArgumentParser(description='ku ws crawler')
+    parser.add_argument('--daemon', help='run as a daemon in the background', action='store_true')
+    parser.add_argument('-c', '--config', help='config file path', default='config.yml')
+    parser.add_argument('-s', '--secrets', help='secrets config file path', default='secrets.yml')
+    parser.add_argument('-f', '--read-from-file', help='read data from file as crawled data')
+    parser.add_argument('-d', '--dump', help='dump crawled and protobuf data', action='store_true')
+    parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
+    parser.add_argument('-v', '--verbose', help='print verbose log', action='store_true')
+    parser.add_argument('--game-type', help='ball type')
+    parser.add_argument('--play-type', help='early, today, team totals')
+    return parser.parse_args()
 
 if __name__ == '__main__':
+    arguments = parse_args()
+    with open(arguments.config) as config_file:
+        config = yaml.safe_load(config_file)
+    with open(arguments.secrets) as secrets_file:
+        secrets = yaml.safe_load(secrets_file)
 
-    debug = open(fileName + ".log", "ab")
-
-    loginManager = LoginManager(userName, pwd)
-    loginResponse = loginManager.run()
-
-    print(loginResponse)
-    print("Ready Connect to Websocket(10), pls change network to VPN")
-    time.sleep(10)
-
-    BBUrl = loginResponse["BBWSUrl"]
-    BBUrlSearch = loginResponse["BBUrlSearch"]
-    BBProtocol = loginResponse["BBProtocol"]
-    VERIFY = loginResponse["verify"]
-
-    crawlModeList = ["0", "1", "2"]
-    crawlList = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "26", "27"]
-    threadList = []
-
-    for crawlMode in crawlModeList:
-        for crawlIndex in crawlList:
-            thread = threading.Thread(target = openSocket, args = ("BBRS", BBUrl, BBUrlSearch, BBProtocol, crawlIndex, crawlMode,))
-            thread.start()
-            threadList.append(thread)
-
-    sendToMQ()
-
-    for thread in threadList:
-        thread.join()
-
-    debug.close()    
-
+    crawler_config = {
+        'read_from_file': arguments.read_from_file,
+        'dump': arguments.dump,
+        'debug': arguments.debug,
+        'verbose': arguments.verbose
+    }
+    crawler_config.update(config)
+    crawler_config.update(secrets)
+    # 執行指定球種玩法
+    if arguments.game_type and arguments.play_type:
+        task = {
+            'crawler_name': f"ku_{arguments.game_type}_{arguments.play_type}",
+            'game_type': arguments.game_type,
+            'play_type': arguments.play_type
+        }
+        runner = CrawlerRunner(crawler_config, [task], arguments.daemon)
+    else:
+        runner = CrawlerRunner(crawler_config, [], arguments.daemon)    
+    # 執行設定檔中的爬取任務
+    # else:
+    #     tasks = []
+    #     for task in secrets['tasks']:
+    #         for target in task['targets']:
+    #             if target['enabled']:
+    #                 task_name = f'tx_{task["name"]}_{target["period"]}_{target["category"]}{target.get("page", "")}'
+    #                 if target.get('wdls'):
+    #                     task_name = f'{task_name}_wdls'
+    #                 elif target.get('europe_champion'):
+    #                     task_name = f'{task_name}_euch'
+    #                 task_spec = {
+    #                     'crawler_name': task_name,
+    #                     'game_type': task['name'],
+    #                     'period': target['period'],
+    #                     'category': target['category'],
+    #                     'live': target.get('live', False),
+    #                     'wdls': target.get('wdls', False),
+    #                     'europe_champion': target.get('europe_champion', False),
+    #                     'page': target.get('page', 0)
+    #                 }
+    #                 tasks.append(task_spec)
+    #     runner = CrawlerRunner(crawler_config, tasks, arguments.daemon)
+    runner.run()

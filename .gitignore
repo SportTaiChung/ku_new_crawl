@@ -126,7 +126,7 @@ dmypy.json
 .vscode
 
 # config file
-secrets.yml
+#secrets.yml
 
 # tmp
 *.pickle

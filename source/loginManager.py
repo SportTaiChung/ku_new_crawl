@@ -9,16 +9,18 @@ from utils import getQueryString, getRandomMachineId, getBodyStr
 
 class LoginManager:
 
-    defaultUserAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'
-
-    def __init__(self, userName, password):
+    def __init__(self, userName, password, config):
         self.userName = userName
         self.password = password
         self.eval_res, self.pwdManager = js2py.run_file("account.js")
         self.session_requests = requests.session()
+        self.platformUrl = config['platformUrl']
+        self.gameUrl = config['gameUrl'],
+        self.apiPath = config['apiPath'],
+        self.loginHeaders = config['loginHeaders']
 
     def run(self):
-        memCookieUrl = self.loginWa777()
+        memCookieUrl = self.loginPlatform(self.platformUrl, self.apiPath[0]['login'])
         if len(memCookieUrl) <= 0:
             print("Get memCookieUrl Fail.")
             return {}
@@ -29,29 +31,32 @@ class LoginManager:
             print("Get cookie Fail.")
             return {}
 
-        lobyPath = self.kuLogin()
+        lobyPath = self.kuLogin(self.platformUrl, self.apiPath[0]['gameLogin'], self.gameUrl[0][0])
         if len(lobyPath) <= 0:
             print("Get kuLogin Fail.")
             return {}    
 
-        return self.goToLoby("https://dcf.nbb21cf.net/" + lobyPath)        
+        return self.goToLoby(self.gameUrl[0][0] + "/" + lobyPath)        
         
-    def loginWa777(self):
-        self.headers = {'user-agent' : self.defaultUserAgent}
-        url = 'https://www.wa777.net/LoadData/Pd.ashx'
+    def loginPlatform(self, urlList, path):
+        self.headers = self.loginHeaders.copy()
         bodyData = {'txtUser': self.userName,'txtPassword': self.pwdManager.SetHMACMD5(self.password),'screenSize':''}
-        response = self.session_requests.post(url, bodyData, headers = self.headers)
-        if response.status_code == 200:
-            #print(response.text)
-            responseBody = json.loads(response.text)
+        for url in urlList: 
+            requestUrl = url + '/' + path
+            
+            response = self.session_requests.post(requestUrl, bodyData, headers = self.headers)
+            if response.status_code == 200:
+                #print(response.text)
+                responseBody = json.loads(response.text)
 
-            self.headers["cookie"] = response.headers["Set-Cookie"]
-            return responseBody["SData"].split("#")
-        else:
-            print("Url[" + url + "] fail")
-            print("Status : " + response.status_code)
-            print("header : " + response.headers)
-            print("body_text : " + response.text)
+                self.headers["cookie"] = response.headers["Set-Cookie"]
+                return responseBody["SData"].split("#")
+            else:
+                print("Url[" + url + "] fail")
+                print("Status : " + response.status_code)
+                print("header : " + response.headers)
+                print("body_text : " + response.text)
+        return []
 
     def getCookie(self, urlArary):
         machineId = getRandomMachineId(True)
@@ -75,9 +80,8 @@ class LoginManager:
             print("body_text : " + response.text) 
             return False
 
-    def kuLogin(self):
-        header = {'user-agent' : self.defaultUserAgent}
-        header["authority"] = "www.wa777.net"
+    def kuLogin(self, urlList, path, gameUrl):
+        header = self.loginHeaders.copy()
         header["accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" 
         header["accept-encoding"] = "gzip, deflate, br"
         header["accept-language"] = "zh-TW,zh;q=0.9"
@@ -91,19 +95,22 @@ class LoginManager:
         header["upgrade-insecure-requests"] = "1"
         header["cookie"] = self.headers["cookie"].replace("path=/; HttpOnly, ", "")
 
-        url = "https://www.wa777.net/Game/NBBIndex.aspx?nbbUrl=https://dcf.nbb21cf.net/"
-        response = self.session_requests.get(url, headers = header)
-        if response.status_code == 200:
-            return getBodyStr("bbView/Login.aspx", '");', response.text)
-        else:
-            print("Url[" + url + "] fail")
-            print("Status : " + response.status_code)
-            print("header : " + response.headers)
-            print("body_text : " + response.text) 
-            return ""
+        for url in urlList:
+            header["authority"] = url.replace("http://", "").replace("https://", "")
+            requestUrl = url + "/" + path + gameUrl
+            response = self.session_requests.get(requestUrl, headers = header)
+            if response.status_code == 200:
+                return getBodyStr("bbView/Login.aspx", '");', response.text)
+            else:
+                print("Url[" + url + "] fail")
+                print("Status : " + response.status_code)
+                print("header : " + response.headers)
+                print("body_text : " + response.text) 
+                
+        return ""
              
     def goToLoby(self, lobyUrl):
-        header = {}
+        header = self.loginHeaders.copy()
         header['user-agent'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'
         header['authority'] = 'dsp.nbb21f.net'
         header['accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
@@ -132,6 +139,7 @@ class LoginManager:
             print("body_text : " + response.text)
             return {}  
             
+    #Not Use
     def requestOpenSocket(self, token, SourceType, urlArray, urlSearch):
         header = {}
         header['user-agent'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1'

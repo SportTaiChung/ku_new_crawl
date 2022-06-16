@@ -1,0 +1,10 @@
+ku_domains:
+  - https://www.wa777.net
+
+game_server:
+  - https://dcf.nbb21cf.net
+
+api_path:
+  login: LoadData/Pd.ashx
+  logout: LoadData/End.ashx
+  gameLogin: Game/NBBIndex.aspx?nbbUrl=
