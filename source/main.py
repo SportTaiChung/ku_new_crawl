@@ -38,29 +38,22 @@ if __name__ == '__main__':
             'play_type': arguments.play_type
         }
         runner = CrawlerRunner(crawler_config, [task], arguments.daemon)
+    #執行設定檔中的爬取任務
     else:
-        runner = CrawlerRunner(crawler_config, [], arguments.daemon)    
-    # 執行設定檔中的爬取任務
-    # else:
-    #     tasks = []
-    #     for task in secrets['tasks']:
-    #         for target in task['targets']:
-    #             if target['enabled']:
-    #                 task_name = f'tx_{task["name"]}_{target["period"]}_{target["category"]}{target.get("page", "")}'
-    #                 if target.get('wdls'):
-    #                     task_name = f'{task_name}_wdls'
-    #                 elif target.get('europe_champion'):
-    #                     task_name = f'{task_name}_euch'
-    #                 task_spec = {
-    #                     'crawler_name': task_name,
-    #                     'game_type': task['name'],
-    #                     'period': target['period'],
-    #                     'category': target['category'],
-    #                     'live': target.get('live', False),
-    #                     'wdls': target.get('wdls', False),
-    #                     'europe_champion': target.get('europe_champion', False),
-    #                     'page': target.get('page', 0)
-    #                 }
-    #                 tasks.append(task_spec)
-    #     runner = CrawlerRunner(crawler_config, tasks, arguments.daemon)
+        tasks = []
+        for task in secrets['tasks']:
+            for target in task['targets']:
+                if target['enabled']:
+                    task_name = f'ku_{task["name"]}_{target["mode"]}'
+                    if target.get('wdls'):
+                        task_name = f'{task_name}_wdls'
+                    elif target.get('europe_champion'):
+                        task_name = f'{task_name}_euch'
+                    task_spec = {
+                        'crawler_name': task_name,
+                        'game_type': task['name'],
+                        'game_mode': target['mode']
+                    }
+                    tasks.append(task_spec)
+        runner = CrawlerRunner(crawler_config, tasks, arguments.daemon)
     runner.run()
