@@ -5,6 +5,7 @@ import json
 from threading import Timer
 import calendar
 import time
+import traceback
 
 import action as Action
 from upload import init_session, upload_data
@@ -31,7 +32,8 @@ def sendToMQ():
                     connection, channel = init_session(mq_url)
                 _upload_status = upload_data(channel, protobufData, gameType)
                 print(_upload_status)  
-            except:
+            except Exception:
+                traceback.print_exc()
                 print("Can't connect to MQ.")
             else:
                 print("Send MQ status : " + str(_upload_status))
@@ -68,7 +70,8 @@ def BB_change(ws, sport, gameType, mode):
             command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
             print("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
             ws.sendCommand(command)
-        else:
+        else Exception:
+            traceback.print_exc()
             print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
         repeat = Timer(30, BB_change, (ws, sport, gameType, mode,))
@@ -116,11 +119,11 @@ def openSocket(SourceType, urlArray, urlSearch, protocol, crawlIndex, crawlMode)
 
     print(SourceType + "[" + crawlIndex + "][" + crawlMode + "] is closed.")
 
-userName = "hnbg123456"
-pwd = "aaq13ss"
+#userName = "hnbg123456"
+#pwd = "aaq13ss"
 
-#userName = "78gg787"
-#pwd = "878bb87"
+userName = "78gg787"
+pwd = "878bb87"
 
 VERIFY = ''
 
@@ -131,7 +134,8 @@ try:
     connection, channel = init_session(mq_url)
     print("MQ connect Success, pls change network to normal.(10)")
     time.sleep(10)
-except:
+except Exception:
+    traceback.print_exc()
     print("MQ can't connect")
 
 _upload_status = True
