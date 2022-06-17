@@ -105,15 +105,14 @@ class KUCrawler:
         self.printLog("Verify Key : " + self._verifyKey)
 
         crawlModeList = ["0", "1", "2"]
-        # crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
-        #             "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
-        crawlList = {"soccer" : "11"}
+        crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
+                    "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
 
         self.sendToMQ()
-
+        
         while self._config['_running'] :
             for task in self._tasks:
-                if task['game_type'] in crawlList and str(task['game_mode']) in crawlModeList:
+                if str(task['game_type']) in crawlList and str(task['game_mode']) in crawlModeList:
                     for index, url in enumerate(self._url):
                         webSocketList = task['socket']
                         if not url in webSocketList:
@@ -193,8 +192,7 @@ class KUCrawler:
         ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
         time.sleep(keepLive_time)
 
-    def BB_change(self, ws, sport, gameType, mode):
-        
+    def BB_change(self, ws, sport, gameType, mode):  
         try:
             gameType = Action.getNextGameType(sport, gameType, mode)
             if gameType > 0:
@@ -207,8 +205,8 @@ class KUCrawler:
                 print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
             if self._config['_running'] == True :
-                self.otherTimer = Timer(30, self.BB_change, (ws, sport, gameType, mode,))
-                self.otherTimer.start()
+                ws.otherTimer = Timer(30, self.BB_change, (ws, sport, gameType, mode,))
+                ws.otherTimer.start()
         except Exception:
             traceback.print_exc()
             self.printLog("[" + sport + "][" + mode + "] Change stop.")
@@ -227,5 +225,5 @@ class KUCrawler:
 
         BB_Last = sendCommand 
 
-        self.otherTimer = Timer(30, self.BB_change, (ws, sport, 0, mode,))
-        self.otherTimer.start()
+        ws.otherTimer = Timer(30, self.BB_change, (ws, sport, 0, mode,))
+        ws.otherTimer.start()

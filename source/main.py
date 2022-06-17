@@ -36,7 +36,7 @@ if __name__ == '__main__':
         task = {
             'crawler_name': f"ku_{arguments.game_type}_{arguments.play_type}",
             'game_type': arguments.game_type,
-            'play_type': arguments.play_type,
+            'game_mode': arguments.play_type,
             'socket' : {}
         }
         runner = CrawlerRunner(crawler_config, [task], arguments.daemon)

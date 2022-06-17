@@ -125,7 +125,7 @@ class KuWebSocket():
             self._keepLiveTimer.cancel()
 
         if not self.otherTimer == None:
-            self.otherTimer.cancel()    
+            self.otherTimer.cancel()
 
         if not self._status == self.Status.CLOSE:
             self._status = self.Status.CLOSE
