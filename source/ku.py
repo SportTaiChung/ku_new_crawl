@@ -116,7 +116,7 @@ class KUCrawler:
                     for index, url in enumerate(self._url):
                         webSocketList = task['socket']
                         if not url in webSocketList:
-                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_BB_open, on_message=self.on_BB_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=str(task['game_mode']))
+                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=str(task['game_mode']))
                             startThread = threading.Thread(target = socket.connect)
                             webSocketList[url] = {
                                 'socket' : socket
@@ -175,7 +175,7 @@ class KUCrawler:
             self._sendMqTimer = Timer(60, self.sendToMQ)
             self._sendMqTimer.start()            
 
-    def on_BB_message(self, socketKey, message):
+    def on_message(self, socketKey, message):
         
         decodeStr = Action.pako_inflate(message)
 
@@ -192,20 +192,20 @@ class KUCrawler:
         ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
         time.sleep(keepLive_time)
 
-    def BB_change(self, ws, sport, gameType, mode):  
+    def gameChange(self, ws, sport, gameType, mode):  
         try:
             gameType = Action.getNextGameType(sport, gameType, mode)
             if gameType > 0:
                 command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
-                print("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
+                self.printLog("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
                 if ws.sendCommand(command) == False:
-                    print("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change stop.")
+                    self.printLog("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change stop.")
                     return
             else:
-                print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
+                self.printLog("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
             if self._config['_running'] == True :
-                ws.otherTimer = Timer(30, self.BB_change, (ws, sport, gameType, mode,))
+                ws.otherTimer = Timer(30, self.gameChange, (ws, sport, gameType, mode,))
                 ws.otherTimer.start()
         except Exception:
             traceback.print_exc()
@@ -214,8 +214,8 @@ class KUCrawler:
     def on_keepLive(self, ws, sport):
         ws.sendCommand('{"action":"checkTime"}')
 
-    def on_BB_open(self, ws, sport, mode):
-        print("[" + sport + "][" + mode + "] Opened connection")
+    def on_open(self, ws, sport, mode):
+        self.printLog("[" + sport + "][" + mode + "] Opened connection")
 
         sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey  + '","dc":' + str(ws.getMessageIndex()) + '}'
         ws.sendCommand(sendCommand)
@@ -225,5 +225,5 @@ class KUCrawler:
 
         BB_Last = sendCommand 
 
-        ws.otherTimer = Timer(30, self.BB_change, (ws, sport, 0, mode,))
+        ws.otherTimer = Timer(30, self.gameChange, (ws, sport, 0, mode,))
         ws.otherTimer.start()
