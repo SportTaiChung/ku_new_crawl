@@ -12,31 +12,63 @@ from upload import init_session, upload_data
 from loginManager import LoginManager
 from kuWebSocket import KuWebSocket
 
-BB_Last = {}
 class KUCrawler:
         
     def __init__(self, tasks, config, daemon=False):  
         self._config = config
         self._tasks = tasks
         self._config['_running'] = True
-        self._closing = False 
-        self._logger_factory = None
+        self._url = []
+        self._urlSearch = ""
+        self._protocol = ""
         self._verifyKey = ""
         self._upload_status = True
+        self.connection = None
+        self.channel = None
+        self._sendMqTimer = None
+        self._crawlChangeTypeTimer = None
 
-    def set_logger_factory(self, logger_factory):
-        self._logger_factory = logger_factory('ku', extra={ 'game_type': self._tasks[0]['game_type'], 'play_type': self._tasks[0]['game_mode'] })
+    def printLog(self, msg):
+        print("[" + str(datetime.datetime.now()) + "]" + msg + '\n')
 
-    async def run(self, task_info, mq):
+    def stop(self):
 
-        try:
-            print("Start connect to MQ, pls change network to VPN.")
-            self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
-            print("MQ connect Success, pls change network to normal.(10)")
-            time.sleep(10)
-        except Exception:
-            traceback.print_exc()
-            print("MQ can't connect")
+        if not self._crawlChangeTypeTimer == None:
+            self._crawlChangeTypeTimer.cancel()
+
+        if not self._sendMqTimer == None:
+            self._sendMqTimer.cancel()
+
+        self._config['_running'] = False
+
+        for task in self._tasks:
+            webSocketList = task['socket']
+            for webSocket in webSocketList:
+                webSocketList[webSocket]["socket"].stop()
+
+            task['socket'] = {}    
+                
+        self.printLog("KUCrawler Stoped.")
+
+    def runFromFile(self, fileName):
+        self._config['_running'] = False
+
+        f = open(fileName, "rb")
+        Lines = f.readlines()
+        for line in Lines :
+            obj = json.loads(line)
+            datetime_dt = datetime.datetime.today()
+            datetime_dt = datetime_dt + datetime.timedelta(hours=8)
+            datetime_str = datetime_dt.strftime("%Y/%m/%d %H:%M:%S")
+            obj["date"] = datetime_str
+            line = json.dumps(obj)
+            Action.onNext(line.encode("utf-8"))
+            
+        f.close()
+
+        self.sendToMQ()
+
+    def run(self):
 
         loginConfig = {
             'platformUrl': self._config['ku_domains'],
@@ -49,85 +81,103 @@ class KUCrawler:
             if not account_info['enabled']:
                 continue
 
-            loginManager = LoginManager(account, account_info['password'], loginConfig)
-            loginResponse = loginManager.run()
+            self._url = account_info.get("url", [])
+            self._urlSearch = account_info.get("search", "")
+            self._protocol = account_info.get("protocol", "")
+            self._verifyKey = account_info.get("verifyKey", "")   
 
-            if loginResponse != {}:
-                break
-            else:
-                print(loginResponse)
+            if len(self._url) == 0 or len(self._urlSearch) == 0 or len(self._protocol) == 0 or len(self._verifyKey) == 0:
+                loginManager = LoginManager(account, account_info['password'], loginConfig)
+                loginResponse = loginManager.run()
 
-        print("Ready Connect to Websocket(10), pls change network to VPN")
-        time.sleep(10)
+                if loginResponse != {}:
+                    self._url = loginResponse["BBWSUrl"]
+                    self._urlSearch = loginResponse["BBUrlSearch"]
+                    self._protocol = loginResponse["BBProtocol"]
+                    self._verifyKey = loginResponse["verify"]
+                    break
+                else:
+                    self.printLog(loginResponse)
 
-        BBUrl = loginResponse["BBWSUrl"]
-        BBUrlSearch = loginResponse["BBUrlSearch"]
-        BBProtocol = loginResponse["BBProtocol"]
-        self.Key = loginResponse["verify"]
+
+        self.printLog("URL : " + self._url)
+        self.printLog("Url Search : " + self._urlSearch)
+        self.printLog("Protocol : " + self._protocol)
+        self.printLog("Verify Key : " + self._verifyKey)
 
         crawlModeList = ["0", "1", "2"]
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
                     "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
-        threadList = []
-
-        for task in self._tasks:
-            if task['game_type'] in crawlList and str(task['game_mode']) in crawlModeList:
-                thread = threading.Thread(target = self.openSocket, args = ("BBRS", BBUrl, BBUrlSearch, BBProtocol, crawlList[task['game_type']], str(task['game_mode']),))
-                thread.start()
-                threadList.append(thread)
 
         self.sendToMQ()
 
-        for thread in threadList:
-            thread.join()
-            
+        while self._config['_running'] :
+            for task in self._tasks:
+                if task['game_type'] in crawlList and str(task['game_mode']) in crawlModeList:
+                    for index, url in enumerate(self._url):
+                        webSocketList = task['socket']
+                        if not url in webSocketList:
+                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_BB_open, on_message=self.on_BB_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=str(task['game_mode']))
+                            startThread = threading.Thread(target = socket.connect)
+                            webSocketList[url] = {
+                                'socket' : socket
+                            }
+                            startThread.start()
+
+            time.sleep(1)
+
+        self.printLog("KUCrawler Exist.")
 
     def sendToMQ(self):
-        global connection, channel, _upload_status, mq_url
-        datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
-        print("[" + str(datetime.datetime.now()) + "]Start Send To MQ." )
+        self.printLog("Start Send To MQ." )
+
         pushData = Action.getNowData()
+
         for game in pushData:
             if "menu" in game:
                 continue
+
             protobufData, gameType = Action.transformToProtobuf(pushData[game])
             if not protobufData == None and protobufData:
                 try:
-                    if self.connection.is_closed or self.channel.is_closed or not _upload_status:
+                    if self.connection == None or self.channel == None:
+                        self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+
+                    elif self.connection.is_closed or self.channel.is_closed or not _upload_status:
                         if connection.is_open:
                             connection.close()
-            
-                        self.connection, self.channel = init_session(mq_url)
+                        self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+
                     self._upload_status = upload_data(self.channel, protobufData, gameType)
-                    print(_upload_status)  
+                    self.printLog(_upload_status)
+                    
                 except Exception:
                     traceback.print_exc()
-                    print("Can't connect to MQ.")
+                    self.printLog("Can't connect to MQ.")
                 else:
-                    print("Send MQ status : " + str(_upload_status))
+                    self.printLog("Send MQ status : " + str(_upload_status))
             else :
-                print("[" + str(datetime.datetime.now()) + "] Data is empty." )        
+                self.printLog("Data is empty." )        
 
-        print("[" + str(datetime.datetime.now()) + "]End Send To MQ." )
-        repeat = Timer(60, self.sendToMQ)
-        repeat.start()            
+        self.printLog("End Send To MQ." )
+
+        if self._config['_running'] == True :
+            self._sendMqTimer = Timer(60, self.sendToMQ)
+            self._sendMqTimer.start()            
 
     def on_BB_message(self, message):
         
         decodeStr = Action.pako_inflate(message)
-
-        #self._logger_factory.info(decodeStr + b'\n')
 
         print(decodeStr + b'\n')
 
         Action.onNext(decodeStr)
 
         datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
-        print("[" + str(datetime.datetime.now()) + "]" + str(decodeStr))
-
+        self.printLog(str(decodeStr))
 
     def on_WR_open(self, ws):
-        print("Opened connection")
+        self.printLog("Opened connection")
         ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
         time.sleep(keepLive_time)
 
@@ -138,53 +188,32 @@ class KUCrawler:
             if gameType > 0:
                 command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
                 print("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
-                ws.sendCommand(command)
+                if ws.sendCommand(command) == False:
+                    print("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change stop.")
+                    return
             else:
-                
                 print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
-            repeat = Timer(30, self.BB_change, (ws, sport, gameType, mode,))
-            repeat.start()    
+            if self._config['_running'] == True :
+                self._crawlChangeTypeTimer = Timer(30, self.BB_change, (ws, sport, gameType, mode,))
+                self._crawlChangeTypeTimer.start()
         except Exception:
             traceback.print_exc()
-            print("[" + sport + "][" + mode + "] Change stop.")
+            self.printLog("[" + sport + "][" + mode + "] Change stop.")
 
     def on_keepLive(self, ws, sport):
         ws.sendCommand('{"action":"checkTime"}')
 
     def on_BB_open(self, ws, sport, mode):
         print("[" + sport + "][" + mode + "] Opened connection")
-        global BB_Last, VERIFY
-        sendCommand = ""
-        if bool(BB_Last) == False :
-            sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey  + '","dc":' + str(ws.getMessageIndex()) + '}'
-            ws.sendCommand(sendCommand)
+
+        sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey  + '","dc":' + str(ws.getMessageIndex()) + '}'
+        ws.sendCommand(sendCommand)
     
         sendCommand = '{"action":"cst","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey + '","dc":' + str(ws.getMessageIndex()) + ',"type":1,"stick":1}'
         ws.sendCommand(sendCommand)
 
         BB_Last = sendCommand 
 
-        repeat = Timer(30, self.BB_change, (ws, sport, 0, mode,))
-        repeat.start()
-
-    def openSocket(self, SourceType, urlArray, urlSearch, protocol, crawlIndex, crawlMode):
-        socketList = []
-        ts = 0.0
-
-        while True:
-            if (time.time() - ts) < 5 :
-                break
-
-            ts = time.time()
-
-            for index, url in enumerate(urlArray):
-                socket = KuWebSocket(url, urlSearch, protocol, on_open=self.on_BB_open, on_message=self.on_BB_message, on_keepLive=self.on_keepLive, crawlIndex=crawlIndex, crawlMode=crawlMode)
-                a = threading.Thread(target = socket.connect)
-                a.start()
-                socketList.append(a)
-
-            for socket in socketList:
-                socket.join()
-
-        print(SourceType + "[" + crawlIndex + "][" + crawlMode + "] is closed.")
+        self._crawlChangeTypeTimer = Timer(30, self.BB_change, (ws, sport, 0, mode,))
+        self._crawlChangeTypeTimer.start()

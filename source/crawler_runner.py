@@ -1,9 +1,8 @@
 # coding: utf-8
-import asyncio
+import platform
+import os
 import signal
 from ku import KUCrawler
-from logger import init_logger
-
 
 class CrawlerRunner:
 
@@ -11,57 +10,29 @@ class CrawlerRunner:
         self._daemon = daemon
         self._config = config
         self._tasks = tasks
-        self._config['_running'] = True
-        self._loop = asyncio.get_event_loop()
-        self._session_pool = None
-        self._mq = None
         self._crawler = None
-        self._crawler_tasks = []
-        self._sport_info_map = None
-        self._task_coro_id_crawler_map = {}
+        self._config['_running'] = True
         self._closing = False
-        self._logger_factory = init_logger
 
     def run(self):
-        task_info = {}
-        self._mq = asyncio.Queue()
-        crawler = KUCrawler(self._tasks, self._config)
-        crawler.set_logger_factory(self._logger_factory)
-        crawler_task = self._loop.create_task(crawler.run(task_info, self._mq))
-        self._task_coro_id_crawler_map[id(crawler_task)] = crawler
-        self._crawler_tasks.append(crawler_task)
-        if not self._daemon:
-            self._loop.create_task(self.watch_dog_task(stop=True))
-        else:
-            self._loop.create_task(self.watch_dog_task())
-        self._loop.add_signal_handler(signal.SIGTERM, self.gracefully_stop)
-        self._loop.add_signal_handler(signal.SIGINT, self.gracefully_stop)
-        self._loop.run_forever()
-        self._loop.close()
+        self._crawler = KUCrawler(self._tasks, self._config)
 
-    async def watch_dog_task(self, wait_time=30, stop=False):
-        if wait_time > 0:
-            await asyncio.sleep(wait_time)
-        if stop and self._config['_running']:
-            # stop crawlers
-            self._config['_running'] = False
-            while not all(task.done() for task in self._crawler_tasks):
-                await asyncio.sleep(5)
-            self._loop.stop()
+        if self._config['read_from_file']:
+            self._crawler.runFromFile(self._config['read_from_file'])
         else:
-            # watch and restart failed tasks
-            while self._config['_running']:
-                for idx, task in enumerate(self._crawler_tasks):
-                    if task.done():
-                        crawler = self._task_coro_id_crawler_map[id(task)]
-                        crawler_task = self._loop.create_task(crawler.run(None, {}, self._mq))
-                        self._crawler_tasks[idx] = crawler_task
-                        await crawler.logger.warning('重啟任務')
-                        self._task_coro_id_crawler_map[id(crawler_task)] = crawler
-                        del self._task_coro_id_crawler_map[id(task)]
-                await asyncio.sleep(wait_time)
+            if platform.system().lower() == 'linux' :
+                if self._daemon:
+                    pid = os.fork()
+                    if pid > 0:
+                        os._exit(0)
+            
+            signal.signal(signal.SIGTERM, self.gracefully_stop)
+            signal.signal(signal.SIGINT, self.gracefully_stop)
+            signal.signal(signal.SIGTSTP, self.gracefully_stop)
 
-    def gracefully_stop(self):
+            self._crawler.run()
+
+    def gracefully_stop(self, signum, frame):
         if not self._closing:
             self._closing = True
-            self._loop.create_task(self.watch_dog_task(wait_time=0, stop=True))
+            self._crawler.stop()

@@ -11,14 +11,10 @@ class KuWebSocket():
         CONNECTED = 4
         CLOSE = 5
 
-    keepLiveTime = 25
-    _status = Status.NONE
-    _messageIndex  = 1
-    _logPrefix = 0
-
     def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11", crawlMode="1"):
         self.url = "wss://" + url + "/" + urlSearch
         self.protocol = protocol
+        # websocket.enableTrace(True)
         self.KuWebSocket = websocket.WebSocketApp(
             self.url,
             header=[
@@ -31,8 +27,11 @@ class KuWebSocket():
                 "Sec-WebSocket-Protocol: " + protocol
             ]
         )
+        self.keepLiveTime = 25
+        self._status = self.Status.NONE
+        self._messageIndex  = 1
         self.crawlIndex = crawlIndex
-        self._logPrefix = crawlIndex
+        self._logPrefix = "[" + url + "][" + crawlIndex + "][" + crawlMode + "]"
         self.crawlMode = crawlMode
         self.KuWebSocket.on_open =  self.on_open
         self.KuWebSocket.on_message = self.on_message
@@ -43,6 +42,7 @@ class KuWebSocket():
         self._on_error = on_error
         self._on_close = on_close
         self._on_keepLive = on_keepLive
+        self._keepLiveTimer = None
         self._status = self.Status.INITED
 
     def on_close(self, ws, close_status_code, close_msg):
@@ -83,8 +83,8 @@ class KuWebSocket():
                 if not self._on_keepLive == None :
                      self._on_keepLive(self, self.crawlIndex)
 
-                repeat = Timer(self.keepLiveTime, self.keepLive)
-                repeat.start()
+                self._keepLiveTimer = Timer(self.keepLiveTime, self.keepLive)
+                self._keepLiveTimer.start()
         except :
             print("[" + str(self._logPrefix) + "] keepLive Stop.")
 
@@ -100,7 +100,7 @@ class KuWebSocket():
                 print("[" + str(self._logPrefix) + "] WebSocket Status : " + self._status)
                 return False
         except :
-            print("[" + str(self._logPrefix) + "] Send message file.[" + message + "]")
+            print("[" + str(self._logPrefix) + "] Send message fail.[" + message + "]")
             self._status = self.Status.CLOSE
             return False
 
@@ -113,4 +113,15 @@ class KuWebSocket():
     def connect(self):
         print("[" + str(self._logPrefix) + "] Start Connect.")
         self._status = self.Status.OPEN
+        self.KuWebSocket.keep_running = True
         self.KuWebSocket.run_forever(origin="https://dsp.nbb21f.net")
+
+    def stop(self):
+        if not self._keepLiveTimer == None:
+            self._keepLiveTimer.cancel()
+
+        if not self._status == self.Status.CLOSE:
+            self._status = self.Status.CLOSE
+            self.KuWebSocket.keep_running = False
+            self.KuWebSocket.close()
+            self.KuWebSocket = None

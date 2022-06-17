@@ -28,6 +28,7 @@ if __name__ == '__main__':
         'debug': arguments.debug,
         'verbose': arguments.verbose
     }
+
     crawler_config.update(config)
     crawler_config.update(secrets)
     # 執行指定球種玩法
@@ -35,7 +36,8 @@ if __name__ == '__main__':
         task = {
             'crawler_name': f"ku_{arguments.game_type}_{arguments.play_type}",
             'game_type': arguments.game_type,
-            'play_type': arguments.play_type
+            'play_type': arguments.play_type,
+            'socket' : {}
         }
         runner = CrawlerRunner(crawler_config, [task], arguments.daemon)
     #執行設定檔中的爬取任務
@@ -52,7 +54,8 @@ if __name__ == '__main__':
                     task_spec = {
                         'crawler_name': task_name,
                         'game_type': task['name'],
-                        'game_mode': target['mode']
+                        'game_mode': target['mode'],
+                        'socket' : {}
                     }
                     tasks.append(task_spec)
         runner = CrawlerRunner(crawler_config, tasks, arguments.daemon)

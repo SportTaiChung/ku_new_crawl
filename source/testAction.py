@@ -51,7 +51,6 @@ class TestActionMethods(unittest.TestCase):
 
         f = open("raw.log", "rb")
         Lines = f.readlines()
-        index = 5
         for line in Lines :
             obj = json.loads(line)
             datetime_dt = datetime.datetime.today()
@@ -64,8 +63,6 @@ class TestActionMethods(unittest.TestCase):
         f.close()
             
         pushData = Action.getNowData()
-        # index = Action.getNextGameType(11, "1", 1)
-        # print(index)
         for game in pushData:
             if "menu" in game:
                 continue
