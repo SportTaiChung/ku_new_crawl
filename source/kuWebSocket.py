@@ -44,6 +44,10 @@ class KuWebSocket():
         self._on_keepLive = on_keepLive
         self._keepLiveTimer = None
         self._status = self.Status.INITED
+        self.otherTimer = None
+
+    def getName(self):
+        return self.crawlIndex + "_" + self.crawlMode
 
     def on_close(self, ws, close_status_code, close_msg):
         self._status = self.Status.CLOSE
@@ -64,7 +68,7 @@ class KuWebSocket():
         # print(message)
 
         if not self._on_message == None :
-            self._on_message(message)
+            self._on_message(self.getName(), message)
 
     def on_open(self, ws):
         self._status = self.Status.CONNECTED
@@ -73,8 +77,8 @@ class KuWebSocket():
         if not self._on_open == None :
             self._on_open(self, self.crawlIndex, self.crawlMode)
 
-        repeat = Timer(self.keepLiveTime, self.keepLive)
-        repeat.start()
+        self._keepLiveTimer = Timer(self.keepLiveTime, self.keepLive)
+        self._keepLiveTimer.start()
 
     def keepLive(self):
         try:
@@ -119,6 +123,9 @@ class KuWebSocket():
     def stop(self):
         if not self._keepLiveTimer == None:
             self._keepLiveTimer.cancel()
+
+        if not self.otherTimer == None:
+            self.otherTimer.cancel()    
 
         if not self._status == self.Status.CLOSE:
             self._status = self.Status.CLOSE

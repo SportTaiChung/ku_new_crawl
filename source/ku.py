@@ -6,6 +6,7 @@ from threading import Timer
 import calendar
 import time
 import traceback
+from google.protobuf import text_format
 
 import action as Action
 from upload import init_session, upload_data
@@ -18,6 +19,7 @@ class KUCrawler:
         self._config = config
         self._tasks = tasks
         self._config['_running'] = True
+        self.name = 'ku_crawl'
         self._url = []
         self._urlSearch = ""
         self._protocol = ""
@@ -26,15 +28,12 @@ class KUCrawler:
         self.connection = None
         self.channel = None
         self._sendMqTimer = None
-        self._crawlChangeTypeTimer = None
 
     def printLog(self, msg):
         print("[" + str(datetime.datetime.now()) + "]" + msg + '\n')
 
     def stop(self):
-
-        if not self._crawlChangeTypeTimer == None:
-            self._crawlChangeTypeTimer.cancel()
+        self.printLog("KUCrawler Start Stop.")
 
         if not self._sendMqTimer == None:
             self._sendMqTimer.cancel()
@@ -100,14 +99,15 @@ class KUCrawler:
                     self.printLog(loginResponse)
 
 
-        self.printLog("URL : " + self._url)
+        self.printLog("URL : " + str(self._url))
         self.printLog("Url Search : " + self._urlSearch)
         self.printLog("Protocol : " + self._protocol)
         self.printLog("Verify Key : " + self._verifyKey)
 
         crawlModeList = ["0", "1", "2"]
-        crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
-                    "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
+        # crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
+        #             "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
+        crawlList = {"soccer" : "11"}
 
         self.sendToMQ()
 
@@ -132,6 +132,10 @@ class KUCrawler:
         self.printLog("Start Send To MQ." )
 
         pushData = Action.getNowData()
+        
+        if self._config['dump'] and pushData:
+            with open(f'{self.name}.raw', mode='wb') as f:
+                f.write(json.dumps(pushData).encode('utf-8'))
 
         for game in pushData:
             if "menu" in game:
@@ -140,6 +144,13 @@ class KUCrawler:
             protobufData, gameType = Action.transformToProtobuf(pushData[game])
             if not protobufData == None and protobufData:
                 try:
+                    if self._config['dump'] and protobufData:
+                        with open(f'{self.name}.bin', mode='wb') as f:
+                            f.write(protobufData.SerializeToString())
+
+                        with open(f'{self.name}.txt', mode='w') as f:
+                            f.write(text_format.MessageToString(protobufData))
+
                     if self.connection == None or self.channel == None:
                         self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
 
@@ -150,7 +161,7 @@ class KUCrawler:
 
                     self._upload_status = upload_data(self.channel, protobufData, gameType)
                     self.printLog(_upload_status)
-                    
+
                 except Exception:
                     traceback.print_exc()
                     self.printLog("Can't connect to MQ.")
@@ -165,16 +176,17 @@ class KUCrawler:
             self._sendMqTimer = Timer(60, self.sendToMQ)
             self._sendMqTimer.start()            
 
-    def on_BB_message(self, message):
+    def on_BB_message(self, socketKey, message):
         
         decodeStr = Action.pako_inflate(message)
 
-        print(decodeStr + b'\n')
+        self.printLog(str(decodeStr))
+
+        if self._config['dump'] and decodeStr:
+            with open(f'{self.name}_{socketKey}.log', mode='ab') as f:
+                f.write(decodeStr + b'\n')
 
         Action.onNext(decodeStr)
-
-        datetime.datetime(2009, 1, 6, 15, 8, 24, 789)
-        self.printLog(str(decodeStr))
 
     def on_WR_open(self, ws):
         self.printLog("Opened connection")
@@ -195,8 +207,8 @@ class KUCrawler:
                 print("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
             if self._config['_running'] == True :
-                self._crawlChangeTypeTimer = Timer(30, self.BB_change, (ws, sport, gameType, mode,))
-                self._crawlChangeTypeTimer.start()
+                self.otherTimer = Timer(30, self.BB_change, (ws, sport, gameType, mode,))
+                self.otherTimer.start()
         except Exception:
             traceback.print_exc()
             self.printLog("[" + sport + "][" + mode + "] Change stop.")
@@ -215,5 +227,5 @@ class KUCrawler:
 
         BB_Last = sendCommand 
 
-        self._crawlChangeTypeTimer = Timer(30, self.BB_change, (ws, sport, 0, mode,))
-        self._crawlChangeTypeTimer.start()
+        self.otherTimer = Timer(30, self.BB_change, (ws, sport, 0, mode,))
+        self.otherTimer.start()
