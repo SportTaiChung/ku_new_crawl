@@ -44,6 +44,7 @@ class KUCrawler:
             webSocketList = task['socket']
             for webSocket in webSocketList:
                 webSocketList[webSocket]["socket"].stop()
+                self.printLog(f'{webSocket} is Stop.')
 
             task['socket'] = {}    
                 
@@ -98,11 +99,11 @@ class KUCrawler:
                 else:
                     self.printLog(loginResponse)
 
-
-        self.printLog("URL : " + str(self._url))
-        self.printLog("Url Search : " + self._urlSearch)
-        self.printLog("Protocol : " + self._protocol)
-        self.printLog("Verify Key : " + self._verifyKey)
+        with open(f'lastLoginInfo.txt', mode='w') as f:
+            f.write("url : " + str(self._url) + "\n")
+            f.write("search : " + self._urlSearch + "\n")
+            f.write("protocol : " + self._protocol + "\n")
+            f.write("verifyKey : " + self._verifyKey + "\n")
 
         crawlModeList = ["0", "1", "2"]
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
@@ -186,11 +187,6 @@ class KUCrawler:
                 f.write(decodeStr + b'\n')
 
         Action.onNext(decodeStr)
-
-    def on_WR_open(self, ws):
-        self.printLog("Opened connection")
-        ws.send('{"action":"orderR","date":"","ball":0,"dc":' + str(ws.getMessageIndex()) + ',"stick":1}')
-        time.sleep(keepLive_time)
 
     def gameChange(self, ws, sport, gameType, mode):  
         try:
