@@ -1,11 +1,10 @@
 
 import threading
-import datetime
 import json
 from threading import Timer
-import calendar
 import time
 import traceback
+import logger
 from google.protobuf import text_format
 
 import action as Action
@@ -27,12 +26,13 @@ class KUCrawler:
         self.connection = None
         self.channel = None
         self._sendMqTimer = None
-
-    def printLog(self, msg):
-        print("[" + str(datetime.datetime.now()) + "]" + msg + '\n')
+        if self._config['verbose'] :
+            self._logger = logger.getLogger("DEBUG")
+        else:
+            self._logger = logger.getLogger("INFO")
 
     def stop(self):
-        self.printLog("KUCrawler Start Stop.")
+        self._logger.debug("KUCrawler Start Stop.")
 
         if not self._sendMqTimer == None:
             self._sendMqTimer.cancel()
@@ -43,11 +43,11 @@ class KUCrawler:
             webSocketList = task['socket']
             for webSocket in webSocketList:
                 webSocketList[webSocket]["socket"].stop()
-                self.printLog(f'{webSocket} is Stop.')
+                self._logger.debug(f'{webSocket} is Stop.')
 
             task['socket'] = {}    
                 
-        self.printLog("KUCrawler Stoped.")
+        self._logger.debug("KUCrawler Stoped.")
 
     def runFromFile(self, fileName):
         self._config['_running'] = False
@@ -92,7 +92,7 @@ class KUCrawler:
                     self._verifyKey = loginResponse["verify"]
                     break
                 else:
-                    self.printLog(loginResponse)
+                    self._logger.warning(loginResponse)
 
         with open(f'lastLoginInfo.txt', mode='w') as f:
             f.write("url : " + str(self._url) + "\n")
@@ -122,10 +122,10 @@ class KUCrawler:
 
             time.sleep(1)
 
-        self.printLog("KUCrawler Exist.")
+        self._logger.info("KUCrawler Exist.")
 
     def sendToMQ(self):
-        self.printLog("Start Send To MQ." )
+        self._logger.debug("Start Send To MQ." )
 
         pushData = Action.getNowData()
         
@@ -156,17 +156,17 @@ class KUCrawler:
                         self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
 
                     self._upload_status = upload_data(self.channel, protobufData, gameType)
-                    self.printLog(_upload_status)
+                    self._logger.debug(_upload_status)
 
                 except Exception:
                     traceback.print_exc()
-                    self.printLog("Can't connect to MQ.")
+                    self._logger.error("Can't connect to MQ.")
                 else:
-                    self.printLog("Send MQ status : " + str(_upload_status))
+                    self._logger.info("Send MQ status : " + str(_upload_status))
             else :
-                self.printLog("Data is empty." )        
+                self._logger.info("Data is empty." )        
 
-        self.printLog("End Send To MQ." )
+        self._logger.debug("End Send To MQ." )
 
         if self._config['_running'] == True :
             pushInterval = 30
@@ -180,7 +180,7 @@ class KUCrawler:
         
         decodeStr = Action.pako_inflate(message)
 
-        self.printLog(str(decodeStr))
+        self._logger.debug(str(decodeStr))
 
         if self._config['dump'] and decodeStr:
             with open(f'{self.name}_{socketKey}.log', mode='ab') as f:
@@ -193,25 +193,25 @@ class KUCrawler:
             gameType = Action.getNextGameType(sport, gameType, mode)
             if gameType > 0:
                 command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
-                self.printLog("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
+                self._logger.info("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
                 if ws.sendCommand(command) == False:
-                    self.printLog("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change stop.")
+                    self._logger.error("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change stop.")
                     return
             else:
-                self.printLog("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
+                self._logger.error("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
             if self._config['_running'] == True :
                 ws.otherTimer = Timer(sleepTime, self.gameChange, (ws, sport, gameType, mode, sleepTime,))
                 ws.otherTimer.start()
         except Exception:
             traceback.print_exc()
-            self.printLog("[" + sport + "][" + mode + "] Change stop.")
+            self._logger.info("[" + sport + "][" + mode + "] Change stop.")
 
     def on_keepLive(self, ws, sport):
         ws.sendCommand('{"action":"checkTime"}')
 
     def on_open(self, ws, sport, mode):
-        self.printLog("[" + sport + "][" + mode + "] Opened connection")
+        self._logger.debug("[" + sport + "][" + mode + "] Opened connection")
 
         sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey  + '","dc":' + str(ws.getMessageIndex()) + '}'
         ws.sendCommand(sendCommand)

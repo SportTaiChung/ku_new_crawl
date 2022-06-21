@@ -14,6 +14,7 @@ from volleyball import volleyballParser
 from badminton import badmintonParser
 from eSport import eSportParser
 from pingpong import pingpongParser
+import logger
 
 GAME_LIST = {}
 
@@ -223,7 +224,7 @@ def onNext(messageUnzip):
                             for oddIndex in range(1, len(oddsList)):
                                 oddItme = oddsList[oddIndex]
                                 if deleteItem[1] == oddItme[3] and deleteItem[2] == oddItme[0]:
-                                    # print("Find " + str(oddItme) + " and deleted")
+                                    logger.getLogger().debug("Find " + str(oddItme) + " and deleted")
                                     del GAME_LIST[searchKey]["odds"][index][oddIndex]
                                     break
                             break                               
@@ -255,7 +256,7 @@ def onNext(messageUnzip):
                                         if "l" in updateItem:
                                             line = updateItem["l"]
                                             oddItme[8] = line
-                                        # print("Find " + str(pathList) + " and Update " + str(oddItme))
+                                        logger.getLogger().debug("Find " + str(pathList) + " and Update " + str(oddItme))
                                         break 
                                 break                            
                     else :
@@ -273,5 +274,5 @@ def onNext(messageUnzip):
         pass
         
     else :
-        print("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
+        logger.getLogger().error("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
 

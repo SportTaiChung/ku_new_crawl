@@ -6,6 +6,7 @@ import json
 import requests
 import datetime
 from utils import getQueryString, getRandomMachineId, getBodyStr
+import logger
 
 class LoginManager:
 
@@ -22,18 +23,18 @@ class LoginManager:
     def run(self):
         memCookieUrl = self.loginPlatform(self.platformUrl, self.apiPath[0]['login'])
         if len(memCookieUrl) <= 0:
-            print("Get memCookieUrl Fail.")
+            logger.getLogger().error("Get memCookieUrl Fail.")
             return {}
 
         if self.getCookie(memCookieUrl):
-            print(self.headers)
+            logger.getLogger().debug(self.headers)
         else:
             print("Get cookie Fail.")
             return {}
 
         lobyPath = self.kuLogin(self.platformUrl, self.apiPath[0]['gameLogin'], self.gameUrl[0][0])
         if len(lobyPath) <= 0:
-            print("Get kuLogin Fail.")
+            logger.getLogger().error("Get kuLogin Fail.")
             return {}    
 
         return self.goToLoby(self.gameUrl[0][0] + "/" + lobyPath)        
@@ -46,16 +47,14 @@ class LoginManager:
             
             response = self.session_requests.post(requestUrl, bodyData, headers = self.headers)
             if response.status_code == 200:
-                #print(response.text)
+                logger.getLogger().debug(response.text)
                 responseBody = json.loads(response.text)
 
                 self.headers["cookie"] = response.headers["Set-Cookie"]
                 return responseBody["SData"].split("#")
             else:
-                print("Url[" + url + "] fail")
-                print("Status : " + response.status_code)
-                print("header : " + response.headers)
-                print("body_text : " + response.text)
+                logger.getLogger().error(response)
+
         return []
 
     def getCookie(self, urlArary):
@@ -74,10 +73,7 @@ class LoginManager:
             self.headers[userKey] = "1"
             return True
         else: 
-            print("Url[" + url + "] fail")
-            print("Status : " + response.status_code)
-            print("header : " + response.headers)
-            print("body_text : " + response.text) 
+            logger.getLogger().error(response)
             return False
 
     def kuLogin(self, urlList, path, gameUrl):
@@ -102,10 +98,7 @@ class LoginManager:
             if response.status_code == 200:
                 return getBodyStr("bbView/Login.aspx", '");', response.text)
             else:
-                print("Url[" + url + "] fail")
-                print("Status : " + response.status_code)
-                print("header : " + response.headers)
-                print("body_text : " + response.text) 
+                logger.getLogger().error(response)
                 
         return ""
              
@@ -134,8 +127,6 @@ class LoginManager:
                 "token" : dataJson["Account"] + "_" + dataJson["SessionID"]
             }
         else :
-            print("Status : " + response.status_code)
-            print("header : " + response.headers)
-            print("body_text : " + response.text)
+            logger.getLogger().error(response)
             return {}
             

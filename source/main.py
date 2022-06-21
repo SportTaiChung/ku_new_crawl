@@ -9,8 +9,8 @@ def parse_args():
     parser.add_argument('-s', '--secrets', help='secrets config file path', default='secrets.yml')
     parser.add_argument('-f', '--read-from-file', help='read data from file as crawled data')
     parser.add_argument('-d', '--dump', help='dump crawled and protobuf data', action='store_true')
-    parser.add_argument('-D', '--debug', help='debug mode', action='store_true') #Not used
-    parser.add_argument('-v', '--verbose', help='print verbose log', action='store_true') #Not used
+    parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
+    parser.add_argument('-v', '--verbose', help='print verbose log', action='store_true')
     parser.add_argument('--game-type', help='ball type')
     parser.add_argument('--play-type', help='early, today, team totals')
     return parser.parse_args()

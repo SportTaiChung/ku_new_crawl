@@ -1,6 +1,8 @@
 import websocket
 from enum import Enum
 from threading import Timer
+import logger
+import traceback
 
 class KuWebSocket():
     class Status(Enum):
@@ -51,28 +53,25 @@ class KuWebSocket():
 
     def on_close(self, ws, close_status_code, close_msg):
         self._status = self.Status.CLOSE
-        print("[" + str(self._logPrefix) + "] Closed : ")
-        print(close_msg)
+        logger.getLogger().info("[" + str(self._logPrefix) + "] Closed : " + str(close_msg))
         if not self._on_close == None :
             self._on_close(close_msg)
         
     def on_error(self, ws, error):
-        print("[" + str(self._logPrefix) + "] error : ")
-        print(error)
+        logger.getLogger().info("[" + str(self._logPrefix) + "] error : " + str(error))
 
         if not self._on_error == None :
             self._on_error(error)
 
     def on_message(self, ws, message):
-        # print("[" + str(self._logPrefix) + "] Recv : ")
-        # print(message)
+        logger.getLogger().debug("[" + str(self._logPrefix) + "] Recv : " + str(message))
 
         if not self._on_message == None :
             self._on_message(self.getName(), message)
 
     def on_open(self, ws):
         self._status = self.Status.CONNECTED
-        print("[" + str(self._logPrefix) + "] Opened connected.")
+        logger.getLogger().info("[" + str(self._logPrefix) + "] Opened connected.")
         
         if not self._on_open == None :
             self._on_open(self, self.crawlIndex, self.crawlMode)
@@ -83,28 +82,29 @@ class KuWebSocket():
     def keepLive(self):
         try:
             if self._status == self.Status.CONNECTED :
-                print("[" + str(self._logPrefix) + "] keepLive.")
+                logger.getLogger().info("[" + str(self._logPrefix) + "] keepLive.")
                 if not self._on_keepLive == None :
                      self._on_keepLive(self, self.crawlIndex)
 
                 self._keepLiveTimer = Timer(self.keepLiveTime, self.keepLive)
                 self._keepLiveTimer.start()
-        except :
-            print("[" + str(self._logPrefix) + "] keepLive Stop.")
-
+        except Exception:
+            logger.getLogger().error("[" + str(self._logPrefix) + "] keepLive Stop.")
+            traceback.print_exc()
 
     def sendCommand(self, message):
         try :
             if self._status == self.Status.CONNECTED and len(message) > 0 :
-                print("[" + str(self._logPrefix) + "] Send : " + message)
+                logger.getLogger().debug("[" + str(self._logPrefix) + "] Send : " + message)
                 self.KuWebSocket.send(message)
                 self._messageIndex += 1
                 return True
             else :
-                print("[" + str(self._logPrefix) + "] WebSocket Status : " + self._status)
+                logger.getLogger().debug("[" + str(self._logPrefix) + "] WebSocket Status : " + self._status)
                 return False
-        except :
-            print("[" + str(self._logPrefix) + "] Send message fail.[" + message + "]")
+        except Exception:
+            logger.getLogger().error("[" + str(self._logPrefix) + "] Send message fail.[" + message + "]")
+            traceback.print_exc()
             self._status = self.Status.CLOSE
             return False
 
@@ -115,7 +115,7 @@ class KuWebSocket():
         return self.status
 
     def connect(self):
-        print("[" + str(self._logPrefix) + "] Start Connect.")
+        logger.getLogger().info("[" + str(self._logPrefix) + "] Start Connect.")
         self._status = self.Status.OPEN
         self.KuWebSocket.keep_running = True
         self.KuWebSocket.run_forever(origin="https://dsp.nbb21f.net")

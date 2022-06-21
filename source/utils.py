@@ -461,4 +461,5 @@ def TransformRunTime(gameType, timeStr, crawlTime):
                 return time.strftime('%M:%S', runTime)
 
         except ValueError:
+            traceback.print_exc()
             return timeStr if len(timeStr) > 0 else '0'    
