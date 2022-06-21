@@ -16,7 +16,7 @@ from eSport import eSportParser
 from pingpong import pingpongParser
 import logger
 
-GAME_LIST = {}
+_gameList = {}
 
 def pako_inflate(data):
 
@@ -157,8 +157,8 @@ def transformToProtobuf(jsonData):
     return dataList, jsonData["sport"]
 
 def getNowData():
-    global GAME_LIST
-    return GAME_LIST.copy()
+    global _gameList
+    return _gameList.copy()
 
 def getNextGameType(gameType, nowIndex, gameMode):
     allData = getNowData()
@@ -180,7 +180,7 @@ def getNextGameType(gameType, nowIndex, gameMode):
     return -1   
 
 def onNext(messageUnzip):
-    global GAME_LIST
+    global _gameList
     
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
@@ -191,12 +191,12 @@ def onNext(messageUnzip):
     searchKey = sport + "_" + mode + "_" + gameType
 
     if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" or messageJson["action"] == "ckg": 
-        GAME_LIST[searchKey] = messageJson
-        GAME_LIST["menu" + mode]= messageJson["menu"]["list"]
+        _gameList[searchKey] = messageJson
+        _gameList["menu" + mode]= messageJson["menu"]["list"]
 
     elif messageJson["action"] == "add" : 
-        if searchKey in GAME_LIST:
-            gameAllList = GAME_LIST[searchKey]
+        if searchKey in _gameList:
+            gameAllList = _gameList[searchKey]
             if "game" in messageJson:
                 for newItem in messageJson["game"]:
                     gameAllList["game"].append(newItem)
@@ -215,8 +215,8 @@ def onNext(messageUnzip):
 
     elif messageJson["action"] == "del" : 
         if "val" in messageJson:
-            if searchKey in GAME_LIST:
-                oddsAllList = GAME_LIST[searchKey]["odds"]
+            if searchKey in _gameList:
+                oddsAllList = _gameList[searchKey]["odds"]
                 deleteList = messageJson["val"]  
                 for deleteItem in deleteList:
                     for index, oddsList in enumerate(oddsAllList):
@@ -225,14 +225,14 @@ def onNext(messageUnzip):
                                 oddItme = oddsList[oddIndex]
                                 if deleteItem[1] == oddItme[3] and deleteItem[2] == oddItme[0]:
                                     logger.getLogger().debug("Find " + str(oddItme) + " and deleted")
-                                    del GAME_LIST[searchKey]["odds"][index][oddIndex]
+                                    del _gameList[searchKey]["odds"][index][oddIndex]
                                     break
                             break                               
 
     elif messageJson["action"] == "update" : 
         if "odds" in messageJson: #更新賠率
-            if searchKey in GAME_LIST:
-                oddsAllList = GAME_LIST[searchKey]["odds"]
+            if searchKey in _gameList:
+                oddsAllList = _gameList[searchKey]["odds"]
                 updateList = messageJson["odds"]
                 for updateItem in updateList:
                     if "path" in updateItem :
@@ -265,7 +265,7 @@ def onNext(messageUnzip):
                 print("Can't find key : " + searchKey)
 
         elif "menu" in messageJson:
-            GAME_LIST["menu" + mode] = messageJson["menu"]["list"]
+            _gameList["menu" + mode] = messageJson["menu"]["list"]
 
         elif "score" in messageJson:
             pass
