@@ -14,7 +14,6 @@ from loginManager import LoginManager
 from kuWebSocket import KuWebSocket
 
 class KUCrawler:
-        
     def __init__(self, tasks, config, daemon=False):  
         self._config = config
         self._tasks = tasks
@@ -170,7 +169,11 @@ class KUCrawler:
         self.printLog("End Send To MQ." )
 
         if self._config['_running'] == True :
-            self._sendMqTimer = Timer(60, self.sendToMQ)
+            pushInterval = 30
+            if self._config['push_interval'] :
+                pushInterval = self._config['push_interval']
+
+            self._sendMqTimer = Timer(pushInterval, self.sendToMQ)
             self._sendMqTimer.start()            
 
     def on_message(self, socketKey, message):
@@ -185,7 +188,7 @@ class KUCrawler:
 
         Action.onNext(decodeStr)
 
-    def gameChange(self, ws, sport, gameType, mode):  
+    def gameChange(self, ws, sport, gameType, mode, sleepTime):  
         try:
             gameType = Action.getNextGameType(sport, gameType, mode)
             if gameType > 0:
@@ -198,7 +201,7 @@ class KUCrawler:
                 self.printLog("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
             if self._config['_running'] == True :
-                ws.otherTimer = Timer(30, self.gameChange, (ws, sport, gameType, mode,))
+                ws.otherTimer = Timer(sleepTime, self.gameChange, (ws, sport, gameType, mode, sleepTime,))
                 ws.otherTimer.start()
         except Exception:
             traceback.print_exc()
@@ -218,5 +221,9 @@ class KUCrawler:
 
         BB_Last = sendCommand 
 
-        ws.otherTimer = Timer(30, self.gameChange, (ws, sport, 0, mode,))
+        crawlInterval = 20
+        if self._config['crawl_interval']:
+            crawlInterval = self._config['crawl_interval']
+
+        ws.otherTimer = Timer(crawlInterval, self.gameChange, (ws, sport, 0, mode, crawlInterval,))
         ws.otherTimer.start()
