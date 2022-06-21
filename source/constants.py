@@ -16,6 +16,7 @@ class langFont:
     Font_WPStatus = ["未開賽", "第1節", "第2節", "第3節", "第4節", "暫停", "上半", "中場", "下半", "加時", "LIVE", "結束", "中斷"]
     Font_OPStatus = ["未開賽", "LIVE"]
     Font_BXStatus = ["未開賽"]
+    Font_RollBall = "LIVE"
 
 class GameType(Enum):
     # baseball not used in protobuf game class

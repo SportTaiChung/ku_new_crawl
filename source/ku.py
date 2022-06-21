@@ -57,10 +57,6 @@ class KUCrawler:
         Lines = f.readlines()
         for line in Lines :
             obj = json.loads(line)
-            datetime_dt = datetime.datetime.today()
-            datetime_dt = datetime_dt + datetime.timedelta(hours=8)
-            datetime_str = datetime_dt.strftime("%Y/%m/%d %H:%M:%S")
-            obj["date"] = datetime_str
             line = json.dumps(obj)
             Action.onNext(line.encode("utf-8"))
             
@@ -101,11 +97,12 @@ class KUCrawler:
 
         with open(f'lastLoginInfo.txt', mode='w') as f:
             f.write("url : " + str(self._url) + "\n")
-            f.write("search : " + self._urlSearch + "\n")
-            f.write("protocol : " + self._protocol + "\n")
-            f.write("verifyKey : " + self._verifyKey + "\n")
+            f.write("search : '" + self._urlSearch + "'\n")
+            f.write("protocol : '" + self._protocol + "'\n")
+            f.write("verifyKey : '" + self._verifyKey + "'\n")
 
-        crawlModeList = ["0", "1", "2"]
+        #crawlModeList = ["0", "1", "2"]
+        crawlModeList = ["2"]
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
                     "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
 
@@ -145,10 +142,10 @@ class KUCrawler:
             if not protobufData == None and protobufData:
                 try:
                     if self._config['dump'] and protobufData:
-                        with open(f'{self.name}.bin', mode='wb') as f:
+                        with open(f'{self.name}.bin', mode='ab') as f:
                             f.write(protobufData.SerializeToString())
 
-                        with open(f'{self.name}.txt', mode='w') as f:
+                        with open(f'{self.name}.txt', mode='a') as f:
                             f.write(text_format.MessageToString(protobufData))
 
                     if self.connection == None or self.channel == None:
