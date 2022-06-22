@@ -215,9 +215,9 @@ def onNext(messageUnzip):
 
     elif messageJson["action"] == "del" : 
         if "val" in messageJson:
+            deleteList = messageJson["val"] 
             if searchKey in _gameList:
                 oddsAllList = _gameList[searchKey]["odds"]
-                deleteList = messageJson["val"]  
                 for deleteItem in deleteList:
                     for index, oddsList in enumerate(oddsAllList):
                         if deleteItem[0] == oddsList[0]:
@@ -231,9 +231,9 @@ def onNext(messageUnzip):
 
     elif messageJson["action"] == "update" : 
         if "odds" in messageJson: #更新賠率
+            updateList = messageJson["odds"]
             if searchKey in _gameList:
                 oddsAllList = _gameList[searchKey]["odds"]
-                updateList = messageJson["odds"]
                 for updateItem in updateList:
                     if "path" in updateItem :
                         pathList = updateItem["path"]
@@ -260,15 +260,26 @@ def onNext(messageUnzip):
                                         break 
                                 break                            
                     else :
-                        print("Can't find key[path] in " + updateItem)                    
+                        logger.getLogger().debug("Can't find key[path] in " + updateItem)
             else:
-                print("Can't find key : " + searchKey)
+                logger.getLogger().debug("Can't find key : " + searchKey)
 
-        elif "menu" in messageJson:
+        if "menu" in messageJson:
             _gameList["menu" + mode] = messageJson["menu"]["list"]
 
-        elif "score" in messageJson:
-            pass
+        if "score" in messageJson and "score" in _gameList[searchKey]: #更新比分
+            scoreKeyList = { "ra" : 0, "rb" : 1, "rcna" : 2, "rcnb" : 3, "sa" : 4, "sb" : 5, "na" : 6, "nb" : 7, "runsA" : 8, "runsB" : 9, "pr" : 10, "tc" : 11, "fra" : 12, "frb" : 13}
+            updateScoreList = messageJson["score"]
+            if searchKey in _gameList:
+                cacheScoreList = _gameList[searchKey]["score"]
+                for updateScore in updateScoreList:
+                    scoreKey = updateScore["gId"]
+                    if scoreKey in cacheScoreList :
+                        for scoreItem in updateScore :
+                            if not scoreItem == "gId" and scoreItem in scoreKeyList:
+                                index = scoreKeyList[scoreItem]
+                                logger.getLogger().debug(f'Update Scrore {scoreItem}[{index}] from {_gameList[searchKey]["score"][scoreKey]} to {updateScore[scoreItem]}' )
+                                _gameList[searchKey]["score"][scoreKey][index] = updateScore[scoreItem]
 
     elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over", "ban"]: 
         pass
