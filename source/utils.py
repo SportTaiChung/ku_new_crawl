@@ -41,7 +41,7 @@ def TransformGdOrSt(gameType, gameMode, st, gd, crawlTime, startTime, ht):
             if searchItemfromArray([2, 4, 60], st) < 0 :
                 serverTime = int(time.mktime(time.strptime(crawlTime, "%Y/%m/%d %H:%M:%S")))
                 gameStartTime = int(time.mktime(time.strptime(startTime, "%Y/%m/%d %H:%M:%S")))
-                rt = np.round((serverTime - int(gameStartTime))/ 1e3 / 60, 1)
+                rt = int(np.round((serverTime - int(gameStartTime)) / 60))
                 if rt > int(ht) :
                     rt = ht + "+" 
                 else :
