@@ -124,7 +124,6 @@ class KUCrawler:
         self._logger.info("KUCrawler Exist.")
 
     def sendToMQ(self):
-        self._logger.debug("Start Send To MQ." )
 
         pushData = Action.getNowData()
         
@@ -135,6 +134,11 @@ class KUCrawler:
         for game in pushData:
             if "menu" in game:
                 continue
+
+            if self._config['_running'] == False :
+                break
+
+            self._logger.debug(f'Start Send [{game}]To MQ.')
 
             protobufData, gameType = Action.transformToProtobuf(pushData[game])
             if not protobufData == None and protobufData:

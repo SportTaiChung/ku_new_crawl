@@ -31,7 +31,6 @@ def pako_inflate(data):
 def transformToProtobuf(jsonData):
     global datetime_str
     gameTypeList = {}
-    logger.getLogger().debug(f'Transfer to protobuf [{json.dumps(jsonData)}]')
     for gameType in jsonData["ally"]:
         gameId = gameType[0]
         gameName = utils.AllyNameProcess(gameId, gameType[1])
@@ -84,6 +83,7 @@ def transformToProtobuf(jsonData):
             event.source_updatetime = jsonData["date"].replace('/', '-') + ".000"
             
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
+
             event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[11], gameRound[9], jsonData["date"], gameRound[10], gameRound[19])
 
             event.information.league = gameTypeList[gameRound[1]]["name"] 
@@ -185,6 +185,8 @@ def onNext(messageUnzip):
     
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
+
+    logger.getLogger().debug(json.dumps(messageJson))
     
     sport = str(messageJson["sport"]) if "sport" in messageJson else '-1'
     mode = str(messageJson["mode"]) if "mode" in messageJson else '-1'
@@ -192,8 +194,14 @@ def onNext(messageUnzip):
     searchKey = sport + "_" + mode + "_" + gameType
 
     if messageJson["action"] == "first" or messageJson["action"] == "cm" or messageJson["action"] == "cst" or messageJson["action"] == "ckg": 
-        _gameList[searchKey] = messageJson
-        _gameList["menu" + mode]= messageJson["menu"]["list"]
+        if "ally" in messageJson and "game" in messageJson and "score" in messageJson and "odds" in messageJson:
+            _gameList[searchKey] = messageJson
+
+        if "menu" in messageJson:
+            if "list" in messageJson["menu"]:
+                _gameList["menu" + mode]= messageJson["menu"]["list"]
+            else :
+                self._logger.error(json.dumps(messageJson))
 
     elif messageJson["action"] == "add" : 
         if searchKey in _gameList:
@@ -266,7 +274,10 @@ def onNext(messageUnzip):
                 logger.getLogger().debug("Can't find key : " + searchKey)
 
         if "menu" in messageJson:
-            _gameList["menu" + mode] = messageJson["menu"]["list"]
+            if "list" in  messageJson["menu"]:
+                _gameList["menu" + mode] = messageJson["menu"]["list"]
+            else :
+                self._logger.error(json.dumps(messageJson))    
 
         if "score" in messageJson and "score" in _gameList[searchKey]: #更新比分
             scoreKeyList = { "ra" : 0, "rb" : 1, "rcna" : 2, "rcnb" : 3, "sa" : 4, "sb" : 5, "na" : 6, "nb" : 7, "runsA" : 8, "runsB" : 9, "pr" : 10, "tc" : 11, "fra" : 12, "frb" : 13}

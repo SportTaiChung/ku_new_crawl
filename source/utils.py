@@ -36,15 +36,16 @@ def addZero(n, t):
 def TransformGdOrSt(gameType, gameMode, st, gd, crawlTime, startTime, ht):
     s = TransformStatus(gameType, st)
     rt = TransformRunTime(gameType, crawlTime, startTime)
-    if int(gameMode) == 2:
+    if int(gameMode) == 2 and len(startTime) > 0:
         if IsSC(gameType):
             if searchItemfromArray([2, 4, 60], st) < 0 :
                 serverTime = int(time.mktime(time.strptime(crawlTime, "%Y/%m/%d %H:%M:%S")))
-                rt = np.round((serverTime - int(rt))/ 1e3 / 60, 1)
+                gameStartTime = int(time.mktime(time.strptime(startTime, "%Y/%m/%d %H:%M:%S")))
+                rt = np.round((serverTime - int(gameStartTime))/ 1e3 / 60, 1)
                 if rt > int(ht) :
                     rt = ht + "+" 
                 else :
-                    rt += "'"
+                    rt = str(rt) + "'"
             else : 
                 rt = ""
         elif gameType == 18 or gameType == "es" or gameType == 13 or gameType == "bb":
@@ -368,7 +369,7 @@ def TransformStatus(gameType, timeOption):
     gameType = "11" if IsSC(gameType) else str(gameType) 
     timeOption = int(timeOption)
     try :
-        return o[gameType][timeOption] if o[gameType] and o[gameType][timeOption] else ""
+        return o[gameType][timeOption] if o[gameType] and timeOption in o[gameType] else ""
     except KeyError:
         traceback.print_exc()
         return ""
