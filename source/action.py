@@ -31,6 +31,7 @@ def pako_inflate(data):
 def transformToProtobuf(jsonData):
     global datetime_str
     gameTypeList = {}
+    ogger.getLogger().debug(f'Transfer to protobuf [{json.dumps(jsonData)}]')
     for gameType in jsonData["ally"]:
         gameId = gameType[0]
         gameName = utils.AllyNameProcess(gameId, gameType[1])
