@@ -148,7 +148,21 @@ class KUCrawler:
 
              #Clear file
             with open(f'{self.name}.txt', mode='w') as f:
-                f.write('')                
+                f.write('')  
+
+        try:
+            if self.connection == None or self.channel == None:
+                self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+
+            elif self.connection.is_closed or self.channel.is_closed or not self._upload_status:
+                if connection.is_open:
+                    connection.close()
+
+                self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+        except Exception:
+            traceback.print_exc()
+            self._logger.error("Can't connect to MQ.")
+            self._upload_status = False
 
         for game in pushData:
             if "menu" in game:
@@ -169,26 +183,19 @@ class KUCrawler:
                         with open(f'{self.name}.txt', mode='a') as f:
                             f.write(text_format.MessageToString(protobufData))
 
-                    if self.connection == None or self.channel == None:
-                        self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
-
-                    elif self.connection.is_closed or self.channel.is_closed or not self._upload_status:
-                        if connection.is_open:
-                            connection.close()
-                        self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
-
-                    self._upload_status = upload_data(self.channel, protobufData, gameType)
-                    self._logger.debug(self._upload_status)
+                    if self._upload_status:
+                        self._upload_status = upload_data(self.channel, protobufData, gameType)
+                        self._logger.debug(self._upload_status)
 
                 except Exception:
                     traceback.print_exc()
                     self._logger.error("Can't connect to MQ.")
+                    
                 else:
-                    self._logger.info("Send MQ status : " + str(self._upload_status))
-            else :
-                self._logger.info("Data is empty." )        
+                    self._logger.debug(f'Send [{game}] To MQ status [{str(self._upload_status)}]')
 
-        self._logger.debug("End Send To MQ." )
+            else :
+                self._logger.info("Data is empty." )
 
         if self._config['_running'] == True :
             pushInterval = 30
