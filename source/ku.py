@@ -49,7 +49,7 @@ class KUCrawler:
 
         for stop in taskStopList:
             stop.join()   
-            
+
         self._logger.debug("KUCrawler Stoped.")
 
     def runFromFile(self, fileName):
@@ -141,6 +141,14 @@ class KUCrawler:
         if self._config['dump'] and pushData:
             with open(f'{self.name}.raw', mode='wb') as f:
                 f.write(json.dumps(pushData).encode('utf-8'))
+
+            #Clear file
+            with open(f'{self.name}.bin', mode='wb') as f:
+                f.write(b'')
+
+             #Clear file
+            with open(f'{self.name}.txt', mode='w') as f:
+                f.write('')                
 
         for game in pushData:
             if "menu" in game:
