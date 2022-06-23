@@ -100,8 +100,7 @@ class KUCrawler:
             f.write("protocol : '" + self._protocol + "'\n")
             f.write("verifyKey : '" + self._verifyKey + "'\n")
 
-        #crawlModeList = ["0", "1", "2"]
-        crawlModeList = ["2"]
+        crawlModeList = ["0", "1", "2"]
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
                     "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
 

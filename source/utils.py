@@ -449,7 +449,8 @@ def TransformGameType(typeId, gameDisplayName):
 def TransformRunTime(gameType, timeStr, crawlTime):
     if "-60" == timeStr :
         return TransformStatus(gameType, 60) 
-    else :
+
+    elif len(timeStr) > 0 and len(crawlTime) > 0:
         try:
             if IsSC(gameType):
                 runTime = time.strptime(timeStr, "%Y/%m/%d %H:%M:%S")
@@ -462,4 +463,5 @@ def TransformRunTime(gameType, timeStr, crawlTime):
 
         except ValueError:
             traceback.print_exc()
-            return timeStr if len(timeStr) > 0 else '0'    
+
+    return timeStr if len(timeStr) > 0 else '0'    
