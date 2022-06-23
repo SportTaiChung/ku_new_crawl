@@ -158,7 +158,7 @@ def soccerParser(eventBuf, oddItem):
     #11061 - 波膽-全場
     #11161 - 波膽-上半場
     elif oddsType == "11061" or oddsType == "11161":  
-        eventBuf.game_type = "pd " + "" if eventBuf.live == "true" else "live " + eventBuf.game_type
+        eventBuf.game_type = "pd " + eventBuf.game_type
         eventBuf.information.league += " - 波膽"
         oddsKey += "_7"
 
@@ -175,7 +175,7 @@ def soccerParser(eventBuf, oddItem):
     #11062 - 入球數-全場
     #11162 - 入球數-上半場
     elif oddsType == "11062" or oddsType == "11162":
-        eventBuf.game_type = "tg " + "" if eventBuf.live == "true" else "live " + eventBuf.game_type
+        eventBuf.game_type = "tg " + eventBuf.game_type
         eventBuf.information.league += " - 入球數"
         oddsKey += "_8"
 
@@ -183,7 +183,7 @@ def soccerParser(eventBuf, oddItem):
 
     #11063 - 半全場
     elif oddsType == "11063":
-        eventBuf.game_type = "hf " + "" if eventBuf.live == "true" else "live " + eventBuf.game_type
+        eventBuf.game_type = "hf " + eventBuf.game_type
         eventBuf.information.league += " - 半全場" 
         oddsKey += "_9"
 
