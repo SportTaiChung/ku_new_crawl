@@ -297,7 +297,7 @@ def TransformStatus(gameType, timeOption):
             60: langFont.Font_ESStatus[9],
             61: langFont.Font_ESStatus[10]
         },
-        "af" : {
+        "19" : {
             0: langFont.Font_AFStatus[0],
             1: langFont.Font_AFStatus[1],
             2: langFont.Font_AFStatus[2],
@@ -420,7 +420,7 @@ def TransformGameType(typeId, gameDisplayName):
         gameName = GameType.other
     elif gameType == 18 or gameType == "es" :  #"電子競技"
         gameName = GameType.eSport
-    elif gameType == 19 or gameType == "as" :  #"美足"
+    elif gameType == 19 or gameType == "af" :  #"美足"
         gameName = GameType.football
     elif gameType == 20 or gameType == "pb" :  #"撞球"
         gameName = GameType.other
