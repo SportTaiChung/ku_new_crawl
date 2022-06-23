@@ -111,7 +111,15 @@ class KUCrawler:
                 if str(task['game_type']) in crawlList and str(task['game_mode']) in crawlModeList:
                     for index, url in enumerate(self._url):
                         webSocketList = task['socket']
-                        if not url in webSocketList:
+                        reConnect = False
+                        for index in webSocketList:
+                            if webSocketList[index]['socket'].isClose():
+                                reConnect = True
+                            else :
+                                reConnect = False
+                                break
+
+                        if not url in webSocketList or reConnect:
                             socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=str(task['game_mode']))
                             startThread = threading.Thread(target = socket.connect)
                             webSocketList[url] = {
@@ -203,7 +211,10 @@ class KUCrawler:
             else:
                 self._logger.error("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
 
-            if self._config['_running'] == True :
+            if ws.isClose():
+                return
+
+            if self._config['_running'] == True:
                 ws.otherTimer = Timer(sleepTime, self.gameChange, (ws, sport, gameType, mode, sleepTime,))
                 ws.otherTimer.start()
         except Exception:

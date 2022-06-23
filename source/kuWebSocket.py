@@ -111,8 +111,8 @@ class KuWebSocket():
     def getMessageIndex(self):
         return self._messageIndex
 
-    def getStatus(self):
-        return self.status
+    def isClose(self):
+        return True if self._status == self.Status.CLOSE else False
 
     def connect(self):
         logger.getLogger().info("[" + str(self._logPrefix) + "] Start Connect.")
