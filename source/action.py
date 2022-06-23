@@ -83,7 +83,7 @@ def transformToProtobuf(jsonData):
             event.source_updatetime = jsonData["date"].replace('/', '-') + ".000"
             
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
-            event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[11], gameRound[9], gameRound[10], jsonData["date"], gameRound[19])
+            event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[11], gameRound[9], jsonData["date"], gameRound[10], gameRound[19])
 
             event.information.league = gameTypeList[gameRound[1]]["name"] 
 
