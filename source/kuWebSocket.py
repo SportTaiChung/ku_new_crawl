@@ -100,7 +100,7 @@ class KuWebSocket():
                 self._messageIndex += 1
                 return True
             else :
-                logger.getLogger().debug("[" + str(self._logPrefix) + "] WebSocket Status : " + self._status)
+                logger.getLogger().debug("[" + str(self._logPrefix) + "] WebSocket Status : " + str(self._status))
                 return False
         except Exception:
             logger.getLogger().error("[" + str(self._logPrefix) + "] Send message fail.[" + message + "]")
