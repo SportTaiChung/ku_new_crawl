@@ -39,14 +39,17 @@ class KUCrawler:
 
         self._config['_running'] = False
 
+        taskStopList = []
         for task in self._tasks:
             webSocketList = task['socket']
             for webSocket in webSocketList:
-                webSocketList[webSocket]["socket"].stop()
-                self._logger.debug(f'{webSocket} is Stop.')
+                stop = threading.Thread(target = webSocketList[webSocket]["socket"].stop)
+                taskStopList.append(stop)
+                stop.start()
 
-            task['socket'] = {}    
-                
+        for stop in taskStopList:
+            stop.join()   
+            
         self._logger.debug("KUCrawler Stoped.")
 
     def runFromFile(self, fileName):

@@ -132,3 +132,5 @@ class KuWebSocket():
             self.KuWebSocket.keep_running = False
             self.KuWebSocket.close()
             self.KuWebSocket = None
+
+        logger.getLogger().info(f'{self._logPrefix} is Stop.')    
