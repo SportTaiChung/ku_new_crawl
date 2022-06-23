@@ -201,7 +201,7 @@ def onNext(messageUnzip):
             if "list" in messageJson["menu"]:
                 _gameList["menu" + mode]= messageJson["menu"]["list"]
             else :
-                self._logger.error(json.dumps(messageJson))
+                logger.getLogger().error(json.dumps(messageJson))
 
     elif messageJson["action"] == "add" : 
         if searchKey in _gameList:
@@ -276,8 +276,6 @@ def onNext(messageUnzip):
         if "menu" in messageJson:
             if "list" in  messageJson["menu"]:
                 _gameList["menu" + mode] = messageJson["menu"]["list"]
-            else :
-                self._logger.error(json.dumps(messageJson))    
 
         if "score" in messageJson and "score" in _gameList[searchKey]: #更新比分
             scoreKeyList = { "ra" : 0, "rb" : 1, "rcna" : 2, "rcnb" : 3, "sa" : 4, "sb" : 5, "na" : 6, "nb" : 7, "runsA" : 8, "runsB" : 9, "pr" : 10, "tc" : 11, "fra" : 12, "frb" : 13}

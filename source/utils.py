@@ -35,7 +35,7 @@ def addZero(n, t):
 #ht: 19 st: 11, gd: 9, rt: TransformRunTime
 def TransformGdOrSt(gameType, gameMode, st, gd, crawlTime, startTime, ht):
     s = TransformStatus(gameType, st)
-    rt = TransformRunTime(gameType, crawlTime, startTime)
+    rt = TransformRunTime(gameType, startTime, crawlTime)
     if int(gameMode) == 2 and len(startTime) > 0:
         if IsSC(gameType):
             if searchItemfromArray([2, 4, 60], st) < 0 :

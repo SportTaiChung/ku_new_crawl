@@ -64,7 +64,7 @@ class KUCrawler:
             
         f.close()
 
-        self.sendToMQ()
+        self.sendToMQ(True)
 
     def run(self):
 
@@ -134,7 +134,7 @@ class KUCrawler:
 
         self._logger.info("KUCrawler Exist.")
 
-    def sendToMQ(self):
+    def sendToMQ(self, fromFile=False):
 
         pushData = Action.getNowData()
         
@@ -154,7 +154,7 @@ class KUCrawler:
             if "menu" in game:
                 continue
 
-            if self._config['_running'] == False :
+            if not fromFile and self._config['_running'] == False :
                 break
 
             self._logger.debug(f'Start Send [{game}]To MQ.')
