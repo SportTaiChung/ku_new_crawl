@@ -145,7 +145,7 @@ def transformToProtobuf(jsonData):
             if oddsKey == None :
                 event.game_id = gameRoundId
             else:
-                event.game_id = oddsKey
+                event.game_id = oddsKey.replace("_", "")
 
             if oddsKey in event_proto_list:
                 event_proto_list[oddsKey].MergeFrom(event)
