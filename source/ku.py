@@ -155,8 +155,8 @@ class KUCrawler:
                 self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
 
             elif self.connection.is_closed or self.channel.is_closed or not self._upload_status:
-                if connection.is_open:
-                    connection.close()
+                if self.connection.is_open:
+                    self.connection.close()
 
                 self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
         except Exception:
