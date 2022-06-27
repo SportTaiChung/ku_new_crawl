@@ -1,11 +1,12 @@
 from utils import searchItemfromArray
 from upload import protobufUtils
+from constants import Mapping
 
 def badmintonParser(eventBuf, oddItem):
     soccerDefault = 17000
-    oddsType = oddItem[0]
+    oddsType = oddItem[Mapping.oddsData.oddType]
 
-    oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
+    oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
 
     gameClass = int(oddsType) - soccerDefault
 
@@ -74,6 +75,6 @@ def badmintonParser(eventBuf, oddItem):
     #17404 第四局-單雙  
     #17504 第五局-單雙    
     elif searchItemfromArray(["17004", "17104", "17204", "17304", "17404", "17504"], oddsType) >= 0: 
-        eventBuf = protobufUtils.serParity(eventBuf, oddItem)           
+        eventBuf = protobufUtils.setParity(eventBuf, oddItem)           
  
     return eventBuf, oddsKey

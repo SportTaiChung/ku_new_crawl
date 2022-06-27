@@ -2,6 +2,7 @@
 import traceback
 import pika
 from utils import TransformNumToPk
+from constants import Mapping
 
 def get_exchange_name(sport_type_id):
     sport_type_id_exchange_mapping = {
@@ -48,19 +49,19 @@ class protobufUtils:
     #讓分
     @classmethod
     def setSpread(self, eventBuf, oddsItem, reverse=False):
-        lineStr = TransformNumToPk(oddsItem[0], oddsItem[8])
-        lineAt = oddsItem[9] # 1: 主讓 , 0: 客讓
+        lineStr = TransformNumToPk(oddsItem[Mapping.oddsData.oddType], oddsItem[Mapping.oddsData.oddLine])
+        lineAt = oddsItem[Mapping.oddsData.whichTeam] # 1: 主讓 , 0: 客讓
 
         if reverse:
             awayLine = ("-" if lineAt == 1 else "+") + lineStr
-            awayOdds = self.getOdds(oddsItem[13])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
             homeLine = ("+" if lineAt == 1 else "-") + lineStr
-            homeOdds = self.getOdds(oddsItem[15])     
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])     
         else :    
             homeLine = ("-" if lineAt == 1 else "+") + lineStr
-            homeOdds = self.getOdds(oddsItem[13])
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
             awayLine = ("+" if lineAt == 1 else "-") + lineStr
-            awayOdds = self.getOdds(oddsItem[15])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
 
         eventBuf.twZF.homeZF.line = homeLine
         eventBuf.twZF.homeZF.odds = homeOdds
@@ -71,11 +72,11 @@ class protobufUtils:
     #大小
     @classmethod
     def setTotal(self, eventBuf, oddsItem):
-        line = TransformNumToPk(oddsItem[0], oddsItem[8])
-        overOdds = self.getOdds(oddsItem[13])
-        underOdds = self.getOdds(oddsItem[15])
+        lineStr = TransformNumToPk(oddsItem[Mapping.oddsData.oddType], oddsItem[Mapping.oddsData.oddLine])
+        overOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
+        underOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
 
-        eventBuf.twDS.line = line    
+        eventBuf.twDS.line = lineStr    
         eventBuf.twDS.over = overOdds
         eventBuf.twDS.under = underOdds
         return eventBuf
@@ -84,13 +85,13 @@ class protobufUtils:
     @classmethod
     def setMonneyLine(self, eventBuf, oddsItem, reverse=False):
         if reverse:
-            homeOdds = self.getOdds(oddsItem[13])
-            awayOdds = self.getOdds(oddsItem[15])
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
         else :    
-            homeOdds = self.getOdds(oddsItem[15])
-            awayOdds = self.getOdds(oddsItem[13])
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
 
-        drawOdds = self.getOdds(oddsItem[17]) if len(oddsItem) >= 17 else '0'
+        drawOdds = self.getOdds(oddsItem[Mapping.oddsData.drawOdd]) if len(oddsItem) >= 17 else '0'
 
         eventBuf.de.home = homeOdds
         eventBuf.de.away = awayOdds
@@ -100,14 +101,14 @@ class protobufUtils:
     #一輸二贏
     @classmethod
     def setSpread_1_5(self, eventBuf,  oddsItem, reverse=False): 
-        lineAt = oddsItem[9] # 1: 主讓 , 0: 客讓
+        lineAt = oddsItem[Mapping.oddsData.whichTeam] # 1: 主讓 , 0: 客讓
         let = (1 if lineAt == 1 else 2)
         if reverse:
-            homeOdds = self.getOdds(oddItem[15])
-            awayOdds = self.getOdds(oddItem[13])
-        else :
-            homeOdds = self.getOdds(oddItem[13])
-            awayOdds = self.getOdds(oddItem[15])
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
+        else :    
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
 
         eventBuf.esre.let = let
         eventBuf.esre.home = homeOdds
@@ -116,13 +117,13 @@ class protobufUtils:
 
     #單雙
     @classmethod
-    def serParity(self, eventBuf, oddsItem, reverse=False):
+    def setParity(self, eventBuf, oddsItem, reverse=False):
         if reverse:
-            homeOdds = self.getOdds(oddsItem[13])
-            awayOdds = self.getOdds(oddsItem[15])
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
         else :    
-            homeOdds = self.getOdds(oddsItem[15])
-            awayOdds = self.getOdds(oddsItem[13])
+            homeOdds = self.getOdds(oddsItem[Mapping.oddsData.awayOdd])
+            awayOdds = self.getOdds(oddsItem[Mapping.oddsData.homeOdd])
 
         eventBuf.sd.home = homeOdds
         eventBuf.sd.away = awayOdds
@@ -133,16 +134,27 @@ class protobufUtils:
         return eventBuf
 
     #波膽
-    def setCorrectScore(eventBuf, odds="{}"):  
-        eventBuf.multi = odds
-        return eventBuf  
+    def setCorrectScore(eventBuf, oddsItem): 
+        eventBuf.multi = "{"
+        for oddItemIndex in range(12, (len(oddsItem) - 1), 2):
+            key = oddsItem[oddItemIndex]
+            odd = oddsItem[oddItemIndex + 1]
+            if key == "99":
+                eventBuf.multi += "\"other\": " + str(odd)
+            else :    
+                eventBuf.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + str(odd) + ","
+        eventBuf.multi += "}"
+        
+        return eventBuf
 
     #半全場
-    def setFullHalfOutcome(eventBuf, odds="{}"):
-        eventBuf.multi = odds
+    def setFullHalfOutcome(eventBuf, oddsItem):
+        eventBuf.multi = "{\"HH\": " + str(oddsItem[Mapping.oddsData.hf_HH]) + ", \"HD\": " + str(oddsItem[Mapping.oddsData.hf_HD]) + ", \"HA\": " + str(oddsItem[Mapping.oddsData.hf_HA]) + ", \"DH\": " + str(oddsItem[Mapping.oddsData.hf_DH]) + ", \"DD\": " + str(oddsItem[Mapping.oddsData.hf_DD]) + ", \"DA\": " + str(oddsItem[Mapping.oddsData.hf_DA]) + ", \"AH\": " + str(oddsItem[Mapping.oddsData.hf_AH]) + ", \"AD\": " + str(oddsItem[Mapping.oddsData.hf_AD]) + ", \"AA\": " + str(oddsItem[Mapping.oddsData.hf_AA]) + "}"    
+
         return eventBuf
 
     #入球數
-    def setTotalGoal(eventBuf, odds="{}"):
-        eventBuf.multi = odds
-        return eventBuf
+    def setTotalGoal(eventBuf, oddsItem):
+        eventBuf.multi = "{\"0-1\": \"" + str(oddsItem[Mapping.oddsData.tg_0_1]) + "\", \"2-3\": \"" + str(oddsItem[Mapping.oddsData.tg_2_3]) + "\", \"4-6\": \"" + str(oddsItem[Mapping.oddsData.tg_4_6]) + "\", \"7+\": \"" + str(oddsItem[Mapping.oddsData.tg_7]) + "\"}"
+
+        return eventBuf  

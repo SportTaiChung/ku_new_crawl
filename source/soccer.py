@@ -1,11 +1,12 @@
 from utils import searchItemfromArray
 from upload import protobufUtils
+from constants import Mapping
 
 def soccerParser(eventBuf, oddItem):
     soccerDefault = 11000
-    oddsType = oddItem[0]
+    oddsType = oddItem[Mapping.oddsData.oddType]
 
-    oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
+    oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
 
     gameClass = int(oddsType) - soccerDefault
 
@@ -153,7 +154,7 @@ def soccerParser(eventBuf, oddItem):
     #11114 - 上半場-角球數-單雙
     #11124 - 上半場-罰牌數-單雙
     elif oddsType == "11004" or oddsType == "11014" or oddsType == "11024" or oddsType == "11104" or oddsType == "11114" or oddsType == "11124": 
-        eventBuf = protobufUtils.serParity(eventBuf, oddItem)
+        eventBuf = protobufUtils.setParity(eventBuf, oddItem)
 
     #11061 - 波膽-全場
     #11161 - 波膽-上半場
@@ -161,16 +162,9 @@ def soccerParser(eventBuf, oddItem):
         eventBuf.game_type = "pd " + eventBuf.game_type
         eventBuf.information.league += " - 波膽"
         oddsKey += "_7"
+        
+        eventBuf = protobufUtils.setCorrectScore(eventBuf, oddItem)
 
-        eventBuf.multi = "{"
-        for oddItemIndex in range(12, (len(oddItem) - 1), 2):
-            key = oddItem[oddItemIndex]
-            odd = oddItem[oddItemIndex + 1]
-            if key == "99":
-                eventBuf.multi += "\"other\": " + str(odd)
-            else :    
-                eventBuf.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + str(odd) + ","
-        eventBuf.multi += "}"
 
     #11062 - 入球數-全場
     #11162 - 入球數-上半場
@@ -179,7 +173,7 @@ def soccerParser(eventBuf, oddItem):
         eventBuf.information.league += " - 入球數"
         oddsKey += "_8"
 
-        eventBuf.multi = "{\"0-1\": \"" + str(oddItem[13]) + "\", \"2-3\": \"" + str(oddItem[15]) + "\", \"4-6\": \"" + str(oddItem[17]) + "\", \"7+\": \"" + str(oddItem[17]) + "\"}"
+        eventBuf = protobufUtils.setTotalGoal(eventBuf, oddItem)
 
     #11063 - 半全場
     elif oddsType == "11063":
@@ -187,9 +181,6 @@ def soccerParser(eventBuf, oddItem):
         eventBuf.information.league += " - 半全場" 
         oddsKey += "_9"
 
-        ## 11 : HH, 12 : HA, 13: HD, 21 : AH, 22 : AA, 23 : AD, 31 : DH, 32 : DA, 33 : DD
-        ## HH : 13, HA : 15, HD : 17, AH : 19, AA : 21, AD : 23, DH : 25, DA : 27, DD : 29
-        eventBuf.multi = "{\"HH\": " + str(oddItem[13]) + ", \"HD\": " + str(oddItem[17]) + ", \"HA\": " + str(oddItem[15]) + ", \"DH\": " + str(oddItem[25]) + ", \"DD\": " + str(oddItem[29]) + ", \"DA\": " + str(oddItem[27]) + ", \"AH\": " + str(oddItem[19]) + ", \"AD\": " + str(oddItem[23]) + ", \"AA\": " + str(oddItem[21]) + "}"    
-
+        eventBuf = protobufUtils.setFullHalfOutcome(eventBuf, oddItem)
 
     return eventBuf, oddsKey        

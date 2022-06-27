@@ -1,11 +1,12 @@
 from utils import searchItemfromArray
 from upload import protobufUtils
+from constants import Mapping
 
 def pingpongParser(eventBuf, oddItem):
     soccerDefault = 21000
-    oddsType = oddItem[0]
+    oddsType = oddItem[Mapping.oddsData.oddType]
 
-    oddsKey = eventBuf.raw_event_id + "_" + oddItem[3]
+    oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
 
     gameClass = int(oddsType) - soccerDefault
 
@@ -90,6 +91,6 @@ def pingpongParser(eventBuf, oddItem):
     #21604 第六局-單雙
     #21704 第七局-單雙      
     elif searchItemfromArray(["21014", "21104", "21204", "21304", "21404", "21504", "21604", "21704"], oddsType) >= 0:
-        eventBuf = protobufUtils.serParity(eventBuf, oddItem)
+        eventBuf = protobufUtils.setParity(eventBuf, oddItem)
  
     return eventBuf, oddsKey    
