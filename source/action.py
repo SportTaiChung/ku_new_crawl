@@ -58,6 +58,9 @@ def transformToProtobuf(jsonData):
         
         gameRound = list(filter(lambda x: x[0] == gameRoundId, gameRoundList))[0]
 
+        if not gameRound[1] in gameTypeList :
+            continue
+
         gameType = str(gameTypeList[gameRound[1]]["type"])
         gameDisplayName = gameTypeList[gameRound[1]]["name"]
 
