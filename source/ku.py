@@ -146,7 +146,7 @@ class KUCrawler:
             with open(f'{self.name}.bin', mode='wb') as f:
                 f.write(b'')
 
-             #Clear file
+            #Clear file
             with open(f'{self.name}.txt', mode='w') as f:
                 f.write('')  
 

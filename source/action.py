@@ -155,6 +155,9 @@ def transformToProtobuf(jsonData):
             else :
                 event_proto_list[oddsKey] = event
 
+            # 06/25 - [要求]全場上半的後綴要移除，特殊玩法如果有自己的玩法分類也不用標。
+            event.information.league = gameTypeList[gameRound[1]]["name"]     
+
     for eventItem in event_proto_list:
         dataList.aphdc.append(event_proto_list[eventItem])
 
