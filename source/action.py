@@ -101,10 +101,12 @@ def transformToProtobuf(jsonData):
             event.score.home = score[Mapping.scoreData.homeScore] if len(score[Mapping.scoreData.homeScore]) > 0 else '0'
             event.score.away = score[Mapping.scoreData.awayScore] if len(score[Mapping.scoreData.awayScore]) > 0 else '0'
 
-            #足球(11)d
+            #足球(11)
             if utils.IsSC(gameType) : 
                 event.redcard.home = str(score[Mapping.scoreData.homeRedcard])
                 event.redcard.away = str(score[Mapping.scoreData.awayRedcard])
+                event.conner.home = '0'
+                event.conner.away = '0'                
                 event.yellowcard.home = '0'
                 event.yellowcard.away = '0'
                 event, oddsKey = soccerParser(event, oddItem)

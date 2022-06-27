@@ -113,12 +113,12 @@ class Mapping:
     class scoreData:
         homeScore = 0           # 主隊比分
         awayScore = 1           # 客隊比分
-        homeConner = 2          # 主隊角球
-        awayConner = 3          # 客隊角球
+        homeRedcard = 2         # 主隊紅牌
+        awayRedcard = 3         # 客隊紅牌
         # homeRoundScore = 4    # 主隊各局數分數 
         # awayRoundScore = 5    # 客隊各局數分數 
-        homeRedcard = 6         # 主隊紅牌
-        awayRedcard = 7         # 客隊紅牌
+        # None = 6              # 未使用 - 意義不明
+        # None = 7              # 未使用 - 意義不明
         # homeRoundScore = 8    # 主隊各局數分數
         # awayRoundScore = 9    # 客隊各局數分數
         # None = 10             # 未使用 - 意義不明
