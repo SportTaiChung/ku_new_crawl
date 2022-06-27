@@ -5,10 +5,11 @@ from threading import Timer
 import time
 import traceback
 import logger
+import datetime
 from google.protobuf import text_format
 
 import action as Action
-from upload import init_session, upload_data
+from upload import initSession, uploadData
 from loginManager import LoginManager
 from kuWebSocket import KuWebSocket
 
@@ -22,7 +23,7 @@ class KUCrawler:
         self._urlSearch = ""
         self._protocol = ""
         self._verifyKey = ""
-        self._upload_status = True
+        self._uploadStatus = True
         self.connection = None
         self.channel = None
         self._sendMqTimer = None
@@ -67,6 +68,8 @@ class KUCrawler:
         self.sendToMQ(True)
 
     def run(self):
+
+        _startRunTime = time.perf_counter()
 
         loginConfig = {
             'platformUrl': self._config['ku_domains'],
@@ -132,7 +135,9 @@ class KUCrawler:
 
             time.sleep(1)
 
-        self._logger.info("KUCrawler Exist.")
+        runTime = time.perf_counter() - _startRunTime
+        
+        self._logger.info(f'KUCrawler Exist.\n Run : {str(datetime.timedelta(seconds=runTime))}')
 
     def sendToMQ(self, fromFile=False):
 
@@ -151,21 +156,21 @@ class KUCrawler:
                 f.write('')  
                 
         if self._config['debug'] :
-            self._upload_status = False
+            self._uploadStatus = False
         else :    
             try:
                 if self.connection == None or self.channel == None:
-                    self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+                    self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
 
-                elif self.connection.is_closed or self.channel.is_closed or not self._upload_status:
+                elif self.connection.is_closed or self.channel.is_closed or not self._uploadStatus:
                     if self.connection.is_open:
                         self.connection.close()
 
-                    self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+                    self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
             except Exception:
                 traceback.print_exc()
                 self._logger.error("Can't connect to MQ.")
-                self._upload_status = False
+                self._uploadStatus = False
 
         for game in pushData:
             if "menu" in game:
@@ -186,16 +191,16 @@ class KUCrawler:
                         with open(f'{self.name}.txt', mode='a') as f:
                             f.write(text_format.MessageToString(protobufData))
 
-                    if self._upload_status:
-                        self._upload_status = upload_data(self.channel, protobufData, gameType)
-                        self._logger.debug(self._upload_status)
+                    if self._uploadStatus:
+                        self._uploadStatus = uploadData(self.channel, protobufData, gameType)
+                        self._logger.debug(self._uploadStatus)
 
                 except Exception:
                     traceback.print_exc()
                     self._logger.error("Can't connect to MQ.")
                     
                 else:
-                    self._logger.debug(f'Send [{game}] To MQ status [{str(self._upload_status)}]')
+                    self._logger.debug(f'Send [{game}] To MQ status [{str(self._uploadStatus)}]')
 
             else :
                 self._logger.info("Data is empty." )
