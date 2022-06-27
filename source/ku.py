@@ -149,20 +149,23 @@ class KUCrawler:
             #Clear file
             with open(f'{self.name}.txt', mode='w') as f:
                 f.write('')  
-
-        try:
-            if self.connection == None or self.channel == None:
-                self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
-
-            elif self.connection.is_closed or self.channel.is_closed or not self._upload_status:
-                if self.connection.is_open:
-                    self.connection.close()
-
-                self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
-        except Exception:
-            traceback.print_exc()
-            self._logger.error("Can't connect to MQ.")
+                
+        if self._config['debug'] :
             self._upload_status = False
+        else :    
+            try:
+                if self.connection == None or self.channel == None:
+                    self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+
+                elif self.connection.is_closed or self.channel.is_closed or not self._upload_status:
+                    if self.connection.is_open:
+                        self.connection.close()
+
+                    self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+            except Exception:
+                traceback.print_exc()
+                self._logger.error("Can't connect to MQ.")
+                self._upload_status = False
 
         for game in pushData:
             if "menu" in game:
