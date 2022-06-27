@@ -107,7 +107,7 @@ def IsSC(gameType):
         return False
 
 def TransformStatus(gameType, timeOption):
-    o = {
+    langList = {
         "11" : {
             0: langFont.Font_SCStatus[0],
             1: langFont.Font_SCStatus[1],
@@ -369,7 +369,7 @@ def TransformStatus(gameType, timeOption):
     gameType = "11" if IsSC(gameType) else str(gameType) 
     timeOption = int(timeOption)
     try :
-        return o[gameType][timeOption] if o[gameType] and timeOption in o[gameType] else ""
+        return langList[gameType][timeOption] if langList[gameType] and timeOption in langList[gameType] else ""
     except KeyError:
         traceback.print_exc()
         return ""

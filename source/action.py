@@ -14,6 +14,7 @@ from volleyball import volleyballParser
 from badminton import badmintonParser
 from eSport import eSportParser
 from pingpong import pingpongParser
+from constants import Mapping
 import logger
 
 _gameList = {}
@@ -32,14 +33,14 @@ def transformToProtobuf(jsonData):
     global datetime_str
     gameTypeList = {}
     for gameType in jsonData["ally"]:
-        gameId = gameType[0]
-        gameName = utils.AllyNameProcess(gameId, gameType[1])
+        gameId = gameType[Mapping.allyData.leagueId]
+        gameName = utils.AllyNameProcess(gameId, gameType[Mapping.allyData.leagueName])
         gameTypeList[gameId] = {
             "aId" : gameId,
             "name" : gameName,
-            "ssid" : gameType[2],
-            "type" : gameType[3],
-            "sport" : gameType[4],
+            "uuid" : gameType[Mapping.allyData.leagueUUID],
+            "sport" : gameType[Mapping.allyData.sportId],
+            "type" : gameType[Mapping.allyData.typeId],
         }
 
     gameScoreList = jsonData["score"]
@@ -97,13 +98,15 @@ def transformToProtobuf(jsonData):
         
             score = gameScoreList[gameRoundId]
 
-            event.score.home = score[0] if len(score[0]) > 0 else '0'
-            event.score.away = score[1] if len(score[1]) > 0 else '0'
+            event.score.home = score[Mapping.scoreData.homeScore] if len(score[Mapping.scoreData.homeScore]) > 0 else '0'
+            event.score.away = score[Mapping.scoreData.awayScore] if len(score[Mapping.scoreData.awayScore]) > 0 else '0'
 
-            #足球(11)
+            #足球(11)d
             if utils.IsSC(gameType) : 
-                event.redcard.home = score[2] if len(score[2]) > 0 else '0'
-                event.redcard.away = score[3] if len(score[3]) > 0 else '0'
+                event.redcard.home = str(score[Mapping.scoreData.homeRedcard])
+                event.redcard.away = str(score[Mapping.scoreData.awayRedcard])
+                event.conner.away = score[Mapping.scoreData.homeConner] if len(score[Mapping.scoreData.homeConner]) > 0 else '0'
+                event.conner.away = score[Mapping.scoreData.awayConner] if len(score[Mapping.scoreData.homeConner]) > 0 else '0'
                 event.yellowcard.home = '0'
                 event.yellowcard.away = '0'
                 event, oddsKey = soccerParser(event, oddItem)

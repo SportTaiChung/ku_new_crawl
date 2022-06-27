@@ -37,3 +37,33 @@ class GameType(Enum):
     pingpong = 'PP'
     volleyball = 'VL'
     other = 'other'
+
+
+class Mapping:
+
+    # 足球 ["11_2264_0_1","愛爾蘭超級聯賽",4009000,11,11]
+    # 籃球 ["12_8189_0_2","籃球超級聯賽",10813000,12,12]
+    class allyData:
+        leagueId = 0            # 聯盟編號
+        leagueName = 1          # 聯盟名稱
+        leagueUUID = 2          # 未使用 - 意義不明
+        sportId = 3             # 運動編號
+        typeId = 4              # 運動類型
+
+    # 足球 "112611148":["3","1","","",[],[],0,0,["0","0","0","0","0","0"],["0","0","0","0","0","0"],0,16,"3","1"]
+    # 籃球 "142127890": ["0", "0", "", "", ["3", "", "", "", ""], ["1", "", "", "", ""], "40", "15", [], [], 2, 3, "0", "0"]
+    class scoreData:
+        homeScore = 0           # 主隊比分
+        awayScore = 1           # 客隊比分
+        homeConner = 2          # 主隊角球
+        awayConner = 3          # 客隊角球
+        # homeRoundScore = 4    # 主隊各局數分數 
+        # awayRoundScore = 5    # 客隊各局數分數 
+        homeRedcard = 6         # 主隊紅牌
+        awayRedcard = 7         # 客隊紅牌
+        # homeRoundScore = 8    # 主隊各局數分數
+        # awayRoundScore = 9    # 客隊各局數分數
+        # None = 10             # 未使用 - 意義不明
+        # None = 11             # 未使用 - 意義不明
+        # homeScore = 12        # 主隊比分 - 與 '0' 相同，實際使用'0'
+        # awayScore = 13        # 客隊比分 - 與 '1' 相同，實際使用'1'
