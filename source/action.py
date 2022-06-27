@@ -59,11 +59,11 @@ def transformToProtobuf(jsonData):
         
         gameRound = list(filter(lambda x: x[0] == gameRoundId, gameRoundList))[0]
 
-        if not gameRound[1] in gameTypeList :
+        if not gameRound[Mapping.gameData.gameLeagueId] in gameTypeList :
             continue
 
-        gameType = str(gameTypeList[gameRound[1]]["type"])
-        gameDisplayName = gameTypeList[gameRound[1]]["name"]
+        gameType = str(gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["type"])
+        gameDisplayName = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"]
 
         for index in range(1, len(odds)):
             oddItem = odds[index]
@@ -76,7 +76,7 @@ def transformToProtobuf(jsonData):
             event.ip = "192.168.1.1"
             event.status = '0'
 
-            event.event_time = gameRound[9].replace('/', '-') + ":00"
+            event.event_time = gameRound[Mapping.gameData.startTime].replace('/', '-') + ":00"
 
             #For debug
             # datetime_dt = datetime.datetime.today()
@@ -88,13 +88,13 @@ def transformToProtobuf(jsonData):
             
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
 
-            event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[11], gameRound[9], jsonData["date"], gameRound[10], gameRound[19])
+            event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[Mapping.gameData.runningType], gameRound[Mapping.gameData.startTime], jsonData["date"], gameRound[Mapping.gameData.runningTime], gameRound[Mapping.gameData.ht])
 
-            event.information.league = gameTypeList[gameRound[1]]["name"] 
+            event.information.league = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"] 
 
-            event.information.home.team_name = gameRound[2][0]
+            event.information.home.team_name = gameRound[Mapping.gameData.homeName][0]
 
-            event.information.away.team_name = gameRound[3][0]
+            event.information.away.team_name = gameRound[Mapping.gameData.awayName][0]
         
             score = gameScoreList[gameRoundId]
 
@@ -159,7 +159,7 @@ def transformToProtobuf(jsonData):
                 event_proto_list[oddsKey] = event
 
             # 06/25 - [要求]全場上半的後綴要移除，特殊玩法如果有自己的玩法分類也不用標。
-            event.information.league = gameTypeList[gameRound[1]]["name"]     
+            event.information.league = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"]  
 
     for eventItem in event_proto_list:
         dataList.aphdc.append(event_proto_list[eventItem])
