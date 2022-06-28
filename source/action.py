@@ -49,7 +49,7 @@ def transformToProtobuf(jsonData):
 
     gameRoundList = jsonData["game"]
 
-    event_proto_list = {}
+    eventProtoList = {}
 
     dataList = protobuf_spec.ApHdcArr()
 
@@ -153,16 +153,16 @@ def transformToProtobuf(jsonData):
             else:
                 event.game_id = oddsKey.replace("_", "")
 
-            if oddsKey in event_proto_list:
-                event_proto_list[oddsKey].MergeFrom(event)
+            if oddsKey in eventProtoList:
+                eventProtoList[oddsKey].MergeFrom(event)
             else :
-                event_proto_list[oddsKey] = event
+                eventProtoList[oddsKey] = event
 
             # 06/25 - [要求]全場上半的後綴要移除，特殊玩法如果有自己的玩法分類也不用標。
             event.information.league = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"]  
 
-    for eventItem in event_proto_list:
-        dataList.aphdc.append(event_proto_list[eventItem])
+    for eventItem in eventProtoList:
+        dataList.aphdc.append(eventProtoList[eventItem])
 
     return dataList, jsonData["sport"]
 
@@ -209,8 +209,6 @@ def onNext(messageUnzip):
         if "menu" in messageJson:
             if "list" in messageJson["menu"]:
                 _gameList["menu" + mode]= messageJson["menu"]["list"]
-            else :
-                logger.getLogger().error(json.dumps(messageJson))
 
     elif messageJson["action"] == "add" : 
         if searchKey in _gameList:
@@ -242,7 +240,7 @@ def onNext(messageUnzip):
                             for oddIndex in range(1, len(oddsList)):
                                 oddItme = oddsList[oddIndex]
                                 if deleteItem[1] == oddItme[3] and deleteItem[2] == oddItme[0]:
-                                    logger.getLogger().debug("Find " + str(oddItme) + " and deleted")
+                                    logger.getLogger().debug(f'Find [{str(oddItme)}] and deleted')
                                     del _gameList[searchKey]["odds"][index][oddIndex]
                                     break
                             break                               
@@ -274,13 +272,13 @@ def onNext(messageUnzip):
                                         if "l" in updateItem:
                                             line = updateItem["l"]
                                             oddItme[8] = line
-                                        logger.getLogger().debug("Find " + str(pathList) + " and Update " + str(oddItme))
+                                        logger.getLogger().debug(f'Find [{str(pathList)}] and Update it [{str(oddItme)}]')
                                         break 
                                 break                            
                     else :
-                        logger.getLogger().debug("Can't find key[path] in " + updateItem)
+                        logger.getLogger().debug(f'Can\'t find key[{pathList}] in [{updateItem}]')
             else:
-                logger.getLogger().debug("Can't find key : " + searchKey)
+                logger.getLogger().debug(f'Can\'t find key [{searchKey}]')
 
         if "menu" in messageJson:
             if "list" in  messageJson["menu"]:
@@ -300,9 +298,12 @@ def onNext(messageUnzip):
                                 logger.getLogger().debug(f'Update Scrore {scoreItem}[{index}] from {_gameList[searchKey]["score"][scoreKey]} to {updateScore[scoreItem]}' )
                                 _gameList[searchKey]["score"][scoreKey][index] = updateScore[scoreItem]
 
-    elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over", "ban"]: 
+    elif messageJson["action"] == "ban":
+        logger.getLogger().error("The account is be ban.")
+
+    elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]: 
         pass
         
     else :
-        logger.getLogger().error("Unknown Action : " + messageJson["action"] + "\n" + json.dumps(messageJson))
+        logger.getLogger().debug(f'Unknown Action [{messageJson["action"]}]\n {json.dumps(messageJson)}')
 

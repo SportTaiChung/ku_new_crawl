@@ -32,6 +32,10 @@ class KUCrawler:
         else:
             self._logger = logger.getLogger("INFO")
 
+        self._logger.info("KU Crawl Init.")
+        self._logger.debug(f'Config : {self._config}')
+        self._logger.debug(f'Tasks : {self._tasks}')
+
     def stop(self):
         self._logger.debug("KUCrawler Start Stop.")
 
@@ -54,6 +58,7 @@ class KUCrawler:
         self._logger.debug("KUCrawler Stoped.")
 
     def runFromFile(self, fileName):
+        self._logger.info(f'[File mode] Start read file[{fileName}].')
         self._config['_running'] = False
 
         f = open(fileName, "rb")
@@ -68,7 +73,7 @@ class KUCrawler:
         self.sendToMQ(True)
 
     def run(self):
-
+        self._logger.info("KU crawl start run")
         _startRunTime = time.perf_counter()
 
         loginConfig = {
@@ -96,15 +101,26 @@ class KUCrawler:
                     self._urlSearch = loginResponse["BBUrlSearch"]
                     self._protocol = loginResponse["BBProtocol"]
                     self._verifyKey = loginResponse["verify"]
+                    self._logger.info(f'Account[{account}] Login success.')
                     break
                 else:
-                    self._logger.warning(loginResponse)
+                    self._logger.error(loginResponse)
+                    self._logger.info(f'Account[{account}] Login fail.')
+
+            else :
+                self._logger.info(f'Account[{account}] Used detect parameter.')        
+
+        if len(self._url) == 0 or len(self._urlSearch) == 0 or len(self._protocol) == 0 or len(self._verifyKey) == 0:
+            self._logger.error(f'Account[{account}] Login fail and not found login parameter.\n Stop crawl...')
+            return
 
         with open(f'lastLoginInfo.txt', mode='w') as f:
             f.write("url : " + str(self._url) + "\n")
             f.write("search : '" + self._urlSearch + "'\n")
             f.write("protocol : '" + self._protocol + "'\n")
             f.write("verifyKey : '" + self._verifyKey + "'\n")
+
+        self._logger.info(f'Url : {self._url} \n UrlSearch : {self._urlSearch} \n Protocol : {self._protocol} \n VerifyKey : {self._verifyKey}')        
 
         crawlModeList = ["0", "1", "2"]
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
@@ -230,28 +246,30 @@ class KUCrawler:
             gameType = Action.getNextGameType(sport, gameType, mode)
             if gameType > 0:
                 command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
-                self._logger.info("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change. :" + command)
+                self._logger.info(f'[{sport}][{mode}][{str(gameType + 1)}]Send change.[{command}]')
                 if ws.sendCommand(command) == False:
-                    self._logger.error("[" + sport + "][" + mode + "][" + str(gameType + 1) + "]Send change stop.")
+                    self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Send command fail, stop thread.')
                     return
             else:
-                self._logger.error("Not found game.[" + sport + "][" + mode + "][" + str(gameType + 1) + "]")
+                self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Not found game.')
 
             if ws.isClose():
+                self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Weosocket is closed, stop thread.')
                 return
 
             if self._config['_running'] == True:
                 ws.otherTimer = Timer(sleepTime, self.gameChange, (ws, sport, gameType, mode, sleepTime,))
                 ws.otherTimer.start()
+
         except Exception:
             traceback.print_exc()
-            self._logger.info("[" + sport + "][" + mode + "] Change stop.")
+            self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Change thread stop.'')
 
     def on_keepLive(self, ws, sport):
         ws.sendCommand('{"action":"checkTime"}')
 
     def on_open(self, ws, sport, mode):
-        self._logger.debug("[" + sport + "][" + mode + "] Opened connection")
+        self._logger.debug(f'[{sport}][{mode}] Opened connection')
 
         sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey  + '","dc":' + str(ws.getMessageIndex()) + '}'
         ws.sendCommand(sendCommand)
