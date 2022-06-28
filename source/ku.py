@@ -127,7 +127,8 @@ class KUCrawler:
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
                     "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
 
-        self.sendToMQ()
+        self._sendMqTimer = Timer(10, self.sendToMQ)
+        self._sendMqTimer.start()
   
         while self._config['_running'] :
             for task in self._tasks:
@@ -149,6 +150,8 @@ class KUCrawler:
                                 'socket' : socket
                             }
                             startThread.start()
+                else:
+                    self._logger.debug(f'Not support sport[{task['game_type']}] mode[{task['game_mode']}]')
 
             time.sleep(1)
 
