@@ -93,6 +93,7 @@ class KUCrawler:
             self._verifyKey = account_info.get("verifyKey", "")   
 
             if len(self._url) == 0 or len(self._urlSearch) == 0 or len(self._protocol) == 0 or len(self._verifyKey) == 0:
+                self._logger.info(f'Start login by [{account}]')
                 loginManager = LoginManager(account, account_info['password'], loginConfig)
                 loginResponse = loginManager.run()
 
@@ -150,6 +151,8 @@ class KUCrawler:
                             startThread.start()
 
             time.sleep(1)
+
+
 
         runTime = time.perf_counter() - _startRunTime
         
@@ -227,7 +230,7 @@ class KUCrawler:
                 pushInterval = self._config['push_interval']
 
             self._sendMqTimer = Timer(pushInterval, self.sendToMQ)
-            self._sendMqTimer.start()            
+            self._sendMqTimer.start()
 
     def on_message(self, socketKey, message):
         
@@ -263,7 +266,7 @@ class KUCrawler:
 
         except Exception:
             traceback.print_exc()
-            self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Change thread stop.'')
+            self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Change thread stop.')
 
     def on_keepLive(self, ws, sport):
         ws.sendCommand('{"action":"checkTime"}')
