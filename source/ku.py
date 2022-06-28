@@ -109,7 +109,7 @@ class KUCrawler:
                     self._logger.info(f'Account[{account}] Login fail.')
 
             else :
-                self._logger.info(f'Account[{account}] Used detect parameter.')        
+                self._logger.info(f'Account[{account}] Detect login parameter.')        
 
         if len(self._url) == 0 or len(self._urlSearch) == 0 or len(self._protocol) == 0 or len(self._verifyKey) == 0:
             self._logger.error(f'Account[{account}] Login fail and not found login parameter.\n Stop crawl...')
@@ -121,14 +121,14 @@ class KUCrawler:
             f.write("protocol : '" + self._protocol + "'\n")
             f.write("verifyKey : '" + self._verifyKey + "'\n")
 
-        self._logger.info(f'Url : {self._url} \n UrlSearch : {self._urlSearch} \n Protocol : {self._protocol} \n VerifyKey : {self._verifyKey}')        
+        self._logger.info(f'Url : {self._url} \n\t UrlSearch : {self._urlSearch} \n\t Protocol : {self._protocol} \n\t VerifyKey : {self._verifyKey}')        
 
-        crawlModeList = ["0", "1", "2"]
+        crawlModeList = {"early" : "0", "today" : "1", "team totals" : "2"}
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
                     "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
 
         self.sendToMQ()
-        
+  
         while self._config['_running'] :
             for task in self._tasks:
                 if str(task['game_type']) in crawlList and str(task['game_mode']) in crawlModeList:
@@ -143,7 +143,7 @@ class KUCrawler:
                                 break
 
                         if not url in webSocketList or reConnect:
-                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=str(task['game_mode']))
+                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']])
                             startThread = threading.Thread(target = socket.connect)
                             webSocketList[url] = {
                                 'socket' : socket
@@ -152,8 +152,6 @@ class KUCrawler:
 
             time.sleep(1)
 
-
-
         runTime = time.perf_counter() - _startRunTime
         
         self._logger.info(f'KUCrawler Exist.\n Run : {str(datetime.timedelta(seconds=runTime))}')
@@ -161,18 +159,6 @@ class KUCrawler:
     def sendToMQ(self, fromFile=False):
 
         pushData = Action.getNowData()
-        
-        if self._config['dump'] and pushData:
-            with open(f'{self.name}.raw', mode='wb') as f:
-                f.write(json.dumps(pushData).encode('utf-8'))
-
-            #Clear file
-            with open(f'{self.name}.bin', mode='wb') as f:
-                f.write(b'')
-
-            #Clear file
-            with open(f'{self.name}.txt', mode='w') as f:
-                f.write('')  
                 
         if self._config['debug'] :
             self._uploadStatus = False
@@ -186,19 +172,27 @@ class KUCrawler:
                         self.connection.close()
 
                     self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
+
             except Exception:
                 traceback.print_exc()
                 self._logger.error("Can't connect to MQ.")
                 self._uploadStatus = False
 
+        if self._config['dump'] and pushData:
+            with open(f'{self.name}.raw', mode='wb') as f:
+                f.write(json.dumps(pushData).encode('utf-8'))
+
+            #Clear file
+            with open(f'{self.name}.bin', mode='wb') as f:
+                f.write(b'')
+
+            #Clear file
+            with open(f'{self.name}.txt', mode='w') as f:
+                f.write('')                  
+
         for game in pushData:
             if "menu" in game:
                 continue
-
-            if not fromFile and self._config['_running'] == False :
-                break
-
-            self._logger.debug(f'Start Send [{game}]To MQ.')
 
             protobufData, gameType = Action.transformToProtobuf(pushData[game])
             if not protobufData == None and protobufData:
@@ -209,6 +203,11 @@ class KUCrawler:
 
                         with open(f'{self.name}.txt', mode='a') as f:
                             f.write(text_format.MessageToString(protobufData))
+                            
+                    if not fromFile and self._config['_running'] == False :
+                        break
+
+                    self._logger.debug(f'Start Send [{game}]To MQ.')                            
 
                     if self._uploadStatus:
                         self._uploadStatus = uploadData(self.channel, protobufData, gameType)

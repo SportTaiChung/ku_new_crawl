@@ -11,7 +11,7 @@ def parse_args():
     parser.add_argument('-d', '--dump', help='dump crawled and protobuf data', action='store_true')
     parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
     parser.add_argument('-v', '--verbose', help='print verbose log', action='store_true')
-    parser.add_argument('--game-type', help='ball type')
+    parser.add_argument('--game-type', help='ball type (ex. soccer 、 basketball...)')
     parser.add_argument('--play-type', help='early, today, team totals')
     return parser.parse_args()
 
@@ -47,10 +47,6 @@ if __name__ == '__main__':
             for target in task['targets']:
                 if target['enabled']:
                     task_name = f'ku_{task["name"]}_{target["mode"]}'
-                    if target.get('wdls'):
-                        task_name = f'{task_name}_wdls'
-                    elif target.get('europe_champion'):
-                        task_name = f'{task_name}_euch'
                     task_spec = {
                         'crawler_name': task_name,
                         'game_type': task['name'],
@@ -58,5 +54,6 @@ if __name__ == '__main__':
                         'socket' : {}
                     }
                     tasks.append(task_spec)
+                    
         runner = CrawlerRunner(crawler_config, tasks, arguments.daemon)
     runner.run()
