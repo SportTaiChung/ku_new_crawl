@@ -151,7 +151,7 @@ class KUCrawler:
                             }
                             startThread.start()
                 else:
-                    self._logger.debug(f'Not support sport[{task['game_type']}] mode[{task['game_mode']}]')
+                    self._logger.debug(f'Not support sport[{task["game_type"]}] mode[{task["game_mode"]}]')
 
             time.sleep(1)
 
@@ -169,12 +169,14 @@ class KUCrawler:
             try:
                 if self.connection == None or self.channel == None:
                     self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
+                    self._uploadStatus = True
 
                 elif self.connection.is_closed or self.channel.is_closed or not self._uploadStatus:
                     if self.connection.is_open:
                         self.connection.close()
 
                     self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
+                    self._uploadStatus = True
 
             except Exception:
                 traceback.print_exc()
