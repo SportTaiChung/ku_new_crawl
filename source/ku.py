@@ -125,7 +125,7 @@ class KUCrawler:
 
         crawlModeList = {"early" : "0", "today" : "1", "team totals" : "2"}
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
-                    "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27"}
+                    "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27", "coming soon" : "100"}
 
         self._sendMqTimer = Timer(10, self.sendToMQ)
         self._sendMqTimer.start()
@@ -257,8 +257,17 @@ class KUCrawler:
                 if ws.sendCommand(command) == False:
                     self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Send command fail, stop thread.')
                     return
+
             else:
-                self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Not found game.')
+                if sport == "100":
+                    command = '{"action":"cs","sport":100,"mode":1,"type":0,"dc":' + str(ws.getMessageIndex()) + '}'
+                    self._logger.info(f'[{sport}][{mode}][{str(gameType + 1)}]Send change.[{command}]')
+                    if ws.sendCommand(command) == False:
+                        self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Send command fail, stop thread.')
+                        return
+
+                else :    
+                    self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Not found game.')
 
             if ws.isClose():
                 self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Weosocket is closed, stop thread.')
