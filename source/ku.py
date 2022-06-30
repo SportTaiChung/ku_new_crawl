@@ -259,7 +259,7 @@ class KUCrawler:
                     return
 
             else:
-                if sport == "100":
+                if sport == "100" and mode == "1":
                     command = '{"action":"cs","sport":100,"mode":1,"type":0,"dc":' + str(ws.getMessageIndex()) + '}'
                     self._logger.info(f'[{sport}][{mode}][{str(gameType + 1)}]Send change.[{command}]')
                     if ws.sendCommand(command) == False:
