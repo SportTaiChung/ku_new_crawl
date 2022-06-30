@@ -261,13 +261,15 @@ def onNext(messageUnzip):
                                         if "o" in updateItem:
                                             oddItemList = updateItem["o"]
                                             for oddIndex in range(0, len(oddItemList), 2):
+                                                oddKey = oddItemList[oddIndex]
                                                 oddValue = oddItemList[oddIndex + 1]
-                                                try:
-                                                    oddItemOffset = 13 + int(oddIndex)
-                                                except ValueError:
-                                                    continue
-
-                                                oddItme[oddItemOffset] = oddValue
+                                                for oddItmeIndex in range(12, len(oddItme), 2):
+                                                    try:
+                                                        print(f'oddItme[oddItmeIndex] : {oddItme[oddItmeIndex]}  oddKey : {oddKey}')
+                                                        if oddItme[oddItmeIndex] == oddKey:
+                                                            oddItme[oddItmeIndex + 1] = oddValue
+                                                    except ValueError:
+                                                        continue
 
                                         if "l" in updateItem:
                                             line = updateItem["l"]
