@@ -78,17 +78,14 @@ def transformToProtobuf(jsonData):
 
             event.event_time = gameRound[Mapping.gameData.startTime].replace('/', '-') + ":00"
 
-            #For debug
-            # datetime_dt = datetime.datetime.today()
-            # datetime_dt = datetime_dt + datetime.timedelta(hours=14)
-            # datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
-            # event.event_time = datetime_dt.strftime("%Y-%m-%d %H:%M:%S")
+            datetime_dt = datetime.datetime.today()
+            datetime_dt = datetime_dt + datetime.timedelta(hours=8)
+            datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+            event.source_updatetime = datetime_dt.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
-            event.source_updatetime = jsonData["date"].replace('/', '-') + ".000"
-            
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
 
-            event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[Mapping.gameData.runningType], gameRound[Mapping.gameData.startTime], jsonData["date"], gameRound[Mapping.gameData.runningTime], gameRound[Mapping.gameData.ht])
+            event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[Mapping.gameData.runningType], gameRound[Mapping.gameData.startTime], datetime_dt.strftime("%Y/%m/%d %H:%M:%S"), gameRound[Mapping.gameData.runningTime], gameRound[Mapping.gameData.ht])
 
             event.information.league = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"] 
 
@@ -153,13 +150,13 @@ def transformToProtobuf(jsonData):
             else:
                 event.game_id = oddsKey.replace("_", "")
 
+            # 06/25 - [要求]全場上半的後綴要移除，特殊玩法如果有自己的玩法分類也不用標。
+            event.information.league = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"]
+
             if oddsKey in eventProtoList:
                 eventProtoList[oddsKey].MergeFrom(event)
             else :
                 eventProtoList[oddsKey] = event
-
-            # 06/25 - [要求]全場上半的後綴要移除，特殊玩法如果有自己的玩法分類也不用標。
-            event.information.league = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"]  
 
     for eventItem in eventProtoList:
         dataList.aphdc.append(eventProtoList[eventItem])
@@ -263,9 +260,12 @@ def onNext(messageUnzip):
                                             for oddIndex in range(0, len(oddItemList), 2):
                                                 oddKey = oddItemList[oddIndex]
                                                 oddValue = oddItemList[oddIndex + 1]
+
+                                                if oddValue == "":
+                                                    continue
+
                                                 for oddItmeIndex in range(12, len(oddItme), 2):
                                                     try:
-                                                        print(f'oddItme[oddItmeIndex] : {oddItme[oddItmeIndex]}  oddKey : {oddKey}')
                                                         if oddItme[oddItmeIndex] == oddKey:
                                                             oddItme[oddItmeIndex + 1] = oddValue
                                                     except ValueError:

@@ -33,7 +33,7 @@ def footballParser(eventBuf, oddItem):
     #19003 全場-獨贏
     #19103 上半場-獨贏
     elif searchItemfromArray(["19003", "19103"], oddsType) >= 0: 
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
 
     #19004 全場-單雙
     #19104 上半場-單雙

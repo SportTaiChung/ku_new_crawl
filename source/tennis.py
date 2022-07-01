@@ -47,7 +47,7 @@ def tennisParser(eventBuf, oddItem):
     
     #14001 局數-讓球
     if searchItemfromArray(["14001", "14101", "14201", "14301" ,"14401" ,"14501"], oddsType) >= 0:
-        eventBuf = protobufUtils.setSpread(eventBuf, oddItem) 
+        eventBuf = protobufUtils.setSpread(eventBuf, oddItem, True) 
 
     #14002 局數-大小
     elif searchItemfromArray(["14002"], oddsType) >= 0:
@@ -56,7 +56,7 @@ def tennisParser(eventBuf, oddItem):
     #14013 盤數-獨贏
     #14103 第一盤-獨贏
     elif searchItemfromArray(["14013", "14103"], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
 
     #14004 局數-單雙
     elif searchItemfromArray(["14004"], oddsType) >= 0:

@@ -157,7 +157,7 @@ def eSportParser(eventBuf, oddItem):
                               "180201", "180271", "180272", "180278", "180280", "180281", \
                               "180301", "180371", "180372", "180378", "180380", "180381" \
                             ], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)        
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)        
 
     #180108 第一局-擊殺英雄總數-單雙
     #180112 第一局-摧毀防禦塔總數-單雙

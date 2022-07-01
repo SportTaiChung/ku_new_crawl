@@ -66,7 +66,7 @@ def badmintonParser(eventBuf, oddItem):
 
     #17103 第一局-獨贏
     elif searchItemfromArray(["17103"], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
 
     #17014 總分-單雙
     #17104 第一局-單雙

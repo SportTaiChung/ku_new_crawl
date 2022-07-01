@@ -80,7 +80,7 @@ def volleyballParser(eventBuf, oddItem):
 
     #16103 第一局-獨贏
     elif searchItemfromArray(["16103"], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
 
     #16014 總分-單雙
     #16104 第一局-單雙

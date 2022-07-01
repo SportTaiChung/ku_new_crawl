@@ -80,7 +80,7 @@ def pingpongParser(eventBuf, oddItem):
     #21003 局數-獨贏
     #21103 第一局-獨贏
     elif searchItemfromArray(["21003"], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
 
     #21014 總分-單雙
     #21104 第一局-單雙

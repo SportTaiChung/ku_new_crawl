@@ -354,7 +354,7 @@ def TransformStatus(gameType, timeOption):
             60: langFont.Font_WPStatus[11],
             61: langFont.Font_WPStatus[12]
         },
-        "op" : {
+        "23" : {
             0: langFont.Font_OPStatus[0],
             20: langFont.Font_OPStatus[1]
         },

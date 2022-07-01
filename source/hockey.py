@@ -21,7 +21,7 @@ def hockeyParser(eventBuf, oddItem):
 
     #獨贏
     elif searchItemfromArray([], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
 
     #15004 全場-單雙
     elif searchItemfromArray(["15004"], oddsType) >= 0:

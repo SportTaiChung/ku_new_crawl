@@ -142,7 +142,8 @@ class protobufUtils:
             if key == "99":
                 eventBuf.multi += "\"other\": " + str(odd)
             else :    
-                eventBuf.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + str(odd) + ","
+                odd = "0.0" if len(str(odd)) == 0 else str(odd)
+                eventBuf.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + odd + ","
         eventBuf.multi += "}"
         
         return eventBuf
@@ -155,6 +156,10 @@ class protobufUtils:
 
     #入球數
     def setTotalGoal(eventBuf, oddsItem):
-        eventBuf.multi = "{\"0-1\": \"" + str(oddsItem[Mapping.oddsData.tg_0_1]) + "\", \"2-3\": \"" + str(oddsItem[Mapping.oddsData.tg_2_3]) + "\", \"4-6\": \"" + str(oddsItem[Mapping.oddsData.tg_4_6]) + "\", \"7+\": \"" + str(oddsItem[Mapping.oddsData.tg_7]) + "\"}"
+        tg_0_1 = "0.0" if len(str(oddsItem[Mapping.oddsData.tg_0_1])) == 0 else str(oddsItem[Mapping.oddsData.tg_0_1])
+        tg_2_3 = "0.0" if len(str(oddsItem[Mapping.oddsData.tg_2_3])) == 0 else str(oddsItem[Mapping.oddsData.tg_2_3])
+        tg_4_6 = "0.0" if len(str(oddsItem[Mapping.oddsData.tg_4_6])) == 0 else str(oddsItem[Mapping.oddsData.tg_4_6])
+        tg_7 = "0.0" if len(str(oddsItem[Mapping.oddsData.tg_7])) == 0 else str(oddsItem[Mapping.oddsData.tg_7])
+        eventBuf.multi = "{\"0-1\": \"" + tg_0_1 + "\", \"2-3\": \"" + tg_2_3 + "\", \"4-6\": \"" + tg_4_6 + "\", \"7+\": \"" + tg_7 + "\"}"
 
         return eventBuf  

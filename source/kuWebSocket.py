@@ -13,7 +13,7 @@ class KuWebSocket():
         CONNECTED = 4
         CLOSE = 5
 
-    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11", crawlMode="1"):
+    def __init__(self, url, urlSearch, protocol, on_open=None, on_message=None, on_error=None, on_close=None, on_keepLive=None, crawlIndex="11", crawlMode="1", crawlType="1"):
         self.url = "wss://" + url + "/" + urlSearch
         self.protocol = protocol
         # websocket.enableTrace(True)
@@ -33,8 +33,9 @@ class KuWebSocket():
         self._status = self.Status.NONE
         self._messageIndex  = 1
         self.crawlIndex = crawlIndex
-        self._logPrefix = "[" + url + "][" + crawlIndex + "][" + crawlMode + "]"
+        self._logPrefix = f'[{url}][{crawlIndex}][{crawlMode}][{crawlType}]'
         self.crawlMode = crawlMode
+        self.crawlType = crawlType
         self.KuWebSocket.on_open =  self.on_open
         self.KuWebSocket.on_message = self.on_message
         self.KuWebSocket.on_error = self.on_error
@@ -49,7 +50,7 @@ class KuWebSocket():
         self.otherTimer = None
 
     def getName(self):
-        return self.crawlIndex + "_" + self.crawlMode
+        return self.crawlIndex + "_" + self.crawlMode + "_" + self.crawlType
 
     def on_close(self, ws, close_status_code, close_msg):
         self._status = self.Status.CLOSE
@@ -74,7 +75,7 @@ class KuWebSocket():
         logger.getLogger().info("[" + str(self._logPrefix) + "] Opened connected.")
         
         if not self._on_open == None :
-            self._on_open(self, self.crawlIndex, self.crawlMode)
+            self._on_open(self, self.crawlIndex, self.crawlMode, self.crawlType)
 
         self._keepLiveTimer = Timer(self.keepLiveTime, self.keepLive)
         self._keepLiveTimer.start()

@@ -8,14 +8,14 @@ def baseballParser(eventBuf, oddItem):
 
     oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
 
-    #棒球 主客對調
+    # #棒球 主客對調
     tmpHome = eventBuf.information.home.team_name
 
     tmpAway = eventBuf.information.away.team_name
 
-    eventBuf.information.home.team_name = tmpHome
+    eventBuf.information.home.team_name = tmpAway
 
-    eventBuf.information.away.team_name = tmpAway
+    eventBuf.information.away.team_name = tmpHome
 
     gameClass = int(oddsType) - soccerDefault
 
@@ -168,7 +168,7 @@ def baseballParser(eventBuf, oddItem):
     #13301 全場-首分
     #13302 全場-尾分
     elif searchItemfromArray(["13003", "13053", "13113", "13213", "13301", "13302"], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
+        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem)
 
     #13004 全場-單雙
     #13034 1~3局-單雙

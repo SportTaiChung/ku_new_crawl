@@ -47,10 +47,11 @@ class KUCrawler:
         taskStopList = []
         for task in self._tasks:
             webSocketList = task['socket']
-            for webSocket in webSocketList:
-                stop = threading.Thread(target = webSocketList[webSocket]["socket"].stop)
-                taskStopList.append(stop)
-                stop.start()
+            for typeNum in webSocketList:
+                for webSocket in webSocketList[typeNum]:
+                    stop = threading.Thread(target = webSocketList[typeNum][webSocket]["socket"].stop)
+                    taskStopList.append(stop)
+                    stop.start()
 
         for stop in taskStopList:
             stop.join()   
@@ -133,23 +134,57 @@ class KUCrawler:
         while self._config['_running'] :
             for task in self._tasks:
                 if str(task['game_type']) in crawlList and str(task['game_mode']) in crawlModeList:
+                    webSocketList = task['socket']
+                    sportType = 0
+                    #檢查是否有抓到menu，不用管運動總類，只要確認盤口("早盤"、"今日"、"走地")。
+                    #如沒抓到就開啟預設webcoket(type = 1)，抓“全場”
+                    receiveData = Action.getNowData()
+                    menuKey = "menu" + crawlModeList[task['game_mode']]
+
+                    if menuKey in receiveData :
+                        menuList = receiveData[menuKey]
+
+                        for menuItem in menuList:
+                            if "type" in menuItem and "count" in menuItem and str(menuItem["type"]) == crawlList[task['game_type']]:
+                                countList = menuItem["count"]
+                                for index, countNum in enumerate(countList):
+                                    if countNum == 0:
+                                        continue
+
+                                    checkKey = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(index + 1)
+                                    if not checkKey in webSocketList:
+                                        sportType = index
+                                        break
+
+                                break
+                    
+                    else :
+                        sportType = 0
+
+                    typeKey = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(sportType + 1)    
+
                     for index, url in enumerate(self._url):
-                        webSocketList = task['socket']
                         reConnect = False
-                        for index in webSocketList:
-                            if webSocketList[index]['socket'].isClose():
+                        for typeIndex in webSocketList:
+                            if typeIndex in webSocketList and url in webSocketList[typeIndex] and webSocketList[typeIndex][url]['socket'].isClose():
+                                typeKey = typeIndex
+                                sportType = int(typeIndex[-1]) - 1
                                 reConnect = True
                             else :
                                 reConnect = False
                                 break
 
-                        if not url in webSocketList or reConnect:
-                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']])
+                        if not typeKey in webSocketList or reConnect:
+                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']], crawlType=str(sportType + 1))
                             startThread = threading.Thread(target = socket.connect)
-                            webSocketList[url] = {
+                            if not typeKey in webSocketList:
+                                webSocketList[typeKey] = {}
+                            typeItem = webSocketList[typeKey]
+                            typeItem[url] = {
                                 'socket' : socket
                             }
                             startThread.start()
+
                 else:
                     self._logger.debug(f'Not support sport[{task["game_type"]}] mode[{task["game_mode"]}]')
 
@@ -248,29 +283,16 @@ class KUCrawler:
 
         Action.onNext(decodeStr)
 
-    def gameChange(self, ws, sport, gameType, mode, sleepTime):  
+    def gameRefresh(self, ws, sport, gameType, mode, sleepTime):  
         try:
-            gameType = Action.getNextGameType(sport, gameType, mode)
-            if gameType > 0:
-                command = '{"action":"ckg","sport":' + sport + ',"mode": ' + mode + ',"type":' + str(gameType + 1) + ',"dc":' + str(ws.getMessageIndex()) + '}'
-                self._logger.info(f'[{sport}][{mode}][{str(gameType + 1)}]Send change.[{command}]')
-                if ws.sendCommand(command) == False:
-                    self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Send command fail, stop thread.')
-                    return
-
-            else:
-                if sport == "100" and mode == "1":
-                    command = '{"action":"cs","sport":100,"mode":1,"type":0,"dc":' + str(ws.getMessageIndex()) + '}'
-                    self._logger.info(f'[{sport}][{mode}][{str(gameType + 1)}]Send change.[{command}]')
-                    if ws.sendCommand(command) == False:
-                        self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Send command fail, stop thread.')
-                        return
-
-                else :    
-                    self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Not found game.')
+            command = '{"action":"cs","sport":' + sport + ',"mode":' + mode + ',"type":' + gameType + ',"dc":' + str(ws.getMessageIndex()) + '}'
+            self._logger.info(f'[{sport}][{mode}][{str(gameType)}]Send change.[{command}]')
+            if ws.sendCommand(command) == False:
+                self._logger.error(f'[{sport}][{mode}][{str(gameType)}] Send command fail, stop thread.')
+                return
 
             if ws.isClose():
-                self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Weosocket is closed, stop thread.')
+                self._logger.error(f'[{sport}][{mode}][{str(gameType)}] Weosocket is closed, stop thread.')
                 return
 
             if self._config['_running'] == True:
@@ -279,25 +301,24 @@ class KUCrawler:
 
         except Exception:
             traceback.print_exc()
-            self._logger.error(f'[{sport}][{mode}][{str(gameType + 1)}] Change thread stop.')
+            self._logger.error(f'[{sport}][{mode}][{str(gameType)}] Change thread stop.')
 
     def on_keepLive(self, ws, sport):
         ws.sendCommand('{"action":"checkTime"}')
 
-    def on_open(self, ws, sport, mode):
+    def on_open(self, ws, sport, mode, type):
         self._logger.debug(f'[{sport}][{mode}] Opened connection')
 
         sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey  + '","dc":' + str(ws.getMessageIndex()) + '}'
         ws.sendCommand(sendCommand)
     
-        sendCommand = '{"action":"cst","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey + '","dc":' + str(ws.getMessageIndex()) + ',"type":1,"stick":1}'
+        sendCommand = '{"action":"cst","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey + '","dc":' + str(ws.getMessageIndex()) + ',"type":' + str(type) + ',"stick":1}'
+        print(sendCommand)
         ws.sendCommand(sendCommand)
 
-        BB_Last = sendCommand 
+        # crawlInterval = 20
+        # if self._config['crawl_interval']:
+        #     crawlInterval = self._config['crawl_interval']
 
-        crawlInterval = 20
-        if self._config['crawl_interval']:
-            crawlInterval = self._config['crawl_interval']
-
-        ws.otherTimer = Timer(crawlInterval, self.gameChange, (ws, sport, 0, mode, crawlInterval,))
-        ws.otherTimer.start()
+        # ws.otherTimer = Timer(crawlInterval, self.gameRefresh, (ws, sport, str(type), mode, crawlInterval,))
+        # ws.otherTimer.start()
