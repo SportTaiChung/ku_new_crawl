@@ -3,6 +3,7 @@ from enum import Enum
 from threading import Timer
 import logger
 import traceback
+import time
 
 class KuWebSocket():
     class Status(Enum):
@@ -48,6 +49,7 @@ class KuWebSocket():
         self._keepLiveTimer = None
         self._status = self.Status.INITED
         self.otherTimer = None
+        self._lastUpdateTime = time.time()
 
     def getName(self):
         return self.crawlIndex + "_" + self.crawlMode + "_" + self.crawlType
@@ -66,6 +68,7 @@ class KuWebSocket():
 
     def on_message(self, ws, message):
         logger.getLogger().debug("[" + str(self._logPrefix) + "] Recv : " + str(message))
+        self._lastUpdateTime = time.time()
 
         if not self._on_message == None :
             self._on_message(self.getName(), message)
@@ -82,7 +85,8 @@ class KuWebSocket():
 
     def keepLive(self):
         try:
-            if self._status == self.Status.CONNECTED :
+            if not self._status == self.Status.CLOSE :
+                self._lastUpdateTime = time.time()
                 logger.getLogger().info("[" + str(self._logPrefix) + "] keepLive.")
                 if not self._on_keepLive == None :
                     self._on_keepLive(self, self.crawlIndex)
@@ -91,11 +95,13 @@ class KuWebSocket():
                 self._keepLiveTimer.start()
         except Exception:
             logger.getLogger().error("[" + str(self._logPrefix) + "] keepLive Stop.")
+            self._status = self.Status.CLOSE
             traceback.print_exc()
 
     def sendCommand(self, message):
         try :
             if self._status == self.Status.CONNECTED and len(message) > 0 :
+                self._lastUpdateTime = time.time()
                 logger.getLogger().debug("[" + str(self._logPrefix) + "] Send : " + message)
                 self.KuWebSocket.send(message)
                 self._messageIndex += 1
@@ -115,6 +121,9 @@ class KuWebSocket():
 
     def getMessageIndex(self):
         return self._messageIndex
+
+    def getLastUpdateTime(self):    
+        return self._lastUpdateTime 
 
     def isClose(self):
         return True if self._status == self.Status.CLOSE else False

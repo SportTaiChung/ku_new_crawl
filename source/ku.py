@@ -172,7 +172,7 @@ class KUCrawler:
                             if typeIndex in webSocketList:
                                 urlList = webSocketList[typeIndex]
                                 for url in urlList:
-                                    if urlList[url]['socket'].isClose():
+                                    if urlList[url]['socket'].isClose() or time.time() - urlList[url]['socket'].getLastUpdateTime() > 120:
                                         typeKey = typeIndex
                                         sportType = int(typeIndex[-1])
                                         needConnect = True
@@ -294,7 +294,7 @@ class KUCrawler:
 
     def gameRefresh(self, ws, sport, gameType, mode, sleepTime):  
         try:
-            command = '{"action":"cs","sport":' + sport + ',"mode":' + mode + ',"type":' + gameType + ',"dc":' + str(ws.getMessageIndex()) + '}'
+            command = '{"action":"ckg","sport":' + sport + ',"mode":' + mode + ',"type":' + gameType + ',"dc":' + str(ws.getMessageIndex()) + '}'
             self._logger.info(f'[{sport}][{mode}][{str(gameType)}]Send change.[{command}]')
             if ws.sendCommand(command) == False:
                 self._logger.error(f'[{sport}][{mode}][{str(gameType)}] Send command fail, stop thread.')
@@ -305,7 +305,7 @@ class KUCrawler:
                 return
 
             if self._config['_running'] == True:
-                ws.otherTimer = Timer(10, self.gameRefresh, (ws, sport, gameType, mode, sleepTime,))
+                ws.otherTimer = Timer(sleepTime, self.gameRefresh, (ws, sport, gameType, mode, sleepTime,))
                 ws.otherTimer.start()
 
         except Exception:
@@ -325,10 +325,9 @@ class KUCrawler:
         print(sendCommand)
         ws.sendCommand(sendCommand)
 
-        # if mode == "2":
-        #     crawlInterval = 20
-        #     if self._config['crawl_interval']:
-        #         crawlInterval = self._config['crawl_interval']
+        crawlInterval = 20
+        if self._config['crawl_interval']:
+            crawlInterval = self._config['crawl_interval']
 
-        #     ws.otherTimer = Timer(crawlInterval, self.gameRefresh, (ws, sport, str(type), mode, crawlInterval,))
-        #     ws.otherTimer.start()
+        ws.otherTimer = Timer(crawlInterval, self.gameRefresh, (ws, sport, str(type), mode, crawlInterval,))
+        ws.otherTimer.start()
