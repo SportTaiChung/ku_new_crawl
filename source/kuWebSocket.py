@@ -85,7 +85,7 @@ class KuWebSocket():
             if self._status == self.Status.CONNECTED :
                 logger.getLogger().info("[" + str(self._logPrefix) + "] keepLive.")
                 if not self._on_keepLive == None :
-                     self._on_keepLive(self, self.crawlIndex)
+                    self._on_keepLive(self, self.crawlIndex)
 
                 self._keepLiveTimer = Timer(self.keepLiveTime, self.keepLive)
                 self._keepLiveTimer.start()
@@ -100,9 +100,13 @@ class KuWebSocket():
                 self.KuWebSocket.send(message)
                 self._messageIndex += 1
                 return True
+                
             else :
                 logger.getLogger().debug("[" + str(self._logPrefix) + "] WebSocket Status : " + str(self._status))
+                self.KuWebSocket.close()
+                self._status = self.Status.CLOSE
                 return False
+
         except Exception:
             logger.getLogger().error("[" + str(self._logPrefix) + "] Send message fail.[" + message + "]")
             traceback.print_exc()
