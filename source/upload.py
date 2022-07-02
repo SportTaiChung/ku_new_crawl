@@ -150,17 +150,17 @@ class protobufUtils:
 
     #半全場
     def setFullHalfOutcome(eventBuf, oddsItem):
-        hl_HH = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_HH])) == 0 else str(oddsItem[Mapping.oddsData.hf_HH])
-        hl_HD = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_HD])) == 0 else str(oddsItem[Mapping.oddsData.hf_HD])
-        hl_HA = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_HA])) == 0 else str(oddsItem[Mapping.oddsData.hf_HA])
-        hl_DH = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_DH])) == 0 else str(oddsItem[Mapping.oddsData.hf_DH])
-        hl_DD = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_DD])) == 0 else str(oddsItem[Mapping.oddsData.hf_DD])
-        hl_DA = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_DA])) == 0 else str(oddsItem[Mapping.oddsData.hf_DA])
-        hl_AH = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_AH])) == 0 else str(oddsItem[Mapping.oddsData.hf_AH])
-        hl_AD = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_AD])) == 0 else str(oddsItem[Mapping.oddsData.hf_AD])
-        hl_AA = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_AA])) == 0 else str(oddsItem[Mapping.oddsData.hf_AA])
+        hf_HH = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_HH])) == 0 else str(oddsItem[Mapping.oddsData.hf_HH])
+        hf_HD = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_HD])) == 0 else str(oddsItem[Mapping.oddsData.hf_HD])
+        hf_HA = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_HA])) == 0 else str(oddsItem[Mapping.oddsData.hf_HA])
+        hf_DH = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_DH])) == 0 else str(oddsItem[Mapping.oddsData.hf_DH])
+        hf_DD = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_DD])) == 0 else str(oddsItem[Mapping.oddsData.hf_DD])
+        hf_DA = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_DA])) == 0 else str(oddsItem[Mapping.oddsData.hf_DA])
+        hf_AH = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_AH])) == 0 else str(oddsItem[Mapping.oddsData.hf_AH])
+        hf_AD = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_AD])) == 0 else str(oddsItem[Mapping.oddsData.hf_AD])
+        hf_AA = "0.0" if len(str(oddsItem[Mapping.oddsData.hf_AA])) == 0 else str(oddsItem[Mapping.oddsData.hf_AA])
 
-        eventBuf.multi = "{\"HH\": " + hl_HH + ", \"HD\": " + hl_HD + ", \"HA\": " + hl_HA + ", \"DH\": " + hl_DH + ", \"DD\": " + hl_DD + ", \"DA\": " + hl_DA + ", \"AH\": " + hl_AH + ", \"AD\": " + hl_AD + ", \"AA\": " + hl_AA + "}"    
+        eventBuf.multi = "{\"HH\": " + hf_HH + ", \"HD\": " + hf_HD + ", \"HA\": " + hf_HA + ", \"DH\": " + hf_DH + ", \"DD\": " + hf_DD + ", \"DA\": " + hf_DA + ", \"AH\": " + hf_AH + ", \"AD\": " + hf_AD + ", \"AA\": " + hf_AA + "}"    
 
         return eventBuf
 
