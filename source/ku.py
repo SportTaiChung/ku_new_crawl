@@ -172,7 +172,6 @@ class KUCrawler:
                                 reConnect = True
                             else :
                                 reConnect = False
-                                break
 
                         if not typeKey in webSocketList or reConnect:
                             socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']], crawlType=str(sportType))
