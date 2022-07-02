@@ -135,7 +135,7 @@ class KUCrawler:
             for task in self._tasks:
                 if str(task['game_type']) in crawlList and str(task['game_mode']) in crawlModeList:
                     webSocketList = task['socket']
-                    sportType = 0
+                    sportType = 1
                     #檢查是否有抓到menu，不用管運動總類，只要確認盤口("早盤"、"今日"、"走地")。
                     #如沒抓到就開啟預設webcoket(type = 1)，抓“全場”
                     receiveData = Action.getNowData()
@@ -148,10 +148,10 @@ class KUCrawler:
                             if "type" in menuItem and "count" in menuItem and str(menuItem["type"]) == crawlList[task['game_type']]:
                                 countList = menuItem["count"]
                                 for index, countNum in enumerate(countList):
-                                    if countNum == 0:
+                                    if countNum == 0 or index == 0 or index == 1:
                                         continue
 
-                                    checkKey = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(index + 1)
+                                    checkKey = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(index)
                                     if not checkKey in webSocketList:
                                         sportType = index
                                         break
@@ -159,23 +159,23 @@ class KUCrawler:
                                 break
                     
                     else :
-                        sportType = 0
+                        sportType = 1
 
-                    typeKey = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(sportType + 1)    
+                    typeKey = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(sportType)    
 
                     for index, url in enumerate(self._url):
                         reConnect = False
                         for typeIndex in webSocketList:
                             if typeIndex in webSocketList and url in webSocketList[typeIndex] and webSocketList[typeIndex][url]['socket'].isClose():
                                 typeKey = typeIndex
-                                sportType = int(typeIndex[-1]) - 1
+                                sportType = int(typeIndex[-1])
                                 reConnect = True
                             else :
                                 reConnect = False
                                 break
 
                         if not typeKey in webSocketList or reConnect:
-                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']], crawlType=str(sportType + 1))
+                            socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']], crawlType=str(sportType))
                             startThread = threading.Thread(target = socket.connect)
                             if not typeKey in webSocketList:
                                 webSocketList[typeKey] = {}
@@ -296,7 +296,7 @@ class KUCrawler:
                 return
 
             if self._config['_running'] == True:
-                ws.otherTimer = Timer(sleepTime, self.gameChange, (ws, sport, gameType, mode, sleepTime,))
+                ws.otherTimer = Timer(10, self.gameRefresh, (ws, sport, gameType, mode, sleepTime,))
                 ws.otherTimer.start()
 
         except Exception:
@@ -316,9 +316,10 @@ class KUCrawler:
         print(sendCommand)
         ws.sendCommand(sendCommand)
 
-        # crawlInterval = 20
-        # if self._config['crawl_interval']:
-        #     crawlInterval = self._config['crawl_interval']
+        # if mode == "2":
+        #     crawlInterval = 20
+        #     if self._config['crawl_interval']:
+        #         crawlInterval = self._config['crawl_interval']
 
-        # ws.otherTimer = Timer(crawlInterval, self.gameRefresh, (ws, sport, str(type), mode, crawlInterval,))
-        # ws.otherTimer.start()
+        #     ws.otherTimer = Timer(crawlInterval, self.gameRefresh, (ws, sport, str(type), mode, crawlInterval,))
+        #     ws.otherTimer.start()
