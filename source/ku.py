@@ -170,6 +170,7 @@ class KUCrawler:
                                 typeKey = typeIndex
                                 sportType = int(typeIndex[-1])
                                 reConnect = True
+                                break
                             else :
                                 reConnect = False
 
