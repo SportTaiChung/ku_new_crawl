@@ -197,6 +197,8 @@ class KUCrawler:
                 else:
                     self._logger.debug(f'Not support sport[{task["game_type"]}] mode[{task["game_mode"]}]')
 
+                time.sleep(0.1)    
+
             time.sleep(1)
 
         runTime = time.perf_counter() - _startRunTime
@@ -204,6 +206,7 @@ class KUCrawler:
         self._logger.info(f'KUCrawler Exist.\n Run : {str(datetime.timedelta(seconds=runTime))}')
 
     def sendToMQ(self, fromFile=False):
+        self._logger.info("Send data to MQ.")
 
         pushData = Action.getNowData()
                 
