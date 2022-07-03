@@ -56,10 +56,13 @@ def transformToProtobuf(jsonData):
     for odds in gameOddsList : 
 
         gameRoundId = odds[0]
-        
-        gameRound = list(filter(lambda x: x[0] == gameRoundId, gameRoundList))[0]
 
-        if not gameRound[Mapping.gameData.gameLeagueId] in gameTypeList :
+        try:
+            gameRound = list(filter(lambda x: x[0] == gameRoundId, gameRoundList))[0]
+        except Exception:
+            gameRound = []
+
+        if len(gameRound) == 0 or not gameRound[Mapping.gameData.gameLeagueId] in gameTypeList :
             continue
 
         gameType = str(gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["type"])

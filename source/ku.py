@@ -27,6 +27,7 @@ class KUCrawler:
         self.connection = None
         self.channel = None
         self._sendMqTimer = None
+        self._lastSendMqTime = time.time()
         if self._config['verbose'] :
             self._logger = logger.getLogger("DEBUG")
         else:
@@ -199,6 +200,12 @@ class KUCrawler:
 
                 time.sleep(0.1)    
 
+            if time.time() - self._lastSendMqTime > 60:
+                if not self._sendMqTimer == None:
+                    self._sendMqTimer.cancel()
+
+                self.sendToMQ()    
+
             time.sleep(1)
 
         runTime = time.perf_counter() - _startRunTime
@@ -208,11 +215,13 @@ class KUCrawler:
     def sendToMQ(self, fromFile=False):
         self._logger.info("Send data to MQ.")
 
+        self._lastSendMqTime = time.time()
+
         pushData = Action.getNowData()
                 
         if self._config['debug'] :
             self._uploadStatus = False
-        else :    
+        else :
             try:
                 if self.connection == None or self.channel == None:
                     self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
