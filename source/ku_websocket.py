@@ -50,7 +50,7 @@ class KuWebsocket():
         self.other_timer = None
         self._last_update_time = time.time()
 
-    def getName(self):
+    def get_name(self):
         return self.crawl_index + "_" + self.crawl_mode + "_" + self.crawl_type
 
     def on_close(self, ws, close_status_code, close_msg):
@@ -70,7 +70,7 @@ class KuWebsocket():
         self._last_update_time = time.time()
 
         if not self._on_message == None :
-            self._on_message(self.getName(), message)
+            self._on_message(self.get_name(), message)
 
     def on_open(self, ws):
         self._status = self.Status.CONNECTED

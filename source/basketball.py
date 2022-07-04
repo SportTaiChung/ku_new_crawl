@@ -92,7 +92,7 @@ def basketballParser(eventBuf, oddItem):
     #12501 第三節-讓球
     #12601 第四節-讓球
     if searchItemfromArray(["12001", "12101", "12201", "12301", "12401", "12501", "12601"], oddsType) >= 0:
-        eventBuf = protobufUtils.setSpread(eventBuf, oddItem, True)
+        eventBuf = protobufUtils.set_spread(eventBuf, oddItem, True)
 
     #12002 全場-大小
     #12102 上半場-大小
@@ -108,7 +108,7 @@ def basketballParser(eventBuf, oddItem):
     #12305 第一節-單隊總得分-客隊大小
     #12307 第一節-單隊總得分-主隊大小    
     elif searchItemfromArray(["12002", "12102", "12202", "12302", "12402", "12502", "12602", "12005", "12007", "12105", "12107", "12305", "12307"], oddsType) >= 0:
-        eventBuf = protobufUtils.setTotal(eventBuf, oddItem)
+        eventBuf = protobufUtils.set_total(eventBuf, oddItem)
 
     #12003 全場-獨贏
     #12103 上半場-獨贏
@@ -122,7 +122,7 @@ def basketballParser(eventBuf, oddItem):
     #12022 全場-尾分
     #12023 全場-單節最高分
     elif searchItemfromArray(["12003", "12103", "12203", "12303", "12403", "12503", "12603", "12010", "12021", "12022", "12023"], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
+        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #12004 全場-單雙
     #12104 上半場-單雙
@@ -138,6 +138,6 @@ def basketballParser(eventBuf, oddItem):
     #12306 第一節-單隊總得分-客隊單雙
     #12308 第一節-單隊總得分-主隊單雙 
     elif searchItemfromArray(["12004", "12104", "12204", "12304", "12404", "12504", "12604", "12006", "12008", "12106", "12108", "12306", "12308"], oddsType) >= 0:
-        eventBuf = protobufUtils.setParity(eventBuf, oddItem)         
+        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)         
 
     return eventBuf, oddsKey

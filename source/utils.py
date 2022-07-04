@@ -55,7 +55,7 @@ def TransformGdOrSt(gameType, gameMode, st, gd, crawlTime, startTime, ht):
     else: 
         return "0"
 
-def TransformNumToPk(gameType, lineStr):
+def transform_num_to_pk(gameType, lineStr):
     if lineStr == "":
         return "0" 
 

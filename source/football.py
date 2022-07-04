@@ -23,21 +23,21 @@ def footballParser(eventBuf, oddItem):
     #19001 全場-讓球
     #19101 上半場-讓球
     if searchItemfromArray(["19001", "19101"], oddsType) >= 0:
-        eventBuf = protobufUtils.setSpread(eventBuf, oddItem) 
+        eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
     #19002 全場-大小
     #19102 上半場-大小
     elif searchItemfromArray(["19002", "19102"], oddsType) >= 0:
-        eventBuf = protobufUtils.setTotal(eventBuf, oddItem) 
+        eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #19003 全場-獨贏
     #19103 上半場-獨贏
     elif searchItemfromArray(["19003", "19103"], oddsType) >= 0: 
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
+        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #19004 全場-單雙
     #19104 上半場-單雙
     elif searchItemfromArray(["19004", "19104"], oddsType) >= 0:
-        eventBuf = protobufUtils.setParity(eventBuf, oddItem)         
+        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)         
  
     return eventBuf, oddsKey

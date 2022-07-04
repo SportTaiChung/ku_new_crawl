@@ -99,7 +99,7 @@ def eSportParser(eventBuf, oddItem):
                             "180205", "180209", "180221", "180225", \
                             "180305", "180309", "180321", "180325" \
                             ], oddsType) >= 0:
-        eventBuf = protobufUtils.setSpread(eventBuf, oddItem) 
+        eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
     #180002 局數-大小
 
@@ -128,7 +128,7 @@ def eSportParser(eventBuf, oddItem):
                               "180206", "180210", "180222", "180226", "180291", \
                               "180306", "180310", "180322", "180326", "180391" \
                             ], oddsType) >= 0:
-        eventBuf = protobufUtils.setTotal(eventBuf, oddItem) 
+        eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #180003 局數-獨贏
 
@@ -157,7 +157,7 @@ def eSportParser(eventBuf, oddItem):
                               "180201", "180271", "180272", "180278", "180280", "180281", \
                               "180301", "180371", "180372", "180378", "180380", "180381" \
                             ], oddsType) >= 0:
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)        
+        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)        
 
     #180108 第一局-擊殺英雄總數-單雙
     #180112 第一局-摧毀防禦塔總數-單雙
@@ -181,6 +181,6 @@ def eSportParser(eventBuf, oddItem):
                               "180308", "180312", "180324", "180328", \
                               "180152", "180252", "180352" \
                               ], oddsType) >= 0:
-        eventBuf = protobufUtils.setParity(eventBuf, oddItem)           
+        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)           
  
     return eventBuf, oddsKey

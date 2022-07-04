@@ -91,7 +91,7 @@ def soccerParser(eventBuf, oddItem):
     #11251 - 74:00 - 全場 -讓球
     if searchItemfromArray(["11001", "11011", "11021", "11066", "11070", "11071", "11101", "11111", "11121", "11167", "11201", "11211", "11221", "11231", "11241", "11251"], oddsType) >= 0 :
 
-        eventBuf = protobufUtils.setSpread(eventBuf, oddItem) 
+        eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
         if oddsType == "11066" or oddsType == "11167":
             eventBuf.information.league += "  - 其他玩法 - 兩隊是否都進球"
@@ -128,7 +128,7 @@ def soccerParser(eventBuf, oddItem):
     #11242 - 60:00 - 74:59 -大小
     #11252 - 74:00 - 全場 -大小
     elif searchItemfromArray(["11002", "11012", "11022", "11064", "11065", "11102", "11112", "11122", "11164", "11165", "11202", "11212", "11222", "11232", "11242", "11252"], oddsType) >= 0 : 
-        eventBuf = protobufUtils.setTotal(eventBuf, oddItem) 
+        eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #11003 - 全場-獨贏
     #11013 - 全場-角球數-獨贏
@@ -145,7 +145,7 @@ def soccerParser(eventBuf, oddItem):
     #11506 - 全場-第一個角球
     #11531 - 全場-第一個進球
     elif searchItemfromArray(["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253", "11506", "11531"], oddsType) >= 0 :
-        eventBuf = protobufUtils.setMonneyLine(eventBuf, oddItem, True)
+        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #11004 - 全場-單雙
     #11014 - 全場-角球數-單雙
@@ -154,7 +154,7 @@ def soccerParser(eventBuf, oddItem):
     #11114 - 上半場-角球數-單雙
     #11124 - 上半場-罰牌數-單雙
     elif oddsType == "11004" or oddsType == "11014" or oddsType == "11024" or oddsType == "11104" or oddsType == "11114" or oddsType == "11124": 
-        eventBuf = protobufUtils.setParity(eventBuf, oddItem)
+        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)
 
     #11061 - 波膽-全場
     #11161 - 波膽-上半場
@@ -163,7 +163,7 @@ def soccerParser(eventBuf, oddItem):
         eventBuf.information.league += " - 波膽"
         oddsKey += "_7"
         
-        eventBuf = protobufUtils.setCorrectScore(eventBuf, oddItem)
+        eventBuf = protobufUtils.set_correct_score(eventBuf, oddItem)
 
 
     #11062 - 入球數-全場
@@ -173,7 +173,7 @@ def soccerParser(eventBuf, oddItem):
         eventBuf.information.league += " - 入球數"
         oddsKey += "_8"
 
-        eventBuf = protobufUtils.setTotalGoal(eventBuf, oddItem)
+        eventBuf = protobufUtils.set_total_goal(eventBuf, oddItem)
 
     #11063 - 半全場
     elif oddsType == "11063":
@@ -181,6 +181,6 @@ def soccerParser(eventBuf, oddItem):
         eventBuf.information.league += " - 半全場" 
         oddsKey += "_9"
 
-        eventBuf = protobufUtils.setFullHalfOutcome(eventBuf, oddItem)
+        eventBuf = protobufUtils.set_full_half_outcome(eventBuf, oddItem)
 
     return eventBuf, oddsKey        
