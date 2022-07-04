@@ -267,7 +267,7 @@ class KUCrawler:
                     if not fromFile and self._config['_running'] == False :
                         break
 
-                    self._logger.debug(f'Start Send [{game}]To MQ.')                            
+                    self._logger.debug(f'Start Send [{sport}]To MQ.')                            
 
                     if self._upload_status:
                         self._upload_status = upload_data(self.channel, protobuf_data, sport_type)
@@ -278,7 +278,7 @@ class KUCrawler:
                     self._logger.error("Can't connect to MQ.")
                     
                 else:
-                    self._logger.debug(f'Send [{game}] To MQ status [{str(self._upload_status)}]')
+                    self._logger.debug(f'Send [{sport}] To MQ status [{str(self._upload_status)}]')
 
             else :
                 self._logger.info("Data is empty." )

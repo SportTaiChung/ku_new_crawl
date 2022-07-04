@@ -33,7 +33,7 @@ def transform_to_protobuf(json_data):
     game_type_list = {}
     for game_type in json_data["ally"]:
         game_id = game_type[Mapping.allyData.leagueId]
-        game_name = utils.ally_name_process(gameId, game_type[Mapping.allyData.leagueName])
+        game_name = utils.ally_name_process(game_id, game_type[Mapping.allyData.leagueName])
         game_type_list[game_id] = {
             "aId" : game_id,
             "name" : game_name,

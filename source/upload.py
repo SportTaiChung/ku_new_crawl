@@ -130,11 +130,13 @@ class protobufUtils:
         return event_buf
 
     #總得分
+    @classmethod
     def set_team_total(event_buf):
         return event_buf
 
     #波膽
-    def set_correct_score(event_buf, odds_item): 
+    @classmethod
+    def set_correct_score(self, event_buf, odds_item): 
         event_buf.multi = "{"
         for odd_item_index in range(12, (len(odds_item) - 1), 2):
             key = odds_item[odd_item_index]
@@ -148,7 +150,8 @@ class protobufUtils:
         return event_buf
 
     #半全場
-    def set_full_half_outcome(event_buf, odds_item):
+    @classmethod
+    def set_full_half_outcome(self, event_buf, odds_item):
         hf_HH = self.get_odds(odds_item[Mapping.oddsData.hf_HH])
         hf_HD = self.get_odds(odds_item[Mapping.oddsData.hf_HD])
         hf_HA = self.get_odds(odds_item[Mapping.oddsData.hf_HA])
@@ -164,7 +167,8 @@ class protobufUtils:
         return event_buf
 
     #入球數
-    def set_total_goal(event_buf, odds_item):
+    @classmethod
+    def set_total_goal(self, event_buf, odds_item):
         tg_0_1 = self.get_odds(odds_item[Mapping.oddsData.tg_0_1])
         tg_2_3 = self.get_odds(odds_item[Mapping.oddsData.tg_2_3])
         tg_4_6 = self.get_odds(odds_item[Mapping.oddsData.tg_4_6])
