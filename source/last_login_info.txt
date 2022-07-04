@@ -1,4 +1,0 @@
-url : ['twrs3.nbbrstw1.net:6125', 'sgrs1.nbbrstw1.net:6125', 'hkrs1.nbbrstw1.net:6125']
-search : '?user=78gg787&sid=5a4dxqtsw31jnidabfod1dun&v=1656930286394'
-protocol : '88a137aec09cbc53'
-verify_key : 'f1a5a2a7120448da'
