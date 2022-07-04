@@ -182,6 +182,31 @@ def onNext(message_unzip):
     search_key = sport + "_" + mode + "_" + game_type
 
     if message_json["action"] == "first" or message_json["action"] == "cm" or message_json["action"] == "cst" or message_json["action"] == "ckg": 
+        # 當前完整資訊
+        # 此格式適用於 "first"、"cm"、"cst"、"ckg"
+        #{
+        #    "action":"first",  命令類型
+        #    "sport":12,        球種
+        #    "mode":1,          盤口
+        #    "type":1,          玩法
+        #    "menu": {"list":[{"type":11, "count":[1,1,1,1...]},....]},   官網左邊Menu欄資訊，分別type為球種，count為各玩法的資料數量。
+        #    "ally": [[Mapping.allyData],......],            聯盟資訊 - 參考Mapping.allyData
+        #    "allyIndex":[],                                 未使用 - 聯盟編號列表
+        #    "game":[[Mapping.gameData], ....],              比賽資訊 - 參考Mapping.gameData
+        #    "score":{賽事ID:Mapping.scoreData,.......},    比分資訊 - key 為 "賽事ID"，value 為資料(參考Mapping.scoreData)
+        #    "odds":[[賽事ID,[Mapping.oddsData],....]],     賠率資訊 - 陣列第一位為"賽事ID"，後續為該比賽的賠率，賠率內容參考 Mapping.oddsData
+        #    "ballIndex":[],    未使用-決定球種在畫面上顯示順序
+        #    "limit":{},        未使用-與投注有關
+        #    "zdCount":10,      未使用-用途未知
+        #    "coin":5,          未使用-用途未知
+        #    "module":0,        未使用-用途未知
+        #    "mtv":181,         未使用-用途未知
+        #    "dc":1,            未使用-用途未知
+        #    "stick":0,         未使用-用途未知
+        #    "date":"2022/07/05 20:38:59",      取得資料當下時間
+        #    "group":0,         未使用-用途未知
+        #    "sn":54167798000   未使用-流水號
+        #}
         if "ally" in message_json and "game" in message_json and "score" in message_json and "odds" in message_json:
             _game_list[search_key] = message_json
 
@@ -190,6 +215,20 @@ def onNext(message_unzip):
                 _game_list["menu" + mode]= message_json["menu"]["list"]
 
     elif message_json["action"] == "add" : 
+    # 增加賽事
+    # 僅適用於 add
+    #{
+    #   "action":"add",                                 命令類型 add
+    #   "game":[[Mapping.gameData], ....],              比賽資訊 - 參考Mapping.gameData
+    #   "allyIndex":[],                                 未使用 - 聯盟編號列表
+    #   "score":{賽事ID:Mapping.scoreData,.......},     比分資訊 - key 為 "賽事ID"，value 為資料(參考Mapping.scoreData)
+    #   "odds":[[賽事ID,[Mapping.oddsData],....]],      賠率資訊 - 陣列第一位為"賽事ID"，後續為該比賽的賠率，賠率內容參考 Mapping.oddsData
+    #   "mode":1,                                       盤口
+    #   "sport":11,                                     球種
+    #   "type":4,                                       玩法
+    #   "group":2,                                      未使用-用途未知
+    #   "sn":21779842001                                未使用-流水號
+    #}
         if search_key in _game_list:
             game_all_list = _game_list[search_key]
             if "game" in message_json:
@@ -209,6 +248,17 @@ def onNext(message_unzip):
                     game_all_list["odds"].append(new_item)                 
 
     elif message_json["action"] == "del" : 
+        # 刪除賽事
+        # 僅適用於 del
+        #{
+        #   "action":"del",             命令類型 del
+        #   "val":[["111591492",-1]],   需要刪除的賽事ID
+        #   "mode":1,                   盤口
+        #   "sport":11,                 球種
+        #   "type":1,                   玩法
+        #   "group":2,                  未使用-用途未知
+        #   "sn":21779574001            未使用-流水號
+        #}
         if "val" in message_json:
             delete_list = message_json["val"] 
             if search_key in _game_list:
@@ -225,6 +275,10 @@ def onNext(message_unzip):
                             break                               
 
     elif message_json["action"] == "update" : 
+        #{"action":"update","odds":[{"path":["111591073","0701","11001"],"o":["1","","2",""],"sId":"07","l":""}],"mode":1,"sport":11,"type":1,"group":2,"sn":21778375002}
+        #{"action":"update","score":[{"gId":"111590990","tc":21}],"mode":1,"sport":11,"type":1,"group":4,"sn":21778597013}
+        #{"action":"update","zdCount":18,"mode":-1,"sport":11,"type":-1,"group":0,"sn":21779086001}
+        #{"action":"update","menu":{"cs":[[11,2],[14,10],[16,2],[18,1]],"list":[{"type":54,"count":[71]},{"type":11,"count":[118,118,25,17,48,48,48]},{"type":12,"count":[9,9,0,5,0]},{"type":13,"count":[24,24,11,11,6,19]},{"type":14,"count":[81,81,61]},{"type":15,"count":[3,3,1,0]},{"type":16,"count":[6,6,6]},{"type":17,"count":[3,3,0]},{"type":18,"count":[30,30,13,14]}]},"mode":1,"sport":-1,"type":-1,"group":0,"sn":21778932001}
         if "odds" in message_json: #更新賠率
             update_list = message_json["odds"]
             if search_key in _game_list:
@@ -282,9 +336,11 @@ def onNext(message_unzip):
                                 logger.get_logger().debug(f'Update Scrore {score_item}[{index}] from {_game_list[search_key]["score"][score_key]} to {update_score[score_item]}' )
                                 _game_list[search_key]["score"][score_key][index] = update_score[score_item]
 
+    # action == ban 為帳號被封
     elif message_json["action"] == "ban":
         logger.get_logger().error("The account is be ban.")
 
+    # 以下 action 未使用
     elif message_json["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]: 
         pass
         
