@@ -9,9 +9,9 @@ import datetime
 from google.protobuf import text_format
 
 import action as Action
-from upload import initSession, uploadData
-from loginManager import LoginManager
-from kuWebSocket import KuWebSocket
+from upload import init_session, upload_data
+from login_manager import LoginManager
+from ku_websocket import KuWebSocket
 
 class KUCrawler:
     def __init__(self, tasks, config, daemon=False):  
@@ -20,10 +20,10 @@ class KUCrawler:
         self._config['_running'] = True
         self.name = 'ku_crawl'
         self._url = []
-        self._urlSearch = ""
+        self._url_search = ""
         self._protocol = ""
-        self._verifyKey = ""
-        self._uploadStatus = True
+        self._verify_key = ""
+        self._upload_status = True
         self.connection = None
         self.channel = None
         self._sendMqTimer = None
@@ -90,20 +90,20 @@ class KUCrawler:
                 continue
 
             self._url = account_info.get("url", [])
-            self._urlSearch = account_info.get("search", "")
+            self._url_search = account_info.get("search", "")
             self._protocol = account_info.get("protocol", "")
-            self._verifyKey = account_info.get("verifyKey", "")   
+            self._verify_key = account_info.get("verifyKey", "")   
 
-            if len(self._url) == 0 or len(self._urlSearch) == 0 or len(self._protocol) == 0 or len(self._verifyKey) == 0:
+            if len(self._url) == 0 or len(self._url_search) == 0 or len(self._protocol) == 0 or len(self._verify_key) == 0:
                 self._logger.info(f'Start login by [{account}]')
                 loginManager = LoginManager(account, account_info['password'], loginConfig)
                 loginResponse = loginManager.run()
 
                 if loginResponse != {}:
                     self._url = loginResponse["BBWSUrl"]
-                    self._urlSearch = loginResponse["BBUrlSearch"]
+                    self._url_search = loginResponse["BBUrlSearch"]
                     self._protocol = loginResponse["BBProtocol"]
-                    self._verifyKey = loginResponse["verify"]
+                    self._verify_key = loginResponse["verify"]
                     self._logger.info(f'Account[{account}] Login success.')
                     break
                 else:
@@ -113,17 +113,17 @@ class KUCrawler:
             else :
                 self._logger.info(f'Account[{account}] Detect login parameter.')        
 
-        if len(self._url) == 0 or len(self._urlSearch) == 0 or len(self._protocol) == 0 or len(self._verifyKey) == 0:
+        if len(self._url) == 0 or len(self._url_search) == 0 or len(self._protocol) == 0 or len(self._verify_key) == 0:
             self._logger.error(f'Account[{account}] Login fail and not found login parameter.\n Stop crawl...')
             return
 
         with open(f'lastLoginInfo.txt', mode='w') as f:
             f.write("url : " + str(self._url) + "\n")
-            f.write("search : '" + self._urlSearch + "'\n")
+            f.write("search : '" + self._url_search + "'\n")
             f.write("protocol : '" + self._protocol + "'\n")
-            f.write("verifyKey : '" + self._verifyKey + "'\n")
+            f.write("verifyKey : '" + self._verify_key + "'\n")
 
-        self._logger.info(f'Url : {self._url} \n\t UrlSearch : {self._urlSearch} \n\t Protocol : {self._protocol} \n\t VerifyKey : {self._verifyKey}')        
+        self._logger.info(f'Url : {self._url} \n\t UrlSearch : {self._url_search} \n\t Protocol : {self._protocol} \n\t VerifyKey : {self._verify_key}')        
 
         crawlModeList = {"early" : "0", "today" : "1", "team totals" : "2"}
         crawlList = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
@@ -187,7 +187,7 @@ class KUCrawler:
                     if needConnect:
                         for index, url in enumerate(self._url):
                             if not url in webSocketList[typeKey] or needConnect:
-                                socket = KuWebSocket(url, self._urlSearch, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']], crawlType=str(sportType))
+                                socket = KuWebSocket(url, self._url_search, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keepLive=self.on_keepLive, crawlIndex=crawlList[task['game_type']], crawlMode=crawlModeList[task['game_mode']], crawlType=str(sportType))
                                 startThread = threading.Thread(target = socket.connect)     
                                 typeItem = webSocketList[typeKey]
                                 typeItem[url] = {
@@ -220,24 +220,24 @@ class KUCrawler:
         pushData = Action.getNowData()
                 
         if self._config['debug'] :
-            self._uploadStatus = False
+            self._upload_status = False
         else :
             try:
                 if self.connection == None or self.channel == None:
-                    self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
-                    self._uploadStatus = True
+                    self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+                    self._upload_status = True
 
-                elif self.connection.is_closed or self.channel.is_closed or not self._uploadStatus:
+                elif self.connection.is_closed or self.channel.is_closed or not self._upload_status:
                     if self.connection.is_open:
                         self.connection.close()
 
-                    self.connection, self.channel = initSession(self._config['rabbitmqUrl'])
-                    self._uploadStatus = True
+                    self.connection, self.channel = init_session(self._config['rabbitmqUrl'])
+                    self._upload_status = True
 
             except Exception:
                 traceback.print_exc()
                 self._logger.error("Can't connect to MQ.")
-                self._uploadStatus = False
+                self._upload_status = False
 
         if self._config['dump'] and pushData:
             with open(f'{self.name}.raw', mode='wb') as f:
@@ -270,16 +270,16 @@ class KUCrawler:
 
                     self._logger.debug(f'Start Send [{game}]To MQ.')                            
 
-                    if self._uploadStatus:
-                        self._uploadStatus = uploadData(self.channel, protobufData, gameType)
-                        self._logger.debug(self._uploadStatus)
+                    if self._upload_status:
+                        self._upload_status = upload_data(self.channel, protobufData, gameType)
+                        self._logger.debug(self._upload_status)
 
                 except Exception:
                     traceback.print_exc()
                     self._logger.error("Can't connect to MQ.")
                     
                 else:
-                    self._logger.debug(f'Send [{game}] To MQ status [{str(self._uploadStatus)}]')
+                    self._logger.debug(f'Send [{game}] To MQ status [{str(self._upload_status)}]')
 
             else :
                 self._logger.info("Data is empty." )
@@ -330,10 +330,10 @@ class KUCrawler:
     def on_open(self, ws, sport, mode, type):
         self._logger.debug(f'[{sport}][{mode}] Opened connection')
 
-        sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey  + '","dc":' + str(ws.getMessageIndex()) + '}'
+        sendCommand = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verify_key  + '","dc":' + str(ws.getMessageIndex()) + '}'
         ws.sendCommand(sendCommand)
     
-        sendCommand = '{"action":"cst","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verifyKey + '","dc":' + str(ws.getMessageIndex()) + ',"type":' + str(type) + ',"stick":1}'
+        sendCommand = '{"action":"cst","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verify_key + '","dc":' + str(ws.getMessageIndex()) + ',"type":' + str(type) + ',"stick":1}'
         print(sendCommand)
         ws.sendCommand(sendCommand)
 

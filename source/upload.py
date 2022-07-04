@@ -25,14 +25,14 @@ def get_exchange_name(sport_type_id):
     }
     return sport_type_id_exchange_mapping.get(sport_type_id, 'KU_BK')
 
-def initSession(url):
+def init_session(url):
     parameters = pika.URLParameters(url)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
     return connection, channel
 
 
-def uploadData(channel, data, sport_type_id):
+def upload_data(channel, data, sport_type_id):
     try:
         exchange = get_exchange_name(str(sport_type_id))
         channel.basic_publish(exchange='test', routing_key=exchange, body=memoryview(data.SerializeToString()))
