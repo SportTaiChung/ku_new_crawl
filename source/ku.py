@@ -125,7 +125,7 @@ class KUCrawler:
 
         self._logger.info(f'Url : {self._url} \n\t UrlSearch : {self._url_search} \n\t Protocol : {self._protocol} \n\t VerifyKey : {self._verify_key}')        
 
-        crawl_mode_list = {"early" : "0", "today" : "1", "team totals" : "2"}
+        crawl_mode_list = {"early" : "0", "today" : "1", "live" : "2"}
         crawl_sport_list = {"soccer" : "11", "basketball" : "12", "baseball" : "13", "tennis" : "14", "hockey" : "15", "volleyball" : "16", 
                     "badminton" : "17", "eSport" : "18", "football" : "19", "billiardball" : "20", "PP" : "21", "UCL" : "26", "wsc" : "27", "coming soon" : "100"}
 
