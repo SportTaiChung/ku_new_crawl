@@ -4,16 +4,16 @@ import json
 import datetime
 import APHDC_pb2 as protobuf_spec
 import utils
-from soccer import soccerParser
-from basketball import basketballParser
-from baseball import baseballParser
-from tennis import tennisParser
-from hockey import hockeyParser
-from football import footballParser
-from volleyball import volleyballParser
-from badminton import badmintonParser
-from eSport import eSportParser
-from pingpong import pingpongParser
+from soccer import soccer_parser
+from basketball import basketball_parser
+from baseball import baseball_parser
+from tennis import tennis_parser
+from hockey import hockey_parser
+from football import football_parser
+from volleyball import volleyball_parser
+from badminton import badminton_parser
+from eSport import eSport_parser
+from pingpong import pingpong_parser
 from constants import Mapping
 import logger
 
@@ -108,44 +108,44 @@ def transform_to_protobuf(json_data):
                 event.conner.away = '0'                
                 event.yellowcard.home = '0'
                 event.yellowcard.away = '0'
-                event, odds_key = soccerParser(event, odd_item)
+                event, odds_key = soccer_parser(event, odd_item)
 
             #籃球    
             elif game_type == "12":
                 pass
-                event, odds_key = basketballParser(event, odd_item)
+                event, odds_key = basketball_parser(event, odd_item)
 
             #棒球
             elif game_type == "13":
-                event, odds_key = baseballParser(event, odd_item)
+                event, odds_key = baseball_parser(event, odd_item)
 
             #網球
             elif game_type == "14":
-                event, odds_key = tennisParser(event, odd_item)
+                event, odds_key = tennis_parser(event, odd_item)
 
             #冰球
             elif game_type == "15":
-                event, odds_key = hockeyParser(event, odd_item)
+                event, odds_key = hockey_parser(event, odd_item)
 
             #排球
             elif game_type == "16":
-                event, odds_key = volleyballParser(event, odd_item)
+                event, odds_key = volleyball_parser(event, odd_item)
 
             #羽毛球
             elif game_type == "17":
-                event, odds_key = badmintonParser(event, odd_item)
+                event, odds_key = badminton_parser(event, odd_item)
 
             #電子競技
             elif game_type == "18":
-                event, odds_key = eSportParser(event, odd_item)
+                event, odds_key = eSport_parser(event, odd_item)
 
             #美足
             elif game_type == "19":
-                event, odds_key = footballParser(event, odd_item) 
+                event, odds_key = football_parser(event, odd_item) 
 
             #乒乓球
             elif game_type == "21":
-                event, odds_key = pingpongParser(event, odd_item)
+                event, odds_key = pingpong_parser(event, odd_item)
 
             if odds_key == None :
                 event.game_id = game_round_id

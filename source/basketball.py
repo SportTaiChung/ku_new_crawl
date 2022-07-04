@@ -1,7 +1,7 @@
 from upload import protobufUtils
 from constants import Mapping
 
-def basketballParser(event_buf, odd_item):
+def basketball_parser(event_buf, odd_item):
     soccer_default = 12000
     odds_type = odd_item[Mapping.oddsData.oddType]
 
