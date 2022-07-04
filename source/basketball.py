@@ -1,87 +1,87 @@
 from upload import protobufUtils
 from constants import Mapping
 
-def basketballParser(eventBuf, oddItem):
-    soccerDefault = 12000
-    oddsType = oddItem[Mapping.oddsData.oddType]
+def basketballParser(event_buf, odd_item):
+    soccer_default = 12000
+    odds_type = odd_item[Mapping.oddsData.oddType]
 
-    oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
+    odds_key = event_buf.raw_event_id + "_" + odd_item[Mapping.oddsData.oddGroup]
 
-    gameClass = int(oddsType) - soccerDefault
+    game_class = int(odds_type) - soccer_default
  
     #籃球 主客對調
-    tmpHome = eventBuf.information.home.team_name
+    tmp_home = event_buf.information.home.team_name
 
-    tmpAway = eventBuf.information.away.team_name
+    tmp_away = event_buf.information.away.team_name
 
-    eventBuf.information.home.team_name = tmpHome
+    event_buf.information.home.team_name = tmp_home
 
-    eventBuf.information.away.team_name = tmpAway
+    event_buf.information.away.team_name = tmp_away
 
-    if gameClass < 100:
-        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-        eventBuf.information.league += " - 全場"
-        oddsKey += "_0"
+    if game_class < 100:
+        event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+        event_buf.information.league += " - 全場"
+        odds_key += "_0"
 
-    elif gameClass > 700  :
-        eventBuf.game_type += "live full" if eventBuf.live == "true" else "full"
-        eventBuf.information.league += " - 三分球總數"
-        oddsKey += "_1"
+    elif game_class > 700  :
+        event_buf.game_type += "live full" if event_buf.live == "true" else "full"
+        event_buf.information.league += " - 三分球總數"
+        odds_key += "_1"
 
-    elif gameClass > 600  :
-        eventBuf.game_type += "4q"
-        eventBuf.information.league += " - 第四節"
-        oddsKey += "_2"
+    elif game_class > 600  :
+        event_buf.game_type += "4q"
+        event_buf.information.league += " - 第四節"
+        odds_key += "_2"
 
-    elif gameClass > 500  :
-        eventBuf.game_type += "3q"
-        eventBuf.information.league += " - 第三節"
-        oddsKey += "_3"
+    elif game_class > 500  :
+        event_buf.game_type += "3q"
+        event_buf.information.league += " - 第三節"
+        odds_key += "_3"
 
-    elif gameClass > 400  :
-        eventBuf.game_type += "2q"  
-        eventBuf.information.league += " - 第二節"
-        oddsKey += "_4"
+    elif game_class > 400  :
+        event_buf.game_type += "2q"  
+        event_buf.information.league += " - 第二節"
+        odds_key += "_4"
 
-    elif gameClass > 300  : 
-        eventBuf.game_type += "1q"
-        eventBuf.information.league += " - 第一節" 
-        oddsKey += "_5"  
+    elif game_class > 300  : 
+        event_buf.game_type += "1q"
+        event_buf.information.league += " - 第一節" 
+        odds_key += "_5"  
 
-    elif gameClass > 200  :
-        eventBuf.game_type += "live 2nd half" if eventBuf.live == "true" else "2nd half"
-        eventBuf.information.league += " - 下半場" 
-        oddsKey += "_6" 
+    elif game_class > 200  :
+        event_buf.game_type += "live 2nd half" if event_buf.live == "true" else "2nd half"
+        event_buf.information.league += " - 下半場" 
+        odds_key += "_6" 
 
-    elif gameClass > 100  :    
-        eventBuf.game_type = "live 1st half" if eventBuf.live == "true" else "1st half"
-        eventBuf.information.league += " - 上半場"
-        oddsKey += "_7"
+    elif game_class > 100  :    
+        event_buf.game_type = "live 1st half" if event_buf.live == "true" else "1st half"
+        event_buf.information.league += " - 上半場"
+        odds_key += "_7"
 
 
-    if oddsType == "12005" or oddsType == "12105" or oddsType == "12305" or oddsType == "12006" or oddsType == "12106" or oddsType == "12306":
-        eventBuf.information.league += " - 單隊總得分 - 客隊"
-        oddsKey += "_1"
+    if odds_type == "12005" or odds_type == "12105" or odds_type == "12305" or odds_type == "12006" or odds_type == "12106" or odds_type == "12306":
+        event_buf.information.league += " - 單隊總得分 - 客隊"
+        odds_key += "_1"
 
-    elif oddsType == "12007" or oddsType == "12107" or oddsType == "12307" or oddsType == "12008" or oddsType == "12108" or oddsType == "12108":
-        eventBuf.information.league += " - 單隊總得分 - 主隊"
-        oddsKey += "_2"
+    elif odds_type == "12007" or odds_type == "12107" or odds_type == "12307" or odds_type == "12008" or odds_type == "12108" or odds_type == "12108":
+        event_buf.information.league += " - 單隊總得分 - 主隊"
+        odds_key += "_2"
 
-    elif oddsType == "12010":
-        eventBuf.information.league += " - 特別玩法 - 第一個三分球"
-        oddsKey += "_3"
+    elif odds_type == "12010":
+        event_buf.information.league += " - 特別玩法 - 第一個三分球"
+        odds_key += "_3"
 
-    elif oddsType == "12021":
-        eventBuf.information.league += " - 首分"
-        oddsKey += "_4"
+    elif odds_type == "12021":
+        event_buf.information.league += " - 首分"
+        odds_key += "_4"
 
-    elif oddsType == "12022":
-        eventBuf.information.league += " - 尾分"
-        oddsKey += "_5"
+    elif odds_type == "12022":
+        event_buf.information.league += " - 尾分"
+        odds_key += "_5"
 
-    elif oddsType == "12023":
-        eventBuf.information.league += " - 單節最高分"
-        oddsKey += "_6"
+    elif odds_type == "12023":
+        event_buf.information.league += " - 單節最高分"
+        odds_key += "_6"
     
     #12001 全場-讓球"
     #12101 上半場-讓球
@@ -90,8 +90,8 @@ def basketballParser(eventBuf, oddItem):
     #12401 第二節-讓球
     #12501 第三節-讓球
     #12601 第四節-讓球
-    if oddsType in ["12001", "12101", "12201", "12301", "12401", "12501", "12601"]:
-        eventBuf = protobufUtils.set_spread(eventBuf, oddItem, True)
+    if odds_type in ["12001", "12101", "12201", "12301", "12401", "12501", "12601"]:
+        event_buf = protobufUtils.set_spread(event_buf, odd_item, True)
 
     #12002 全場-大小
     #12102 上半場-大小
@@ -106,8 +106,8 @@ def basketballParser(eventBuf, oddItem):
     #12107 上半場-單隊總得分-主隊大小 
     #12305 第一節-單隊總得分-客隊大小
     #12307 第一節-單隊總得分-主隊大小    
-    elif oddsType in ["12002", "12102", "12202", "12302", "12402", "12502", "12602", "12005", "12007", "12105", "12107", "12305", "12307"]:
-        eventBuf = protobufUtils.set_total(eventBuf, oddItem)
+    elif odds_type in ["12002", "12102", "12202", "12302", "12402", "12502", "12602", "12005", "12007", "12105", "12107", "12305", "12307"]:
+        event_buf = protobufUtils.set_total(event_buf, odd_item)
 
     #12003 全場-獨贏
     #12103 上半場-獨贏
@@ -120,8 +120,8 @@ def basketballParser(eventBuf, oddItem):
     #12021 全場-首分
     #12022 全場-尾分
     #12023 全場-單節最高分
-    elif oddsType in ["12003", "12103", "12203", "12303", "12403", "12503", "12603", "12010", "12021", "12022", "12023"]:
-        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
+    elif odds_type in ["12003", "12103", "12203", "12303", "12403", "12503", "12603", "12010", "12021", "12022", "12023"]:
+        event_buf = protobufUtils.set_monney_line(event_buf, odd_item, True)
 
     #12004 全場-單雙
     #12104 上半場-單雙
@@ -136,7 +136,7 @@ def basketballParser(eventBuf, oddItem):
     #12108 上半場-單隊總得分-主隊單雙
     #12306 第一節-單隊總得分-客隊單雙
     #12308 第一節-單隊總得分-主隊單雙 
-    elif oddsType in ["12004", "12104", "12204", "12304", "12404", "12504", "12604", "12006", "12008", "12106", "12108", "12306", "12308"]:
-        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)         
+    elif odds_type in ["12004", "12104", "12204", "12304", "12404", "12504", "12604", "12006", "12008", "12106", "12108", "12306", "12308"]:
+        event_buf = protobufUtils.set_parity(event_buf, odd_item)         
 
-    return eventBuf, oddsKey
+    return event_buf, odds_key

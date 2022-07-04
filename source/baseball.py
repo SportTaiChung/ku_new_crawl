@@ -1,125 +1,125 @@
 from upload import protobufUtils
 from constants import Mapping
 
-def baseballParser(eventBuf, oddItem):
-    soccerDefault = 13000
-    oddsType = oddItem[Mapping.oddsData.oddType]
+def baseballParser(event_buf, odd_item):
+    soccer_default = 13000
+    odds_type = odd_item[Mapping.oddsData.oddType]
 
-    oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
+    odds_key = event_buf.raw_event_id + "_" + odd_item[Mapping.oddsData.oddGroup]
 
     # #棒球 主客對調
-    tmpHome = eventBuf.information.home.team_name
+    tmp_home = event_buf.information.home.team_name
 
-    tmpAway = eventBuf.information.away.team_name
+    tmp_away = event_buf.information.away.team_name
 
-    eventBuf.information.home.team_name = tmpAway
+    event_buf.information.home.team_name = tmp_away
 
-    eventBuf.information.away.team_name = tmpHome
+    event_buf.information.away.team_name = tmp_home
 
-    gameClass = int(oddsType) - soccerDefault
+    game_class = int(odds_type) - soccer_default
 
-    if gameClass < 30:
-        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-        eventBuf.information.league += " - 全場"
-        oddsKey += "_0"
+    if game_class < 30:
+        event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+        event_buf.information.league += " - 全場"
+        odds_key += "_0"
 
-    elif gameClass < 50  :
-        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-        eventBuf.information.league += " - 1~3局"
-        oddsKey += "_1"
+    elif game_class < 50  :
+        event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+        event_buf.information.league += " - 1~3局"
+        odds_key += "_1"
 
-    elif gameClass < 70  :
-        eventBuf.game_type = "live 1st half" if eventBuf.live == "true" else "1st half"
-        eventBuf.information.league += " - 上半場" 
-        oddsKey += "_2"   
+    elif game_class < 70  :
+        event_buf.game_type = "live 1st half" if event_buf.live == "true" else "1st half"
+        event_buf.information.league += " - 上半場" 
+        odds_key += "_2"   
 
-    elif gameClass < 100  :
-        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-        eventBuf.information.league += " - 1~7局"
-        oddsKey += "_3"
+    elif game_class < 100  :
+        event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+        event_buf.information.league += " - 1~7局"
+        odds_key += "_3"
 
-    elif gameClass < 120  :
-        eventBuf.game_type = "1q"  
-        eventBuf.information.league += " - 第一局 - 得分"
-        oddsKey += "_4_1"
+    elif game_class < 120  :
+        event_buf.game_type = "1q"  
+        event_buf.information.league += " - 第一局 - 得分"
+        odds_key += "_4_1"
 
-    elif gameClass < 130  :
-        eventBuf.game_type = "2q"  
-        eventBuf.information.league += " - 第二局 - 得分"
-        oddsKey += "_4_2"
+    elif game_class < 130  :
+        event_buf.game_type = "2q"  
+        event_buf.information.league += " - 第二局 - 得分"
+        odds_key += "_4_2"
 
-    elif gameClass < 140  :
-        eventBuf.game_type = "3q"  
-        eventBuf.information.league += " - 第三局 - 得分"
-        oddsKey += "_4_3"
+    elif game_class < 140  :
+        event_buf.game_type = "3q"  
+        event_buf.information.league += " - 第三局 - 得分"
+        odds_key += "_4_3"
 
-    elif gameClass < 150  :
-        eventBuf.game_type = "4set"  
-        eventBuf.information.league += " - 第四局 - 得分"
-        oddsKey += "_4_4"
+    elif game_class < 150  :
+        event_buf.game_type = "4set"  
+        event_buf.information.league += " - 第四局 - 得分"
+        odds_key += "_4_4"
 
-    elif gameClass < 160  :
-        eventBuf.game_type = "5set"  
-        eventBuf.information.league += " - 第五局 - 得分"
-        oddsKey += "_4_5"
+    elif game_class < 160  :
+        event_buf.game_type = "5set"  
+        event_buf.information.league += " - 第五局 - 得分"
+        odds_key += "_4_5"
 
-    elif gameClass < 170  :
-        eventBuf.game_type = "6set"  
-        eventBuf.information.league += " - 第六局 - 得分"
-        oddsKey += "_4_6"
+    elif game_class < 170  :
+        event_buf.game_type = "6set"  
+        event_buf.information.league += " - 第六局 - 得分"
+        odds_key += "_4_6"
 
-    elif gameClass < 180  :
-        eventBuf.game_type = "7set"  
-        eventBuf.information.league += " - 第七局 - 得分"
-        oddsKey += "_4_7"
+    elif game_class < 180  :
+        event_buf.game_type = "7set"  
+        event_buf.information.league += " - 第七局 - 得分"
+        odds_key += "_4_7"
 
-    elif gameClass < 190  :
-        eventBuf.game_type = "8set"  
-        eventBuf.information.league += " - 第八局 - 得分"
-        oddsKey += "_4_8"
+    elif game_class < 190  :
+        event_buf.game_type = "8set"  
+        event_buf.information.league += " - 第八局 - 得分"
+        odds_key += "_4_8"
 
-    elif gameClass < 200  :
-        eventBuf.game_type = "9set"  
-        eventBuf.information.league += " - 第九局 - 得分"
-        oddsKey += "_4_9"
+    elif game_class < 200  :
+        event_buf.game_type = "9set"  
+        event_buf.information.league += " - 第九局 - 得分"
+        odds_key += "_4_9"
 
-    elif gameClass < 300  :
-        eventBuf.game_type = "1q"  
-        eventBuf.information.league += " - 第一局 - 安打"
-        oddsKey += "_5"    
+    elif game_class < 300  :
+        event_buf.game_type = "1q"  
+        event_buf.information.league += " - 第一局 - 安打"
+        odds_key += "_5"    
 
-    elif gameClass < 400  : 
-        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-        oddsKey += "_6"
+    elif game_class < 400  : 
+        event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+        odds_key += "_6"
 
 
-    if oddsType == "13006":
-        eventBuf.information.league += " - 單隊總得分 - 客隊"
-        oddsKey += "_1"
+    if odds_type == "13006":
+        event_buf.information.league += " - 單隊總得分 - 客隊"
+        odds_key += "_1"
 
-    elif oddsType == "13007":    
-        eventBuf.information.league += " - 單隊總得分 - 主隊"
-        oddsKey += "_2"
+    elif odds_type == "13007":    
+        event_buf.information.league += " - 單隊總得分 - 主隊"
+        odds_key += "_2"
 
-    elif oddsType == "13012":
-        eventBuf.information.league += " - 安打總數"
-        oddsKey += "_3"
+    elif odds_type == "13012":
+        event_buf.information.league += " - 安打總數"
+        odds_key += "_3"
 
-    elif oddsType == "13321":
-        eventBuf.information.league += " - (得分+安打+失誤)總和"
-        oddsKey += "_4"
+    elif odds_type == "13321":
+        event_buf.information.league += " - (得分+安打+失誤)總和"
+        odds_key += "_4"
 
-    elif oddsType == "13301":
-        eventBuf.information.league += " - 首分"
-        oddsKey += "_5"
+    elif odds_type == "13301":
+        event_buf.information.league += " - 首分"
+        odds_key += "_5"
         
-    elif oddsType == "13302":
-        eventBuf.information.league += " - 尾分" 
-        oddsKey += "_6" 
+    elif odds_type == "13302":
+        event_buf.information.league += " - 尾分" 
+        odds_key += "_6" 
 
-    elif oddsType == "13005":
-        eventBuf.information.league += " - 一輸二贏 " + lineStr 
-        oddsKey += "_7"
+    elif odds_type == "13005":
+        event_buf.information.league += " - 一輸二贏 " + lineStr 
+        odds_key += "_7"
 
 
     #13001 全場-讓球
@@ -136,8 +136,8 @@ def baseballParser(eventBuf, oddItem):
     #13171 第七局-得分-讓球
     #13181 第八局-得分-讓球
     #13191 第九局-得分-讓球
-    if oddsType in ["13001", "13032", "13051", "13071", "13111", "13211", "13121", "13131", "13141", "13151", "13161", "13171", "13181", "13191"]:
-        eventBuf = protobufUtils.set_spread(eventBuf, oddItem, True)
+    if odds_type in ["13001", "13032", "13051", "13071", "13111", "13211", "13121", "13131", "13141", "13151", "13161", "13171", "13181", "13191"]:
+        event_buf = protobufUtils.set_spread(event_buf, odd_item, True)
 
     #13002 全場-大小
     #13006 全場-單隊總得分-客隊大小
@@ -157,8 +157,8 @@ def baseballParser(eventBuf, oddItem):
     #13172 第七局-得分-大小
     #13182 第八局-得分-大小
     #13192 第九局-得分-大小
-    elif oddsType in ["13002", "13006", "13007", "13012", "13032", "13052", "13072", "13112", "13212", "13321", "13122", "13132", "13142", "13152", "13162", "13172", "13182", "13192"]:
-        eventBuf = protobufUtils.set_total(eventBuf, oddItem)
+    elif odds_type in ["13002", "13006", "13007", "13012", "13032", "13052", "13072", "13112", "13212", "13321", "13122", "13132", "13142", "13152", "13162", "13172", "13182", "13192"]:
+        event_buf = protobufUtils.set_total(event_buf, odd_item)
 
     #13003 全場-獨贏
     #13053 上半場-獨贏
@@ -166,18 +166,18 @@ def baseballParser(eventBuf, oddItem):
     #13213 第一局-安打-獨贏
     #13301 全場-首分
     #13302 全場-尾分
-    elif oddsType in ["13003", "13053", "13113", "13213", "13301", "13302"]:
-        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem)
+    elif odds_type in ["13003", "13053", "13113", "13213", "13301", "13302"]:
+        event_buf = protobufUtils.set_monney_line(event_buf, odd_item)
 
     #13004 全場-單雙
     #13034 1~3局-單雙
     #13054 上半場-單雙
     #13074 1~7局-單雙
-    elif oddsType in ["13004", "13034", "13054", "13074"]:
-        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)         
+    elif odds_type in ["13004", "13034", "13054", "13074"]:
+        event_buf = protobufUtils.set_parity(event_buf, odd_item)         
 
     #13005 全場-一輸二贏
-    elif oddsType in ["13005"]:
-        eventBuf = protobufUtils.set_spread_1_5(eventBuf, oddItem, True)           
+    elif odds_type in ["13005"]:
+        event_buf = protobufUtils.set_spread_1_5(event_buf, odd_item, True)           
 
-    return eventBuf, oddsKey   
+    return event_buf, odds_key   

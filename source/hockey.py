@@ -1,29 +1,29 @@
 from upload import protobufUtils
 from constants import Mapping
 
-def hockeyParser(eventBuf, oddItem):
-    soccerDefault = 15000
-    oddsType = oddItem[Mapping.oddsData.oddType]
+def hockeyParser(event_buf, odd_item):
+    soccer_default = 15000
+    odds_type = odd_item[Mapping.oddsData.oddType]
 
-    oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
+    odds_key = event_buf.raw_event_id + "_" + odd_item[Mapping.oddsData.oddGroup]
 
-    eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-    oddsKey += "_0"
+    event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+    odds_key += "_0"
 
     #15001 全場-讓球
-    if oddsType in ["15001"]:
-        eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
+    if odds_type in ["15001"]:
+        event_buf = protobufUtils.set_spread(event_buf, odd_item) 
 
     #15002 全場-大小
-    elif oddsType in ["15002"]:
-        eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
+    elif odds_type in ["15002"]:
+        event_buf = protobufUtils.set_total(event_buf, odd_item) 
 
     #獨贏
-    elif oddsType in []:
-        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
+    elif odds_type in []:
+        event_buf = protobufUtils.set_monney_line(event_buf, odd_item, True)
 
     #15004 全場-單雙
-    elif oddsType in ["15004"]:
-        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)          
+    elif odds_type in ["15004"]:
+        event_buf = protobufUtils.set_parity(event_buf, odd_item)          
  
-    return eventBuf, oddsKey
+    return event_buf, odds_key
