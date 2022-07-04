@@ -251,13 +251,13 @@ def onNext(message_unzip):
         # 刪除賽事
         # 僅適用於 del
         #{
-        #   "action":"del",             命令類型 del
-        #   "val":[["111591492",-1]],   需要刪除的賽事ID
-        #   "mode":1,                   盤口
-        #   "sport":11,                 球種
-        #   "type":1,                   玩法
-        #   "group":2,                  未使用-用途未知
-        #   "sn":21779574001            未使用-流水號
+        #   "action":"del",                      命令類型 del
+        #   "val":[["111591492",0701,11001],...],    需要刪除的賽事ID與賠率編號 [賽事ID, Mapping.oddGroup, Mapping.oddType]
+        #   "mode":1,                            盤口
+        #   "sport":11,                          球種
+        #   "type":1,                            玩法
+        #   "group":2,                           未使用-用途未知
+        #   "sn":21779574001                     未使用-流水號
         #}
         if "val" in message_json:
             delete_list = message_json["val"] 
