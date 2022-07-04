@@ -18,7 +18,7 @@ class CrawlerRunner:
         self._crawler = KUCrawler(self._tasks, self._config)
 
         if self._config['read_from_file']:
-            self._crawler.runFromFile(self._config['read_from_file'])
+            self._crawler.run_from_file(self._config['read_from_file'])
         else:
             if platform.system().lower() == 'linux' :
                 if self._daemon:

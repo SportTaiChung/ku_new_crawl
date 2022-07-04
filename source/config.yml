@@ -7,4 +7,4 @@ game_server:
 api_path:
   login: LoadData/Pd.ashx
   logout: LoadData/End.ashx
-  gameLogin: Game/NBBIndex.aspx?nbbUrl=
+  game_login: Game/NBBIndex.aspx?nbbUrl=

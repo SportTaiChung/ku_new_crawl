@@ -3,7 +3,7 @@ import numpy as np
 import traceback
 import time
 
-def getQueryString(urlStr, key):
+def get_query_string(urlStr, key):
     strList = urlStr.split('?')[1]
     itemList = strList.split('&')
     for item in itemList:
@@ -11,7 +11,7 @@ def getQueryString(urlStr, key):
         if value[0] == key:
             return value[1]
 
-def getRandomMachineId(usedDefault):
+def get_random_machine_id(usedDefault):
     if usedDefault :
         return "c1000b11349e8d89dbb53f19b17ee805"
     resultStr = ''
@@ -24,7 +24,7 @@ def getRandomMachineId(usedDefault):
 
     return resultStr.lower()
 
-def getBodyStr(startKey, endKey, bodyText):    
+def get_body_str(startKey, endKey, bodyText):    
     startIndex = bodyText.find(startKey)
     endIndex = bodyText[startIndex:].find(endKey) + startIndex
     return bodyText[startIndex:endIndex]

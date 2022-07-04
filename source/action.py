@@ -29,7 +29,7 @@ def pako_inflate(data):
 
     return decompressed_data
 
-def transformToProtobuf(jsonData):
+def transform_to_protobuf(jsonData):
     global datetime_str
     gameTypeList = {}
     for gameType in jsonData["ally"]:
@@ -166,7 +166,7 @@ def transformToProtobuf(jsonData):
 
     return dataList, jsonData["sport"]
 
-def getNowData():
+def get_now_data():
     global _gameList
     return _gameList.copy()
 
@@ -195,7 +195,7 @@ def onNext(messageUnzip):
     messageDecode = messageUnzip.decode("utf-8")
     messageJson = json.loads(messageDecode)
 
-    logger.getLogger().debug(json.dumps(messageJson))
+    logger.get_logger().debug(json.dumps(messageJson))
     
     sport = str(messageJson["sport"]) if "sport" in messageJson else '-1'
     mode = str(messageJson["mode"]) if "mode" in messageJson else '-1'
@@ -240,7 +240,7 @@ def onNext(messageUnzip):
                             for oddIndex in range(1, len(oddsList)):
                                 oddItme = oddsList[oddIndex]
                                 if deleteItem[1] == oddItme[3] and deleteItem[2] == oddItme[0]:
-                                    logger.getLogger().debug(f'Find [{str(oddItme)}] and deleted')
+                                    logger.get_logger().debug(f'Find [{str(oddItme)}] and deleted')
                                     del _gameList[searchKey]["odds"][index][oddIndex]
                                     break
                             break                               
@@ -277,13 +277,13 @@ def onNext(messageUnzip):
                                         if "l" in updateItem:
                                             line = updateItem["l"]
                                             oddItme[8] = line
-                                        logger.getLogger().debug(f'Find [{str(pathList)}] and Update it [{str(oddItme)}]')
+                                        logger.get_logger().debug(f'Find [{str(pathList)}] and Update it [{str(oddItme)}]')
                                         break 
                                 break                            
                     else :
-                        logger.getLogger().debug(f'Can\'t find key[{pathList}] in [{updateItem}]')
+                        logger.get_logger().debug(f'Can\'t find key[{pathList}] in [{updateItem}]')
             else:
-                logger.getLogger().debug(f'Can\'t find key [{searchKey}]')
+                logger.get_logger().debug(f'Can\'t find key [{searchKey}]')
 
         if "menu" in messageJson:
             if "list" in  messageJson["menu"]:
@@ -300,15 +300,15 @@ def onNext(messageUnzip):
                         for scoreItem in updateScore :
                             if not scoreItem == "gId" and scoreItem in scoreKeyList:
                                 index = scoreKeyList[scoreItem]
-                                logger.getLogger().debug(f'Update Scrore {scoreItem}[{index}] from {_gameList[searchKey]["score"][scoreKey]} to {updateScore[scoreItem]}' )
+                                logger.get_logger().debug(f'Update Scrore {scoreItem}[{index}] from {_gameList[searchKey]["score"][scoreKey]} to {updateScore[scoreItem]}' )
                                 _gameList[searchKey]["score"][scoreKey][index] = updateScore[scoreItem]
 
     elif messageJson["action"] == "ban":
-        logger.getLogger().error("The account is be ban.")
+        logger.get_logger().error("The account is be ban.")
 
     elif messageJson["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]: 
         pass
         
     else :
-        logger.getLogger().debug(f'Unknown Action [{messageJson["action"]}]\n {json.dumps(messageJson)}')
+        logger.get_logger().debug(f'Unknown Action [{messageJson["action"]}]\n {json.dumps(messageJson)}')
 

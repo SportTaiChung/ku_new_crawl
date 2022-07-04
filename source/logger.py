@@ -20,7 +20,7 @@ def _setup_logging(level="INFO"):
 
     return logger
 
-def getLogger(level="INFO"):
+def get_logger(level="INFO"):
     global _logger
 
     if _logger == None:
