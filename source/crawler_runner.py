@@ -25,10 +25,6 @@ class CrawlerRunner:
                     pid = os.fork()
                     if pid > 0:
                         os._exit(0)
-            
-            signal.signal(signal.SIGTERM, self.gracefully_stop)
-            signal.signal(signal.SIGINT, self.gracefully_stop)
-            signal.signal(signal.SIGTSTP, self.gracefully_stop)
 
             self._crawler.run()
 
