@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -46,20 +45,20 @@ def tennisParser(eventBuf, oddItem):
         oddsKey += "_6"                
     
     #14001 局數-讓球
-    if searchItemfromArray(["14001", "14101", "14201", "14301" ,"14401" ,"14501"], oddsType) >= 0:
+    if oddsType in ["14001", "14101", "14201", "14301" ,"14401" ,"14501"]:
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
     #14002 局數-大小
-    elif searchItemfromArray(["14002"], oddsType) >= 0:
+    elif oddsType in ["14002"]:
         eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #14013 盤數-獨贏
     #14103 第一盤-獨贏
-    elif searchItemfromArray(["14013", "14103"], oddsType) >= 0:
+    elif oddsType in ["14013", "14103"]:
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #14004 局數-單雙
-    elif searchItemfromArray(["14004"], oddsType) >= 0:
+    elif oddsType in ["14004"]:
         eventBuf = protobufUtils.set_parity(eventBuf, oddItem)
 
     return eventBuf, oddsKey

@@ -34,7 +34,7 @@ def transform_to_protobuf(jsonData):
     gameTypeList = {}
     for gameType in jsonData["ally"]:
         gameId = gameType[Mapping.allyData.leagueId]
-        gameName = utils.AllyNameProcess(gameId, gameType[Mapping.allyData.leagueName])
+        gameName = utils.ally_name_process(gameId, gameType[Mapping.allyData.leagueName])
         gameTypeList[gameId] = {
             "aId" : gameId,
             "name" : gameName,
@@ -74,7 +74,7 @@ def transform_to_protobuf(jsonData):
             event = protobuf_spec.ApHdc()        
             event.source = "KU"
             event.game_type = ""
-            event.game_class = utils.TransformGameType(gameType, gameDisplayName) 
+            event.game_class = utils.transform_game_type(gameType, gameDisplayName) 
             event.raw_event_id = gameRoundId
             event.ip = "192.168.1.1"
             event.status = '0'
@@ -88,7 +88,7 @@ def transform_to_protobuf(jsonData):
 
             event.live = 'true' if jsonData["mode"] == 2 else 'false'
 
-            event.live_time = utils.TransformGdOrSt(gameType, jsonData["mode"], gameRound[Mapping.gameData.runningType], gameRound[Mapping.gameData.startTime], datetime_dt.strftime("%Y/%m/%d %H:%M:%S"), gameRound[Mapping.gameData.runningTime], gameRound[Mapping.gameData.ht])
+            event.live_time = utils.transform_live_time(gameType, jsonData["mode"], gameRound[Mapping.gameData.runningType], gameRound[Mapping.gameData.startTime], datetime_dt.strftime("%Y/%m/%d %H:%M:%S"), gameRound[Mapping.gameData.runningTime], gameRound[Mapping.gameData.ht])
 
             event.information.league = gameTypeList[gameRound[Mapping.gameData.gameLeagueId]]["name"] 
 
@@ -102,7 +102,7 @@ def transform_to_protobuf(jsonData):
             event.score.away = score[Mapping.scoreData.awayScore] if len(score[Mapping.scoreData.awayScore]) > 0 else '0'
 
             #足球(11)
-            if utils.IsSC(gameType) : 
+            if utils.is_SC(gameType) : 
                 event.redcard.home = str(score[Mapping.scoreData.homeRedcard])
                 event.redcard.away = str(score[Mapping.scoreData.awayRedcard])
                 event.conner.home = '0'

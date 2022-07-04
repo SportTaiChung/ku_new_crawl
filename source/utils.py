@@ -3,70 +3,70 @@ import numpy as np
 import traceback
 import time
 
-def get_query_string(urlStr, key):
-    strList = urlStr.split('?')[1]
-    itemList = strList.split('&')
-    for item in itemList:
+def get_query_string(url_str, key):
+    str_list = url_str.split('?')[1]
+    item_list = str_list.split('&')
+    for item in item_list:
         value = item.split('=')
         if value[0] == key:
             return value[1]
 
-def get_random_machine_id(usedDefault):
-    if usedDefault :
+def get_random_machine_id(used_default):
+    if used_default :
         return "c1000b11349e8d89dbb53f19b17ee805"
-    resultStr = ''
+    result_str = ''
     chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
     length = len(chars) - 1
     random = Random()
 
     for i in range(32):
-        resultStr+=chars[random.randint(0,length)]
+        result_str+=chars[random.randint(0,length)]
 
-    return resultStr.lower()
+    return result_str.lower()
 
-def get_body_str(startKey, endKey, bodyText):    
-    startIndex = bodyText.find(startKey)
-    endIndex = bodyText[startIndex:].find(endKey) + startIndex
-    return bodyText[startIndex:endIndex]
+def get_body_str(start_key, end_key, body_text):    
+    start_index = body_text.find(start_key)
+    end_index = body_text[start_index:].find(end_key) + start_index
+    return body_text[start_index:end_index]
 
-def addZero(n, t):
+def add_zero(n, t):
     return "0" + str(n) if len(str(n)) < t else str(n)
 
-#ht: 19 st: 11, gd: 9, rt: TransformRunTime
-def TransformGdOrSt(gameType, gameMode, st, gd, crawlTime, startTime, ht):
-    s = TransformStatus(gameType, st)
-    rt = TransformRunTime(gameType, startTime, crawlTime)
-    if int(gameMode) == 2 and len(startTime) > 0:
-        if IsSC(gameType):
-            if searchItemfromArray([2, 4, 60], st) < 0 :
-                serverTime = int(time.mktime(time.strptime(crawlTime, "%Y/%m/%d %H:%M:%S")))
-                gameStartTime = int(time.mktime(time.strptime(startTime, "%Y/%m/%d %H:%M:%S")))
-                rt = int(np.round((serverTime - int(gameStartTime)) / 60))
+#ht: 19 st: 11, gd: 9, rt: transform_runtime
+def transform_live_time(game_type, game_mode, st, gd, crawl_time, start_time, ht):
+    s = transform_status(game_type, st)
+    rt = transform_runtime(game_type, start_time, crawl_time)
+    if int(game_mode) == 2 and len(start_time) > 0:
+        if is_SC(game_type):
+            if st in [2, 4, 60] :
+                server_time = int(time.mktime(time.strptime(crawl_time, "%Y/%m/%d %H:%M:%S")))
+                game_start_time = int(time.mktime(time.strptime(start_time, "%Y/%m/%d %H:%M:%S")))
+                rt = int(np.round((server_time - int(game_start_time)) / 60))
                 if rt > int(ht) :
                     rt = ht + "+" 
                 else :
                     rt = str(rt) + "'"
             else : 
                 rt = ""
-        elif gameType == 18 or gameType == "es" or gameType == 13 or gameType == "bb":
+        elif game_type == 18 or game_type == "es" or game_type == 13 or game_type == "bb":
             s = langFont.Font_RollBall
 
         return  s + " " + rt
     else: 
         return "0"
 
-def transform_num_to_pk(gameType, lineStr):
-    if lineStr == "":
+def transform_num_to_pk(game_type, line_str):
+    if line_str == "":
         return "0" 
 
-    if -1 == lineStr:
+    if -1 == lineline_strStr:
         return "0"
 
-    checkArray = ["11001", "11002", "11011", "11012", "11021", "11022", "11064", "11065", "11101", "11102", "11111", "11112", "11121", "11122", "11164", "11165", "11201", "11202", "11211", "11212", "11221", "11222", "11231", "11232", "11241", "11242", "11251", "11252", "11301", "11302", "11311", "11312", "11321", "11322", "11331", "11332", "11341", "11342", "11351", "11352", "11401", "11402", "11411", "11412", "11421", "11422", "11431", "11432", "11441", "11442", "11451", "11452", "11701", "11702", "11015", "11016", "11115", "11116", "26001", "26002", "26011", "26012", "26021", "26022", "26064", "26065", "26101", "26102", "26111", "26112", "26121", "26122", "26164", "26165", "26201", "26202", "26211", "26212", "26221", "26222", "26231", "26232", "26241", "26242", "26251", "26252", "26301", "26302", "26311", "26312", "26321", "26322", "26331", "26332", "26341", "26342", "26351", "26352", "26401", "26402", "26411", "26412", "26421", "26422", "26431", "26432", "26441", "26442", "26451", "26452", "26701", "26702", "26015", "26016", "26115", "26116", "27001", "27002", "27011", "27012", "27021", "27022", "27064", "27065", "27101", "27102", "27111", "27112", "27121", "27122", "27164", "27165", "27201", "27202", "27211", "27212", "27221", "27222", "27231", "27232", "27241", "27242", "27251", "27252", "27301", "27302", "27311", "27312", "27321", "27322", "27331", "27332", "27341", "27342", "27351", "27352", "27401", "27402", "27411", "27412", "27421", "27422", "27431", "27432", "27441", "27442", "27451", "27452", "27701", "27702", "27015", "27016", "27115", "27116"]
+    check_array = ["11001", "11002", "11011", "11012", "11021", "11022", "11064", "11065", "11101", "11102", "11111", "11112", "11121", "11122", "11164", "11165", "11201", "11202", "11211", "11212", "11221", "11222", "11231", "11232", "11241", "11242", "11251", "11252", "11301", "11302", "11311", "11312", "11321", "11322", "11331", "11332", "11341", "11342", "11351", "11352", "11401", "11402", "11411", "11412", "11421", "11422", "11431", "11432", "11441", "11442", "11451", "11452", "11701", "11702", "11015", "11016", "11115", "11116", "26001", "26002", "26011", "26012", "26021", "26022", "26064", "26065", "26101", "26102", "26111", "26112", "26121", "26122", "26164", "26165", "26201", "26202", "26211", "26212", "26221", "26222", "26231", "26232", "26241", "26242", "26251", "26252", "26301", "26302", "26311", "26312", "26321", "26322", "26331", "26332", "26341", "26342", "26351", "26352", "26401", "26402", "26411", "26412", "26421", "26422", "26431", "26432", "26441", "26442", "26451", "26452", "26701", "26702", "26015", "26016", "26115", "26116", "27001", "27002", "27011", "27012", "27021", "27022", "27064", "27065", "27101", "27102", "27111", "27112", "27121", "27122", "27164", "27165", "27201", "27202", "27211", "27212", "27221", "27222", "27231", "27232", "27241", "27242", "27251", "27252", "27301", "27302", "27311", "27312", "27321", "27322", "27331", "27332", "27341", "27342", "27351", "27352", "27401", "27402", "27411", "27412", "27421", "27422", "27431", "27432", "27441", "27442", "27451", "27452", "27701", "27702", "27015", "27016", "27115", "27116"]
 
     try:
-        checkArray.index(gameType)
-        t = abs(int(lineStr))
+        check_array.index(game_type)
+        t = abs(int(line_str))
         r = int(t / 1e3)
         a = t % 1e3
         if 0 == a or 500 == a : 
@@ -79,35 +79,28 @@ def transform_num_to_pk(gameType, lineStr):
             return "0"
 
     except ValueError:
-        t = round(abs(int(lineStr)) / 1e3 * 200);
+        t = round(abs(int(line_str)) / 1e3 * 200);
         r = int(t / 200);
         a = t % 200
         if 100 < a : 
             a = 200 - a
             r += 1
-            return str(r) + "+" + addZero(a, 2) 
+            return str(r) + "+" + add_zero(a, 2) 
         elif 0 == a : 
             return str(r) + "" 
         elif 100 == a : 
             return str(r) + ".5" 
         else : 
-            return str(r) + "-" + addZero(a, 2)
+            return str(r) + "-" + add_zero(a, 2)  
 
-def searchItemfromArray(array, key):
+def is_SC(game_type):
     try:
-        ndx = array.index(key)
-    except:
-        ndx = -1
-    return ndx    
-
-def IsSC(gameType):
-    try:
-        return True if 0 <= ["sc", "eu", "wd", "ch", "fi", "11", "26", "27", "51", "52"].index(str(gameType)) else False
+        return True if 0 <= ["sc", "eu", "wd", "ch", "fi", "11", "26", "27", "51", "52"].index(str(game_type)) else False
     except ValueError:
         return False
 
-def TransformStatus(gameType, timeOption):
-    langList = {
+def transform_status(game_type, time_option):
+    lang_list = {
         "11" : {
             0: langFont.Font_SCStatus[0],
             1: langFont.Font_SCStatus[1],
@@ -365,104 +358,104 @@ def TransformStatus(gameType, timeOption):
         "28" : {
             0: langFont.Font_BXStatus[0]
         }
-    };
-    gameType = "11" if IsSC(gameType) else str(gameType) 
-    timeOption = int(timeOption)
+    }
+    game_type = "11" if is_SC(game_type) else str(game_type) 
+    time_option = int(time_option)
     try :
-        return langList[gameType][timeOption] if langList[gameType] and timeOption in langList[gameType] else ""
+        return lang_list[game_type][time_option] if lang_list[game_type] and time_option in lang_list[game_type] else ""
     except KeyError:
         traceback.print_exc()
         return ""
 
-def AllyNameProcess(id, name):
+def ally_name_process(id, name):
     return name + " - 加時賽" if id.endswith("3") else name
 
-def TransformGameType(typeId, gameDisplayName):
-    gameName = None
-    if typeId.isdigit():
-        gameType = int(typeId)
+def transform_game_type(type_id, game_display_name):
+    game_name = None
+    if type_id.isdigit():
+        game_type = int(type_id)
     else :
-        gameType = typeId
+        game_type = type_id
 
-    if gameType == 100 or gameType == "cs" :  #"即將開賽"
-        gameName = GameType.other
-    elif gameType == 11 or gameType == "sc" : #足球
-        gameName = GameType.soccer
-    elif gameType == 26 or gameType == "eu" : #歐洲冠軍聯賽
-        gameName = GameType.UCL
-    elif gameType == 27 or gameType == "wd" : #世界杯
-        gameName = GameType.wsc
-    elif gameType == 51 or gameType == "ch" : #"冠軍聯賽"
-        gameName = GameType.UCL
-    elif gameType == 52 or gameType == "fi" : #"五大聯賽"
-        gameName = GameType.UCL
-    elif gameType == 12 or gameType == "bk" : #"籃球"
-        if "NBA" in gameDisplayName:
-            gameName = GameType.basketball
+    if game_type == 100 or game_type == "cs" :  #"即將開賽"
+        game_name = GameType.other
+    elif game_type == 11 or game_type == "sc" : #足球
+        game_name = GameType.soccer
+    elif game_type == 26 or game_type == "eu" : #歐洲冠軍聯賽
+        game_name = GameType.UCL
+    elif game_type == 27 or game_type == "wd" : #世界杯
+        game_name = GameType.wsc
+    elif game_type == 51 or game_type == "ch" : #"冠軍聯賽"
+        game_name = GameType.UCL
+    elif game_type == 52 or game_type == "fi" : #"五大聯賽"
+        game_name = GameType.UCL
+    elif game_type == 12 or game_type == "bk" : #"籃球"
+        if "NBA" in game_display_name:
+            game_name = GameType.basketball
         else :    
-            gameName = GameType.otherbasketball
-    elif gameType == 13 or gameType == "bb" :  #"棒球"
-        if '美國職棒' in gameDisplayName or 'MLB' in gameDisplayName:
-            gameName = GameType.mlb
-        elif '日本職業棒球' in gameDisplayName or 'NPB' in gameDisplayName:
-            gameName = GameType.npb
-        elif 'CPBL' in gameDisplayName:
-            gameName = GameType.cpbl
+            game_name = GameType.otherbasketball
+    elif game_type == 13 or game_type == "bb" :  #"棒球"
+        if '美國職棒' in game_display_name or 'MLB' in game_display_name:
+            game_name = GameType.mlb
+        elif '日本職業棒球' in game_display_name or 'NPB' in game_display_name:
+            game_name = GameType.npb
+        elif 'CPBL' in game_display_name:
+            game_name = GameType.cpbl
         else:    
-            gameName = GameType.kbo
-    elif gameType == 14 or gameType == "tn" :  #"網球"
-        gameName = GameType.tennis
-    elif gameType == 15 or gameType == "ih" :  #"冰球"
-        gameName = GameType.hockey
-    elif gameType == 16 or gameType == "vl" :  #"排球"
-        gameName = GameType.volleyball
-    elif gameType == 17 or gameType == "bm" :  #"羽毛球"
-        gameName = GameType.other
-    elif gameType == 18 or gameType == "es" :  #"電子競技"
-        gameName = GameType.eSport
-    elif gameType == 19 or gameType == "af" :  #"美足"
-        gameName = GameType.football
-    elif gameType == 20 or gameType == "pb" :  #"撞球"
-        gameName = GameType.other
-    elif gameType == 21 or gameType == "tt" :  #"乒乓球"
-        gameName = GameType.pingpong
-    elif gameType == 22 or gameType == "hb" :  #"手球"
-        gameName = GameType.other
-    elif gameType == 23 or gameType == "wp" :  #"水球"
-        gameName = GameType.other
-    elif gameType == 99 or gameType == "fv" :  #"收藏夾"
-        gameName = GameType.other
-    elif gameType == 53 or gameType == "op" :  #"冬季奧運會"
-        gameName = GameType.other
-    elif gameType == 24 or gameType == "ot" :  #"其它"
-        gameName = GameType.other
-    elif gameType == 28 or gameType == "bx" :  #"拳擊""
-        gameName = GameType.other
-    elif gameType == 54 or gameType == "tv" :  #"轉播賽事"
-        gameName = GameType.other
-    elif gameType == 10 or gameType == "pass" :  #"過關"
-        gameName = GameType.other
+            game_name = GameType.kbo
+    elif game_type == 14 or game_type == "tn" :  #"網球"
+        game_name = GameType.tennis
+    elif game_type == 15 or game_type == "ih" :  #"冰球"
+        game_name = GameType.hockey
+    elif game_type == 16 or game_type == "vl" :  #"排球"
+        game_name = GameType.volleyball
+    elif game_type == 17 or game_type == "bm" :  #"羽毛球"
+        game_name = GameType.other
+    elif game_type == 18 or game_type == "es" :  #"電子競技"
+        game_name = GameType.eSport
+    elif game_type == 19 or game_type == "af" :  #"美足"
+        game_name = GameType.football
+    elif game_type == 20 or game_type == "pb" :  #"撞球"
+        game_name = GameType.other
+    elif game_type == 21 or game_type == "tt" :  #"乒乓球"
+        game_name = GameType.pingpong
+    elif game_type == 22 or game_type == "hb" :  #"手球"
+        game_name = GameType.other
+    elif game_type == 23 or game_type == "wp" :  #"水球"
+        game_name = GameType.other
+    elif game_type == 99 or game_type == "fv" :  #"收藏夾"
+        game_name = GameType.other
+    elif game_type == 53 or game_type == "op" :  #"冬季奧運會"
+        game_name = GameType.other
+    elif game_type == 24 or game_type == "ot" :  #"其它"
+        game_name = GameType.other
+    elif game_type == 28 or game_type == "bx" :  #"拳擊""
+        game_name = GameType.other
+    elif game_type == 54 or game_type == "tv" :  #"轉播賽事"
+        game_name = GameType.other
+    elif game_type == 10 or game_type == "pass" :  #"過關"
+        game_name = GameType.other
     else :
-        gameName = GameType.other
+        game_name = GameType.other
 
-    return gameName.value
+    return game_name.value
 
-def TransformRunTime(gameType, timeStr, crawlTime):
+def transform_runtime(game_type, time_str, crawl_time):
     if "-60" == timeStr :
-        return TransformStatus(gameType, 60) 
+        return transform_status(game_type, 60) 
 
-    elif len(timeStr) > 0 and len(crawlTime) > 0:
+    elif len(time_str) > 0 and len(crawl_time) > 0:
         try:
-            if IsSC(gameType):
-                runTime = time.strptime(timeStr, "%Y/%m/%d %H:%M:%S")
-                nowTime = time.strptime(crawlTime, "%Y/%m/%d %H:%M:%S")
-                diffTime = int(time.mktime(nowTime)) - int(time.mktime(runTime))
-                return str(int(diffTime / 60))
+            if is_SC(game_type):
+                run_time = time.strptime(time_str, "%Y/%m/%d %H:%M:%S")
+                now_time = time.strptime(crawl_time, "%Y/%m/%d %H:%M:%S")
+                diff_time = int(time.mktime(now_time)) - int(time.mktime(run_time))
+                return str(int(diff_time / 60))
             else :
-                runTime = time.strptime(timeStr, "%Y/%m/%d %H:%M:%S")
-                return time.strftime('%M:%S', runTime)
+                run_time = time.strptime(time_str, "%Y/%m/%d %H:%M:%S")
+                return time.strftime('%M:%S', run_time)
 
         except ValueError:
             traceback.print_exc()
 
-    return timeStr if len(timeStr) > 0 else '0'    
+    return time_str if len(time_str) > 0 else '0'    

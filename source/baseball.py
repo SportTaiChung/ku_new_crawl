@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -137,7 +136,7 @@ def baseballParser(eventBuf, oddItem):
     #13171 第七局-得分-讓球
     #13181 第八局-得分-讓球
     #13191 第九局-得分-讓球
-    if searchItemfromArray(["13001", "13032", "13051", "13071", "13111", "13211", "13121", "13131", "13141", "13151", "13161", "13171", "13181", "13191"], oddsType) >= 0:
+    if oddsType in ["13001", "13032", "13051", "13071", "13111", "13211", "13121", "13131", "13141", "13151", "13161", "13171", "13181", "13191"]:
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem, True)
 
     #13002 全場-大小
@@ -158,7 +157,7 @@ def baseballParser(eventBuf, oddItem):
     #13172 第七局-得分-大小
     #13182 第八局-得分-大小
     #13192 第九局-得分-大小
-    elif searchItemfromArray(["13002", "13006", "13007", "13012", "13032", "13052", "13072", "13112", "13212", "13321", "13122", "13132", "13142", "13152", "13162", "13172", "13182", "13192"], oddsType) >= 0:
+    elif oddsType in ["13002", "13006", "13007", "13012", "13032", "13052", "13072", "13112", "13212", "13321", "13122", "13132", "13142", "13152", "13162", "13172", "13182", "13192"]:
         eventBuf = protobufUtils.set_total(eventBuf, oddItem)
 
     #13003 全場-獨贏
@@ -167,18 +166,18 @@ def baseballParser(eventBuf, oddItem):
     #13213 第一局-安打-獨贏
     #13301 全場-首分
     #13302 全場-尾分
-    elif searchItemfromArray(["13003", "13053", "13113", "13213", "13301", "13302"], oddsType) >= 0:
+    elif oddsType in ["13003", "13053", "13113", "13213", "13301", "13302"]:
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem)
 
     #13004 全場-單雙
     #13034 1~3局-單雙
     #13054 上半場-單雙
     #13074 1~7局-單雙
-    elif searchItemfromArray(["13004", "13034", "13054", "13074"], oddsType) >= 0:
+    elif oddsType in ["13004", "13034", "13054", "13074"]:
         eventBuf = protobufUtils.set_parity(eventBuf, oddItem)         
 
     #13005 全場-一輸二贏
-    elif searchItemfromArray(["13005"], oddsType) >= 0:
+    elif oddsType in ["13005"]:
         eventBuf = protobufUtils.set_spread_1_5(eventBuf, oddItem, True)           
 
     return eventBuf, oddsKey   

@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -12,19 +11,19 @@ def hockeyParser(eventBuf, oddItem):
     oddsKey += "_0"
 
     #15001 全場-讓球
-    if searchItemfromArray(["15001"], oddsType) >= 0:
+    if oddsType in ["15001"]:
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
     #15002 全場-大小
-    elif searchItemfromArray(["15002"], oddsType) >= 0:
+    elif oddsType in ["15002"]:
         eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #獨贏
-    elif searchItemfromArray([], oddsType) >= 0:
+    elif oddsType in []:
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #15004 全場-單雙
-    elif searchItemfromArray(["15004"], oddsType) >= 0:
+    elif oddsType in ["15004"]:
         eventBuf = protobufUtils.set_parity(eventBuf, oddItem)          
  
     return eventBuf, oddsKey

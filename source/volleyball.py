@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -64,7 +63,7 @@ def volleyballParser(eventBuf, oddItem):
     #16501 第五局-讓球
     #16601 第六局-讓球
     #16701 第七局-讓球
-    if searchItemfromArray(["16001", "16101", "16011", "16201", "16301", "16401", "16501", "16601", "16701" ], oddsType) >= 0:
+    if oddsType in ["16001", "16101", "16011", "16201", "16301", "16401", "16501", "16601", "16701" ]:
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
     #16012 總分-大小
@@ -75,11 +74,11 @@ def volleyballParser(eventBuf, oddItem):
     #16502 第五局-大小
     #16602 第六局-大小
     #16702 第七局-大小
-    elif searchItemfromArray(["16012", "16102", "16202", "16302", "16402", "16502", "16602", "16702"], oddsType) >= 0:
+    elif oddsType in ["16012", "16102", "16202", "16302", "16402", "16502", "16602", "16702"]:
         eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #16103 第一局-獨贏
-    elif searchItemfromArray(["16103"], oddsType) >= 0:
+    elif oddsType in ["16103"] :
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #16014 總分-單雙
@@ -90,7 +89,7 @@ def volleyballParser(eventBuf, oddItem):
     #16504 第五局-單雙
     #16604 第六局-單雙
     #16704 第七局-單雙
-    elif searchItemfromArray(["16004", "16104", "16204", "16304", "16404", "16504", "16604", "16704"], oddsType) >= 0:
+    elif oddsType in ["16004", "16104", "16204", "16304", "16404", "16504", "16604", "16704"] :
         eventBuf = protobufUtils.set_parity(eventBuf, oddItem)         
  
     return eventBuf, oddsKey

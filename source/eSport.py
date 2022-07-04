@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -31,47 +30,47 @@ def eSportParser(eventBuf, oddItem):
         oddsKey += "_4"
 
 
-    if searchItemfromArray(["180105", "180205", "180305", "180106", "180206", "180306", "180108", "180208", "180308"], oddsType) >= 0:
+    if oddsType in ["180105", "180205", "180305", "180106", "180206", "180306", "180108", "180208", "180308"]:
         eventBuf.information.league += " - 擊殺英雄總數"
         oddsKey += "_1"
 
-    elif searchItemfromArray(["180109", "180209", "180309", "180110", "180210", "180310", "180112", "180212", "180312"], oddsType) >= 0:
+    elif oddsType in ["180109", "180209", "180309", "180110", "180210", "180310", "180112", "180212", "180312"]:
         eventBuf.information.league += " - 摧毀防禦塔總數"
         oddsKey += "_2"
 
-    elif searchItemfromArray(["180121", "180221", "180321", "180122", "180222", "180322", "180124", "180224", "180324"], oddsType) >= 0:
+    elif oddsType in ["180121", "180221", "180321", "180122", "180222", "180322", "180124", "180224", "180324"]:
         eventBuf.information.league += " - 殺死小龍總數"
         oddsKey += "_3"
 
-    elif searchItemfromArray(["180125", "180225", "180325", "180126", "180226", "180326", "180128", "180228", "180328"], oddsType) >= 0:
+    elif oddsType in ["180125", "180225", "180325", "180126", "180226", "180326", "180128", "180228", "180328"]:
         eventBuf.information.league += " - 殺死大龍總數"
         oddsKey += "_4"
 
-    elif searchItemfromArray(["180149", "180249", "180349", "180150", "180250", "180350", "180152", "180252", "180352"], oddsType) >= 0:
+    elif oddsType in ["180149", "180249", "180349", "180150", "180250", "180350", "180152", "180252", "180352"]:
         eventBuf.information.league += " - 回合總數"
         oddsKey += "_5"
 
-    elif searchItemfromArray(["180191", "180291", "180391"], oddsType) >= 0:
+    elif oddsType in ["180191", "180291", "180391"]:
         eventBuf.information.league += " - 戰時間(分鐘)"
         oddsKey += "_6"
 
-    elif searchItemfromArray(["180171", "180271", "180371"], oddsType) >= 0:
+    elif oddsType in ["180171", "180271", "180371"]:
         eventBuf.information.league += " - 殺死首條小龍"
         oddsKey += "_7"
 
-    elif searchItemfromArray(["180172", "180272", "180372"], oddsType) >= 0:
+    elif oddsType in ["180172", "180272", "180372"]:
         eventBuf.information.league += " - 殺死首條大龍"
         oddsKey += "_8"
 
-    elif searchItemfromArray(["180178", "180278", "180378"], oddsType) >= 0:
+    elif oddsType in ["180178", "180278", "180378"]:
         eventBuf.information.league += " - 摧毀首個水晶"  
         oddsKey += "_9"
 
-    elif searchItemfromArray(["180180", "180280", "180380"], oddsType) >= 0:
+    elif oddsType in ["180180", "180280", "180380"]:
         eventBuf.information.league += " - 摧毀首個防禦塔"
         oddsKey += "_10"
 
-    elif searchItemfromArray(["180181", "180281", "180381"], oddsType) >= 0:
+    elif oddsType in ["180181", "180281", "180381"]:
         eventBuf.information.league += " - 第一滴血"
         oddsKey += "_11"
 
@@ -94,11 +93,11 @@ def eSportParser(eventBuf, oddItem):
     #180321 第三局-殺死小龍總數-讓球
     #180325 第三局-殺死大龍總數-讓球
     #180349 第三局-回合總數
-    if searchItemfromArray(["180001", "180149", "180249", "180349", \
+    if oddsType in ["180001", "180149", "180249", "180349", \
                             "180105", "180109", "180121", "180125", \
                             "180205", "180209", "180221", "180225", \
                             "180305", "180309", "180321", "180325" \
-                            ], oddsType) >= 0:
+                            ]:
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
     #180002 局數-大小
@@ -123,11 +122,11 @@ def eSportParser(eventBuf, oddItem):
     #180326 第三局-殺死大龍總數-大小
     #180391 第三局-對戰時間(分鐘)    
     #180350 第三局-回合總數-大小
-    elif searchItemfromArray(["180002", "180150", "180250", "180350",\
+    elif oddsType in ["180002", "180150", "180250", "180350",\
                               "180106", "180110", "180122", "180126", "180191", \
                               "180206", "180210", "180222", "180226", "180291", \
                               "180306", "180310", "180322", "180326", "180391" \
-                            ], oddsType) >= 0:
+                            ]:
         eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #180003 局數-獨贏
@@ -152,11 +151,11 @@ def eSportParser(eventBuf, oddItem):
     #180378 第三局-摧毀首個水晶
     #180380 第三局-摧毀首個防禦塔
     #180381 第三局-第一滴血   
-    elif searchItemfromArray(["180003", \
+    elif oddsType in ["180003", \
                               "180101", "180171", "180172", "180178", "180180", "180181", \
                               "180201", "180271", "180272", "180278", "180280", "180281", \
                               "180301", "180371", "180372", "180378", "180380", "180381" \
-                            ], oddsType) >= 0:
+                            ]:
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)        
 
     #180108 第一局-擊殺英雄總數-單雙
@@ -176,11 +175,11 @@ def eSportParser(eventBuf, oddItem):
     #180324 第三局-殺死小龍總數-單雙
     #180328 第三局-殺死大龍總數-單雙  
     #180352 第三局-回合總數-單雙       
-    elif searchItemfromArray(["180108", "180112", "180124", "180128", \
+    elif oddsType in ["180108", "180112", "180124", "180128", \
                               "180208", "180212", "180224", "180228", \
                               "180308", "180312", "180324", "180328", \
                               "180152", "180252", "180352" \
-                              ], oddsType) >= 0:
+                              ]:
         eventBuf = protobufUtils.set_parity(eventBuf, oddItem)           
  
     return eventBuf, oddsKey

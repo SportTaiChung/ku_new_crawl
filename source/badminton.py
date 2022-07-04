@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -52,7 +51,7 @@ def badmintonParser(eventBuf, oddItem):
     #17301 第三局-讓球
     #17401 第四局-讓球
     #17501 第五局-讓球
-    if searchItemfromArray(["17001", "17101", "17011", "17201", "17301", "17401", "17501"], oddsType) >= 0:
+    if oddsType in ["17001", "17101", "17011", "17201", "17301", "17401", "17501"]:
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem)
 
     #17012 總分-大小
@@ -61,11 +60,11 @@ def badmintonParser(eventBuf, oddItem):
     #17302 第三局-大小
     #17402 第四局-大小  
     #17502 第五局-大小  
-    elif searchItemfromArray(["17012", "17102", "17202", "17302", "17402", "17502"], oddsType) >= 0:
+    elif oddsType in ["17012", "17102", "17202", "17302", "17402", "17502"]:
         eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #17103 第一局-獨贏
-    elif searchItemfromArray(["17103"], oddsType) >= 0:
+    elif oddsType in ["17103"]:
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #17014 總分-單雙
@@ -74,7 +73,7 @@ def badmintonParser(eventBuf, oddItem):
     #17304 第三局-單雙
     #17404 第四局-單雙  
     #17504 第五局-單雙    
-    elif searchItemfromArray(["17004", "17104", "17204", "17304", "17404", "17504"], oddsType) >= 0: 
+    elif oddsType in ["17004", "17104", "17204", "17304", "17404", "17504"]: 
         eventBuf = protobufUtils.set_parity(eventBuf, oddItem)           
  
     return eventBuf, oddsKey

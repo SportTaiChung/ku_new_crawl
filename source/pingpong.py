@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -63,7 +62,7 @@ def pingpongParser(eventBuf, oddItem):
     #21501 第五局-讓球
     #21601 第六局-讓球
     #21701 第七局-讓球
-    if searchItemfromArray(["21001", "21101", "21201", "21301", "21401", "21501", "21601", "21701"], oddsType) >= 0:
+    if oddsType in ["21001", "21101", "21201", "21301", "21401", "21501", "21601", "21701"]:
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
     #21012 總分-大小
@@ -74,12 +73,12 @@ def pingpongParser(eventBuf, oddItem):
     #21502 第五局-大小
     #21602 第六局-大小
     #21702 第七局-大小    
-    elif searchItemfromArray(["21012", "21102", "21202", "21302", "21402", "21502", "21602", "21702"], oddsType) >= 0:
+    elif oddsType in ["21012", "21102", "21202", "21302", "21402", "21502", "21602", "21702"]:
         eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #21003 局數-獨贏
     #21103 第一局-獨贏
-    elif searchItemfromArray(["21003"], oddsType) >= 0:
+    elif oddsType in ["21003"]:
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #21014 總分-單雙
@@ -90,7 +89,7 @@ def pingpongParser(eventBuf, oddItem):
     #21504 第五局-單雙
     #21604 第六局-單雙
     #21704 第七局-單雙      
-    elif searchItemfromArray(["21014", "21104", "21204", "21304", "21404", "21504", "21604", "21704"], oddsType) >= 0:
+    elif oddsType in ["21014", "21104", "21204", "21304", "21404", "21504", "21604", "21704"]:
         eventBuf = protobufUtils.set_parity(eventBuf, oddItem)
  
     return eventBuf, oddsKey    

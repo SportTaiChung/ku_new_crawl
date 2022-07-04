@@ -1,4 +1,3 @@
-from utils import searchItemfromArray
 from upload import protobufUtils
 from constants import Mapping
 
@@ -49,11 +48,11 @@ def soccerParser(eventBuf, oddItem):
         oddsKey += "_1"
 
 
-    if searchItemfromArray(["11011", "11111", "11012", "11112", "11013", "11113", "11014", "11114"], oddsType) >= 0:
+    if oddsType in ["11011", "11111", "11012", "11112", "11013", "11113", "11014", "11114"] :
         eventBuf.information.league += " - 角球數"
         oddsKey += "_1"
 
-    elif searchItemfromArray(["11021", "11121", "11022", "11122", "11023", "11123", "11024", "11124"], oddsType) >= 0:
+    elif oddsType in ["11021", "11121", "11022", "11122", "11023", "11123", "11024", "11124"] :
         eventBuf.information.league += " - 罰牌數"
         oddsKey += "_2"
      
@@ -89,7 +88,7 @@ def soccerParser(eventBuf, oddItem):
     #11231 - 45:01 - 59:59 -讓球
     #11241 - 60:00 - 74:59 -讓球
     #11251 - 74:00 - 全場 -讓球
-    if searchItemfromArray(["11001", "11011", "11021", "11066", "11070", "11071", "11101", "11111", "11121", "11167", "11201", "11211", "11221", "11231", "11241", "11251"], oddsType) >= 0 :
+    if oddsType in ["11001", "11011", "11021", "11066", "11070", "11071", "11101", "11111", "11121", "11167", "11201", "11211", "11221", "11231", "11241", "11251"]:
 
         eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
 
@@ -127,7 +126,7 @@ def soccerParser(eventBuf, oddItem):
     #11232 - 45:01 - 59:59 -大小
     #11242 - 60:00 - 74:59 -大小
     #11252 - 74:00 - 全場 -大小
-    elif searchItemfromArray(["11002", "11012", "11022", "11064", "11065", "11102", "11112", "11122", "11164", "11165", "11202", "11212", "11222", "11232", "11242", "11252"], oddsType) >= 0 : 
+    elif oddsType in ["11002", "11012", "11022", "11064", "11065", "11102", "11112", "11122", "11164", "11165", "11202", "11212", "11222", "11232", "11242", "11252"]: 
         eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
 
     #11003 - 全場-獨贏
@@ -144,7 +143,7 @@ def soccerParser(eventBuf, oddItem):
     #11253 - 74:00 - 全場  -獨贏
     #11506 - 全場-第一個角球
     #11531 - 全場-第一個進球
-    elif searchItemfromArray(["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253", "11506", "11531"], oddsType) >= 0 :
+    elif oddsType in ["11003", "11013", "11023", "11103", "11113", "11123", "11203", "11213", "11223", "11233", "11243", "11253", "11506", "11531"]:
         eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
 
     #11004 - 全場-單雙
