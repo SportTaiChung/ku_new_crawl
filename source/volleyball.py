@@ -1,58 +1,58 @@
 from upload import protobufUtils
 from constants import Mapping
 
-def volleyballParser(eventBuf, oddItem):
-    soccerDefault = 16000
-    oddsType = oddItem[Mapping.oddsData.oddType]
+def volleyballParser(event_buf, odd_item):
+    soccer_default = 16000
+    odds_type = odd_item[Mapping.oddsData.oddType]
 
-    oddsKey = eventBuf.raw_event_id + "_" + oddItem[Mapping.oddsData.oddGroup]
+    odds_key = event_buf.raw_event_id + "_" + odd_item[Mapping.oddsData.oddGroup]
 
-    gameClass = int(oddsType) - soccerDefault
+    game_class = int(odds_type) - soccer_default
 
-    if gameClass < 10:
-        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-        eventBuf.information.league += " - 局數"
-        oddsKey += "_0"
+    if game_class < 10:
+        event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+        event_buf.information.league += " - 局數"
+        odds_key += "_0"
 
-    elif gameClass < 100:
-        eventBuf.game_type = "live full" if eventBuf.live == "true" else "full"
-        eventBuf.information.league += " - 總分"
-        oddsKey += "_1"
+    elif game_class < 100:
+        event_buf.game_type = "live full" if event_buf.live == "true" else "full"
+        event_buf.information.league += " - 總分"
+        odds_key += "_1"
 
-    elif gameClass < 200:
-        eventBuf.game_type = "1q"
-        eventBuf.information.league += " - 第一局"
-        oddsKey += "_2"
+    elif game_class < 200:
+        event_buf.game_type = "1q"
+        event_buf.information.league += " - 第一局"
+        odds_key += "_2"
 
-    elif gameClass < 300:
-        eventBuf.game_type = "2q"
-        eventBuf.information.league += " - 第二局"
-        oddsKey += "_3"
+    elif game_class < 300:
+        event_buf.game_type = "2q"
+        event_buf.information.league += " - 第二局"
+        odds_key += "_3"
 
-    elif gameClass < 400:
-        eventBuf.game_type = "3q"
-        eventBuf.information.league += " - 第三局"
-        oddsKey += "_4"
+    elif game_class < 400:
+        event_buf.game_type = "3q"
+        event_buf.information.league += " - 第三局"
+        odds_key += "_4"
 
-    elif gameClass < 500:
-        eventBuf.game_type = "4set"
-        eventBuf.information.league += " - 第四局"
-        oddsKey += "_5"
+    elif game_class < 500:
+        event_buf.game_type = "4set"
+        event_buf.information.league += " - 第四局"
+        odds_key += "_5"
 
-    elif gameClass < 600:
-        eventBuf.game_type = "5set"
-        eventBuf.information.league += " - 第五局"
-        oddsKey += "_6"
+    elif game_class < 600:
+        event_buf.game_type = "5set"
+        event_buf.information.league += " - 第五局"
+        odds_key += "_6"
 
-    elif gameClass < 700:
-        eventBuf.game_type = "6set"
-        eventBuf.information.league += " - 第六局"
-        oddsKey += "_7"
+    elif game_class < 700:
+        event_buf.game_type = "6set"
+        event_buf.information.league += " - 第六局"
+        odds_key += "_7"
 
-    elif gameClass < 800:
-        eventBuf.game_type = "7set"
-        eventBuf.information.league += " - 第七局"
-        oddsKey += "_8"
+    elif game_class < 800:
+        event_buf.game_type = "7set"
+        event_buf.information.league += " - 第七局"
+        odds_key += "_8"
 
     #16001 局數-讓球
     #16011 總分-讓球
@@ -63,8 +63,8 @@ def volleyballParser(eventBuf, oddItem):
     #16501 第五局-讓球
     #16601 第六局-讓球
     #16701 第七局-讓球
-    if oddsType in ["16001", "16101", "16011", "16201", "16301", "16401", "16501", "16601", "16701" ]:
-        eventBuf = protobufUtils.set_spread(eventBuf, oddItem) 
+    if odds_type in ["16001", "16101", "16011", "16201", "16301", "16401", "16501", "16601", "16701" ]:
+        event_buf = protobufUtils.set_spread(event_buf, odd_item) 
 
     #16012 總分-大小
     #16102 第一局-大小
@@ -74,12 +74,12 @@ def volleyballParser(eventBuf, oddItem):
     #16502 第五局-大小
     #16602 第六局-大小
     #16702 第七局-大小
-    elif oddsType in ["16012", "16102", "16202", "16302", "16402", "16502", "16602", "16702"]:
-        eventBuf = protobufUtils.set_total(eventBuf, oddItem) 
+    elif odds_type in ["16012", "16102", "16202", "16302", "16402", "16502", "16602", "16702"]:
+        event_buf = protobufUtils.set_total(event_buf, odd_item) 
 
     #16103 第一局-獨贏
-    elif oddsType in ["16103"] :
-        eventBuf = protobufUtils.set_monney_line(eventBuf, oddItem, True)
+    elif odds_type in ["16103"] :
+        event_buf = protobufUtils.set_monney_line(event_buf, odd_item, True)
 
     #16014 總分-單雙
     #16104 第一局-單雙
@@ -89,7 +89,7 @@ def volleyballParser(eventBuf, oddItem):
     #16504 第五局-單雙
     #16604 第六局-單雙
     #16704 第七局-單雙
-    elif oddsType in ["16004", "16104", "16204", "16304", "16404", "16504", "16604", "16704"] :
-        eventBuf = protobufUtils.set_parity(eventBuf, oddItem)         
+    elif odds_type in ["16004", "16104", "16204", "16304", "16404", "16504", "16604", "16704"] :
+        event_buf = protobufUtils.set_parity(event_buf, odd_item)         
  
-    return eventBuf, oddsKey
+    return event_buf, odds_key
