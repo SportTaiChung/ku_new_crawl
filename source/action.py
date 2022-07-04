@@ -112,7 +112,6 @@ def transform_to_protobuf(json_data):
 
             #籃球    
             elif game_type == "12":
-                pass
                 event, odds_key = basketball_parser(event, odd_item)
 
             #棒球
