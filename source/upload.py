@@ -144,7 +144,7 @@ class protobufUtils:
             if key == "99":
                 event_buf.multi += "\"other\": " + str(odd)
             else :    
-                event_buf.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": " + odd + ","
+                event_buf.multi += "\"" + key[0:1] + "-" + key[1:2] + "\": \"" + odd + "\","
         event_buf.multi += "}"
         
         return event_buf
