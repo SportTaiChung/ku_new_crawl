@@ -305,6 +305,14 @@ class KUCrawler:
 
     def game_refresh(self, ws, sport, sport_type, mode, sleep_time):  
         try:
+            # 切換數據類型，每送一次server會回傳該類型的完整數據(該回傳數據內action值為請求的"命令類型")
+            # {
+            #   "action":"ckg",                 根據命令類型 (cm:切換盤口、cs:切換球種、ckg:切換玩法)取得數據
+            #   "mode": {盤口},                  參照README 0: 早盤、1:今日、2:走地
+            #   "sport":{球種},                  參照README
+            #   "type":{玩法},                   參照README 各球種不同
+            #   "dc":{命令流水號}                 每傳送一筆該值+1，由1開始
+            #}
             command = '{"action":"ckg","sport":' + sport + ',"mode":' + mode + ',"type":' + sport_type + ',"dc":' + str(ws.get_message_index()) + '}'
             self._logger.info(f'[{sport}][{mode}][{str(sport_type)}]Send change.[{command}]')
             if ws.send_command(command) == False:
@@ -324,11 +332,37 @@ class KUCrawler:
             self._logger.error(f'[{sport}][{mode}][{str(sport_type)}] Change thread stop.')
 
     def on_keep_live(self, ws, sport):
+        # heartbeat 固定格式
         ws.send_command('{"action":"checkTime"}')
 
     def on_open(self, ws, sport, mode, type):
         self._logger.debug(f'[{sport}][{mode}] Opened connection')
-
+        # websocket 第一次連線需要發送資料格式
+        # {
+        #   "action":"first",               命令類型 "first"
+        #   "module":0,                     無意義，帶0(參照官網websocket傳送值)
+        #   "device":0,                     無意義，帶0(參照官網websocket傳送值)
+        #   "mode": {盤口},                  參照README 0: 早盤、1:今日、2:走地
+        #   "sport":{球種},                  參照README
+        #   "deposit":0,                    無意義，帶0(參照官網websocket傳送值)
+        #   "modeId":11,                    無意義，帶11(參照官網websocket傳送值)
+        #   "verify":{登入webosocket key},   登入webosocket 需要的Key，由進入大廳時取得
+        #   "dc":{命令流水號}                 每傳送一筆該值+1，由1開始
+        #}
+        # 要求數據
+        # {
+        #   "action":"cst",                 命令類型 "cst"
+        #   "module":0,                     無意義，帶0(參照官網websocket傳送值)
+        #   "device":0,                     無意義，帶0(參照官網websocket傳送值)
+        #   "mode": {盤口},                  參照README 0: 早盤、1:今日、2:走地
+        #   "sport":{球種},                  參照README
+        #   "type":{玩法},                   參照README 各球種不同
+        #   "deposit":0,                    無意義，帶0(參照官網websocket傳送值)
+        #   "modeId":11,                    無意義，帶11(參照官網websocket傳送值)
+        #   "verify":{登入webosocket key},   登入webosocket 需要的Key，由進入大廳時取得
+        #   "dc":{命令流水號},                每傳送一筆該值+1，由1開始
+        #   "stick":1                       無意義，帶1(參照官網websocket傳送值)
+        #}        
         send_command = '{"action":"first","module":0,"device":0,"mode":' + mode + ',"sport":' + sport + ',"deposit":0,"modeId":11,"verify":"' + self._verify_key  + '","dc":' + str(ws.get_message_index()) + '}'
         ws.send_command(send_command)
     
