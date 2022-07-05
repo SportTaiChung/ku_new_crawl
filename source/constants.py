@@ -39,6 +39,22 @@ class GameType(Enum):
     other = 'other'
 
 class Mapping:
+    sport_type = {
+        "soccer" : {"early":[1,2,3,4,5,6], "today":[1,2,3,4,5,6], "live":[1,2,4,5,6,7]},
+        "basketball" : {"early":[1,2,3,4], "today":[1,2,3,4], "live":[1,5,6,7]},
+        "baseball" : {"early":[1,2,3,4,5], "today":[1,2,3,4,5], "live":[6,7,8,9,10]},
+        "tennis" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
+        "hockey" : {"early":[1,2,3], "today":[1,2,3], "live":[3,4]},
+        "volleyball" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
+        "badminton" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
+        "eSport" : {"early":[1,2,3], "today":[1,2,3], "live":[4]}, 
+        "football" : {"early":[], "today":[], "live":[]},
+        "billiardball" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
+        "PP" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
+        "UCL" : {"early":[], "today":[], "live":[]},
+        "wsc" : {"early":[], "today":[], "live":[]},
+        "coming soon" : {"early":[], "today":[], "live":[]}
+    }
 
     # 足球 ["11003","","","0701","07",1,0,0,"0",1,120000,120000,"1",3.030,"2",0.929,"3",2.272]
     # 籃球 ["12001","","","0701","07",1,0,0,"19500",0,6000,12000,"1",0.900,"2",0.900]
