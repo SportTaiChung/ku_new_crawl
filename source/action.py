@@ -189,7 +189,7 @@ def onNext(message_unzip):
         #    "sport":12,        球種
         #    "mode":1,          盤口
         #    "type":1,          玩法
-        #    "menu": {"list":[{"type":11, "count":[1,1,1,1...]},....]},   官網左邊Menu欄資訊，分別type為球種，count為各玩法的資料數量。
+        #    "menu": {"list":[{"type":11, "count":[1,1,1,1...]},....]},   只處理key為list，官網左邊Menu欄資訊，分別type為球種，count為各玩法的資料數量。
         #    "ally": [[Mapping.allyData],......],            聯盟資訊 - 參考Mapping.allyData
         #    "allyIndex":[],                                 未使用 - 聯盟編號列表
         #    "game":[[Mapping.gameData], ....],              比賽資訊 - 參考Mapping.gameData
@@ -252,7 +252,7 @@ def onNext(message_unzip):
         # 僅適用於 del
         #{
         #   "action":"del",                      命令類型 del
-        #   "val":[["111591492",0701,11001],...],    需要刪除的賽事ID與賠率編號 [賽事ID, Mapping.oddGroup, Mapping.oddType]
+        #   "val":[["111591492",0701,11001],...],    需要刪除的賽事ID與賠率編號 [賽事ID, Mapping.oddsData.oddGroup, Mapping.oddsData.oddType]，如果為["111591492", -1] 則刪除該賽事
         #   "mode":1,                            盤口
         #   "sport":11,                          球種
         #   "type":1,                            玩法
@@ -266,20 +266,31 @@ def onNext(message_unzip):
                 for delete_item in delete_list:
                     for index, odds_list in enumerate(odds_all_list):
                         if delete_item[0] == odds_list[0]:
-                            for odd_index in range(1, len(odds_list)):
-                                odd_itme = odds_list[odd_index]
-                                if delete_item[1] == odd_itme[3] and delete_item[2] == odd_itme[0]:
-                                    logger.get_logger().debug(f'Find [{str(odd_itme)}] and deleted')
-                                    del _game_list[search_key]["odds"][index][odd_index]
-                                    break
+                            if delete_item[1] == -1:
+                                del _game_list[search_key]["odds"][index]
+                            else:
+                                for odd_index in range(1, len(odds_list)):
+                                    odd_itme = odds_list[odd_index]
+                                    if delete_item[1] == odd_itme[3] and delete_item[2] == odd_itme[0]:
+                                        logger.get_logger().debug(f'Find [{str(odd_itme)}] and deleted')
+                                        del _game_list[search_key]["odds"][index][odd_index]
+                                        break
                             break                               
 
-    elif message_json["action"] == "update" : 
-        #{"action":"update","odds":[{"path":["111591073","0701","11001"],"o":["1","","2",""],"sId":"07","l":""}],"mode":1,"sport":11,"type":1,"group":2,"sn":21778375002}
-        #{"action":"update","score":[{"gId":"111590990","tc":21}],"mode":1,"sport":11,"type":1,"group":4,"sn":21778597013}
-        #{"action":"update","zdCount":18,"mode":-1,"sport":11,"type":-1,"group":0,"sn":21779086001}
-        #{"action":"update","menu":{"cs":[[11,2],[14,10],[16,2],[18,1]],"list":[{"type":54,"count":[71]},{"type":11,"count":[118,118,25,17,48,48,48]},{"type":12,"count":[9,9,0,5,0]},{"type":13,"count":[24,24,11,11,6,19]},{"type":14,"count":[81,81,61]},{"type":15,"count":[3,3,1,0]},{"type":16,"count":[6,6,6]},{"type":17,"count":[3,3,0]},{"type":18,"count":[30,30,13,14]}]},"mode":1,"sport":-1,"type":-1,"group":0,"sn":21778932001}
-        if "odds" in message_json: #更新賠率
+    elif message_json["action"] == "update" :  
+        # 一筆update 資訊，有可能同時更新有多個(score,odds,menu)資訊
+        # 沒有包含在邏輯內的資訊不更新(ex. zdCount, game)，因未使用該資訊
+        if "odds" in message_json:
+            # 更新賠率 
+            #{
+            #   "action":"update",      命令類型 update
+            #   "odds":[{"path":["111591073","0701","11001"],"o":["1","","2",""],"sId":"07","l":""},......],  需要更新的賽事資訊 - "path" 賠率位置 [賽事ID, Mapping.oddsData.oddGroup, Mapping.oddsData.oddType]
+            #   "mode":1,               盤口                                                                                   - "o" 新賠率資訊 [賠率key, 賠率, 賠率key, 賠率,....] 數量不一定 1 ~ N
+            #   "sport":11,             球種                                                                                   - "sId" 未使用-用途未知
+            #   "type":1,               玩法                                                                                   - "l" 新球頭資訊(Mapping.oddsData.oddLine)
+            #   "group":2,              未使用-用途未知
+            #   "sn":21778375002        未使用-流水號
+            #}
             update_list = message_json["odds"]
             if search_key in _game_list:
                 odds_all_list = _game_list[search_key]["odds"]
@@ -319,10 +330,30 @@ def onNext(message_unzip):
                 logger.get_logger().debug(f'Can\'t find key [{search_key}]')
 
         if "menu" in message_json:
+            # 更新 Menu 列表
+            #{
+            #   "action":"update",      命令類型 update
+            #   "menu": {"list":[{"type":11, "count":[1,1,1,1...]},....]},   只處理key為list，官網左邊Menu欄資訊，分別type為球種，count為各玩法的資料數量。
+            #   "mode":1,               盤口 (更新Menu 只看盤口，球種與玩法沒有用到)
+            #   "sport":-1,             球種 (更新Menu 只看盤口，球種與玩法沒有用到)
+            #   "type":-1,              玩法 (更新Menu 只看盤口，球種與玩法沒有用到)
+            #   "group":0,              未使用-用途未知
+            #   "sn":21778932001        未使用-流水號
+            #}
             if "list" in  message_json["menu"]:
                 _game_list["menu" + mode] = message_json["menu"]["list"]
 
-        if "score" in message_json and "score" in _game_list[search_key]: #更新比分
+        if "score" in message_json and "score" in _game_list[search_key]:
+            # 更新比分
+            #{
+            #   "action":"update",          命令類型 update
+            #   "score":[{"gId":"112618372","ra":"1","fra":"1"},.....],   比分資訊 - "gId" 為 賽事ID(一定會存在), 其餘 key 會根據是否需要更新而給予，不一定都會存在，對應 Mapping.scoreData
+            #   "mode":1,                   盤口
+            #   "sport":11,                 球種
+            #   "type":1,                   玩法
+            #   "group":4,                  未使用-用途未知
+            #   "sn":21778597013            未使用-流水號
+            #}
             score_key_list = { "ra" : 0, "rb" : 1, "rcna" : 2, "rcnb" : 3, "sa" : 4, "sb" : 5, "na" : 6, "nb" : 7, "runsA" : 8, "runsB" : 9, "pr" : 10, "tc" : 11, "fra" : 12, "frb" : 13}
             update_score_list = message_json["score"]
             if search_key in _game_list:
