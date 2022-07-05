@@ -29,7 +29,7 @@ def pako_inflate(data):
 
     return decompressed_data
 
-def transform_to_protobuf(json_data):
+def transform_to_protobuf(json_data, filter_list={}):
     game_type_list = {}
     for game_type in json_data["ally"]:
         game_id = game_type[Mapping.allyData.leagueId]
@@ -145,6 +145,16 @@ def transform_to_protobuf(json_data):
             #乒乓球
             elif game_type == "21":
                 event, odds_key = pingpong_parser(event, odd_item)
+
+            skip_game = False
+            if game_type in filter_list:
+                for skip_class in filter_list[game_type]:
+                    if skip_class in event.game_type:
+                        skip_game = True
+                        break
+
+            if skip_game:
+                continue
 
             if odds_key == None :
                 event.game_id = game_round_id

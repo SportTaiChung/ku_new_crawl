@@ -28,6 +28,7 @@ class KUCrawler:
         self.connection = None
         self.channel = None
         self._send_mq_timer = None
+        self._filter_list = {}
         self._last_send_mq_time = time.time()
         if self._config['verbose'] :
             self._logger = logger.get_logger("DEBUG")
@@ -136,6 +137,11 @@ class KUCrawler:
         while self._config['_running'] :
             for task in self._tasks:
                 if str(task['game_type']) in crawl_sport_list and str(task['game_mode']) in crawl_mode_list:
+
+                    if task['filter']:
+                        if not crawl_sport_list[task['game_type']] in self._filter_list:
+                            self._filter_list[crawl_sport_list[task['game_type']]] = task['filter']
+
                     websocket_list = task['socket']
                     need_connect = False
                     sport_index = 1
@@ -261,7 +267,7 @@ class KUCrawler:
             if "menu" in sport:
                 continue
 
-            protobuf_data, sport_type = Action.transform_to_protobuf(push_data[sport])
+            protobuf_data, sport_type = Action.transform_to_protobuf(push_data[sport], self._filter_list)
             if not protobuf_data == None and protobuf_data:
                 try:
                     if self._config['dump'] and protobuf_data:
