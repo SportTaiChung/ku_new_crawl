@@ -151,9 +151,6 @@ def transform_to_protobuf(json_data):
             else:
                 event.game_id = odds_key.replace("_", "")
 
-            # 06/25 - [要求]全場上半的後綴要移除，特殊玩法如果有自己的玩法分類也不用標。
-            event.information.league = game_type_list[game_round[Mapping.gameData.gameLeagueId]]["name"]
-
             if odds_key in event_proto_list:
                 event_proto_list[odds_key].MergeFrom(event)
             else :

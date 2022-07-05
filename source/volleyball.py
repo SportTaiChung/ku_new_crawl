@@ -21,37 +21,30 @@ def volleyball_parser(event_buf, odd_item):
 
     elif game_class < 200:
         event_buf.game_type = "1q"
-        event_buf.information.league += " - 第一局"
         odds_key += "_2"
 
     elif game_class < 300:
         event_buf.game_type = "2q"
-        event_buf.information.league += " - 第二局"
         odds_key += "_3"
 
     elif game_class < 400:
         event_buf.game_type = "3q"
-        event_buf.information.league += " - 第三局"
         odds_key += "_4"
 
     elif game_class < 500:
         event_buf.game_type = "4set"
-        event_buf.information.league += " - 第四局"
         odds_key += "_5"
 
     elif game_class < 600:
         event_buf.game_type = "5set"
-        event_buf.information.league += " - 第五局"
         odds_key += "_6"
 
     elif game_class < 700:
         event_buf.game_type = "6set"
-        event_buf.information.league += " - 第六局"
         odds_key += "_7"
 
     elif game_class < 800:
         event_buf.game_type = "7set"
-        event_buf.information.league += " - 第七局"
         odds_key += "_8"
 
     #16001 局數-讓球

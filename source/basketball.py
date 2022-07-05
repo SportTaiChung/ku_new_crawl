@@ -20,7 +20,6 @@ def basketball_parser(event_buf, odd_item):
 
     if game_class < 100:
         event_buf.game_type = "live full" if event_buf.live == "true" else "full"
-        event_buf.information.league += " - 全場"
         odds_key += "_0"
 
     elif game_class > 700  :
@@ -30,32 +29,26 @@ def basketball_parser(event_buf, odd_item):
 
     elif game_class > 600  :
         event_buf.game_type += "4q"
-        event_buf.information.league += " - 第四節"
         odds_key += "_2"
 
     elif game_class > 500  :
         event_buf.game_type += "3q"
-        event_buf.information.league += " - 第三節"
         odds_key += "_3"
 
     elif game_class > 400  :
         event_buf.game_type += "2q"  
-        event_buf.information.league += " - 第二節"
         odds_key += "_4"
 
     elif game_class > 300  : 
         event_buf.game_type += "1q"
-        event_buf.information.league += " - 第一節" 
         odds_key += "_5"  
 
     elif game_class > 200  :
         event_buf.game_type += "live 2nd half" if event_buf.live == "true" else "2nd half"
-        event_buf.information.league += " - 下半場" 
         odds_key += "_6" 
 
     elif game_class > 100  :    
         event_buf.game_type = "live 1st half" if event_buf.live == "true" else "1st half"
-        event_buf.information.league += " - 上半場"
         odds_key += "_7"
 
 

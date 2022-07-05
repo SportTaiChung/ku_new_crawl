@@ -20,7 +20,6 @@ def baseball_parser(event_buf, odd_item):
 
     if game_class < 30:
         event_buf.game_type = "live full" if event_buf.live == "true" else "full"
-        event_buf.information.league += " - 全場"
         odds_key += "_0"
 
     elif game_class < 50  :
@@ -30,7 +29,6 @@ def baseball_parser(event_buf, odd_item):
 
     elif game_class < 70  :
         event_buf.game_type = "live 1st half" if event_buf.live == "true" else "1st half"
-        event_buf.information.league += " - 上半場" 
         odds_key += "_2"   
 
     elif game_class < 100  :
@@ -40,47 +38,38 @@ def baseball_parser(event_buf, odd_item):
 
     elif game_class < 120  :
         event_buf.game_type = "1q"  
-        event_buf.information.league += " - 第一局 - 得分"
         odds_key += "_4_1"
 
     elif game_class < 130  :
         event_buf.game_type = "2q"  
-        event_buf.information.league += " - 第二局 - 得分"
         odds_key += "_4_2"
 
     elif game_class < 140  :
         event_buf.game_type = "3q"  
-        event_buf.information.league += " - 第三局 - 得分"
         odds_key += "_4_3"
 
     elif game_class < 150  :
         event_buf.game_type = "4set"  
-        event_buf.information.league += " - 第四局 - 得分"
         odds_key += "_4_4"
 
     elif game_class < 160  :
         event_buf.game_type = "5set"  
-        event_buf.information.league += " - 第五局 - 得分"
         odds_key += "_4_5"
 
     elif game_class < 170  :
         event_buf.game_type = "6set"  
-        event_buf.information.league += " - 第六局 - 得分"
         odds_key += "_4_6"
 
     elif game_class < 180  :
         event_buf.game_type = "7set"  
-        event_buf.information.league += " - 第七局 - 得分"
         odds_key += "_4_7"
 
     elif game_class < 190  :
         event_buf.game_type = "8set"  
-        event_buf.information.league += " - 第八局 - 得分"
         odds_key += "_4_8"
 
     elif game_class < 200  :
         event_buf.game_type = "9set"  
-        event_buf.information.league += " - 第九局 - 得分"
         odds_key += "_4_9"
 
     elif game_class < 300  :

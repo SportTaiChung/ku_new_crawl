@@ -11,22 +11,18 @@ def eSport_parser(event_buf, odd_item):
 
     if game_class < 100:
         event_buf.game_type = "live full" if event_buf.live == "true" else "full"
-        event_buf.information.league += " - 局數"
         odds_key += "_0"
 
     elif game_class < 200:
          event_buf.game_type = "1q"
-         event_buf.information.league += " - 第一局"
          odds_key += "_1"
 
     elif game_class < 300:
         event_buf.game_type = "2q"
-        event_buf.information.league += " - 第二局"
         odds_key += "_3"
 
     else :    
         event_buf.game_type = "3q"
-        event_buf.information.league += " - 第三局"
         odds_key += "_4"
 
 

@@ -11,7 +11,6 @@ def soccer_parser(event_buf, odd_item):
 
     if game_class < 100:
         event_buf.game_type = "live full" if event_buf.live == "true" else "full"
-        event_buf.information.league += " - 全場"
         odds_key += "_0"
 
     elif game_class > 200  :
@@ -44,9 +43,7 @@ def soccer_parser(event_buf, odd_item):
 
     elif game_class > 100  :    
         event_buf.game_type = "live 1st half" if event_buf.live == "true" else "1st half"
-        event_buf.information.league += " - 上半場"
         odds_key += "_1"
-
 
     if odds_type in ["11011", "11111", "11012", "11112", "11013", "11113", "11014", "11114"] :
         event_buf.information.league += " - 角球數"
@@ -159,7 +156,6 @@ def soccer_parser(event_buf, odd_item):
     #11161 - 波膽-上半場
     elif odds_type == "11061" or odds_type == "11161":  
         event_buf.game_type = "pd " + event_buf.game_type
-        event_buf.information.league += " - 波膽"
         odds_key += "_7"
         
         event_buf = protobufUtils.set_correct_score(event_buf, odd_item)
@@ -169,7 +165,6 @@ def soccer_parser(event_buf, odd_item):
     #11162 - 入球數-上半場
     elif odds_type == "11062" or odds_type == "11162":
         event_buf.game_type = "tg " + event_buf.game_type
-        event_buf.information.league += " - 入球數"
         odds_key += "_8"
 
         event_buf = protobufUtils.set_total_goal(event_buf, odd_item)
@@ -177,7 +172,6 @@ def soccer_parser(event_buf, odd_item):
     #11063 - 半全場
     elif odds_type == "11063":
         event_buf.game_type = "hf " + event_buf.game_type
-        event_buf.information.league += " - 半全場" 
         odds_key += "_9"
 
         event_buf = protobufUtils.set_full_half_outcome(event_buf, odd_item)
