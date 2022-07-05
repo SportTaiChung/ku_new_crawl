@@ -4,6 +4,7 @@ import os
 import signal
 from ku import KUCrawler
 
+
 class CrawlerRunner:
 
     def __init__(self, config, tasks, daemon=False):
@@ -20,7 +21,7 @@ class CrawlerRunner:
         if self._config['read_from_file']:
             self._crawler.run_from_file(self._config['read_from_file'])
         else:
-            if platform.system().lower() == 'linux' :
+            if platform.system().lower() == 'linux':
                 if self._daemon:
                     pid = os.fork()
                     if pid > 0:

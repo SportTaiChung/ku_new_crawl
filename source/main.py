@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import yaml
 from crawler_runner import CrawlerRunner
 
+
 def parse_args():
     parser = ArgumentParser(description='ku ws crawler')
     parser.add_argument('--daemon', help='run as a daemon in the background', action='store_true')
@@ -14,6 +15,7 @@ def parse_args():
     parser.add_argument('--game-type', help='ball type (ex. soccer 、 basketball...)')
     parser.add_argument('--play-type', help='early, today, team totals')
     return parser.parse_args()
+
 
 if __name__ == '__main__':
     arguments = parse_args()
@@ -37,10 +39,10 @@ if __name__ == '__main__':
             'crawler_name': f"ku_{arguments.game_type}_{arguments.play_type}",
             'game_type': arguments.game_type,
             'game_mode': arguments.play_type,
-            'socket' : {}
+            'socket': {}
         }
         runner = CrawlerRunner(crawler_config, [task], arguments.daemon)
-    #執行設定檔中的爬取任務
+    # 執行設定檔中的爬取任務
     else:
         tasks = []
         for task in secrets['tasks']:
@@ -49,7 +51,6 @@ if __name__ == '__main__':
                 for game_type in task['games']:
                     if not game_type['enabled']:
                         task_filter.append(game_type['name'])
-            
             for target in task['targets']:
                 if target['enabled']:
                     task_name = f'ku_{task["name"]}_{target["mode"]}'
@@ -58,9 +59,8 @@ if __name__ == '__main__':
                         'game_type': task['name'],
                         'game_mode': target['mode'],
                         'filter':  task_filter,
-                        'socket' : {}
+                        'socket': {}
                     }
                     tasks.append(task_spec)
-                    
         runner = CrawlerRunner(crawler_config, tasks, arguments.daemon)
     runner.run()

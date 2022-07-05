@@ -3,6 +3,7 @@ import numpy as np
 import traceback
 import time
 
+
 def get_query_string(url_str, key):
     str_list = url_str.split('?')[1]
     item_list = str_list.split('&')
@@ -11,8 +12,9 @@ def get_query_string(url_str, key):
         if value[0] == key:
             return value[1]
 
+
 def get_random_machine_id(used_default):
-    if used_default :
+    if used_default:
         return "c1000b11349e8d89dbb53f19b17ee805"
     result_str = ''
     chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
@@ -20,44 +22,48 @@ def get_random_machine_id(used_default):
     random = Random()
 
     for i in range(32):
-        result_str+=chars[random.randint(0,length)]
+        result_str += chars[random.randint(0, length)]
 
     return result_str.lower()
 
-def get_body_str(start_key, end_key, body_text):    
+
+def get_body_str(start_key, end_key, body_text):
     start_index = body_text.find(start_key)
     end_index = body_text[start_index:].find(end_key) + start_index
     return body_text[start_index:end_index]
 
+
 def add_zero(n, t):
     return "0" + str(n) if len(str(n)) < t else str(n)
 
-#ht: 19 st: 11, gd: 9, rt: transform_runtime
+
+# ht: 19 st: 11, gd: 9, rt: transform_runtime
 def transform_live_time(game_type, game_mode, st, gd, crawl_time, start_time, ht):
     s = transform_status(game_type, st)
     rt = transform_runtime(game_type, start_time, crawl_time)
     if int(game_mode) == 2 and len(start_time) > 0:
         if is_SC(game_type):
-            if st in [2, 4, 60] :
+            if st in [2, 4, 60]:
                 server_time = int(time.mktime(time.strptime(crawl_time, "%Y/%m/%d %H:%M:%S")))
                 game_start_time = int(time.mktime(time.strptime(start_time, "%Y/%m/%d %H:%M:%S")))
                 rt = int(np.round((server_time - int(game_start_time)) / 60))
-                if rt > int(ht) :
-                    rt = ht + "+" 
-                else :
+                if rt > int(ht):
+                    rt = ht + "+"
+                else:
                     rt = str(rt) + "'"
-            else : 
+            else:
                 rt = ""
         elif game_type == 18 or game_type == "es" or game_type == 13 or game_type == "bb":
             s = langFont.Font_RollBall
 
-        return  s + " " + rt
-    else: 
+        return s + " " + rt
+    else:
         return "0"
+
 
 def transform_num_to_pk(game_type, line_str):
     if line_str == "":
-        return "0" 
+        return "0"
 
     if -1 == line_str:
         return "0"
@@ -69,29 +75,30 @@ def transform_num_to_pk(game_type, line_str):
         t = abs(int(line_str))
         r = int(t / 1e3)
         a = t % 1e3
-        if 0 == a or 500 == a : 
-            return str(t / 1e3) + "" 
-        elif 250 == a : 
-            return str(r) + "/" + str(r + .5) 
-        elif 750 == a : 
-            return str(r + .5) + "/" + str(r + 1) 
+        if 0 == a or 500 == a:
+            return str(t / 1e3) + ""
+        elif 250 == a:
+            return str(r) + "/" + str(r + .5)
+        elif 750 == a:
+            return str(r + .5) + "/" + str(r + 1)
         else:
             return "0"
 
     except ValueError:
-        t = round(abs(int(line_str)) / 1e3 * 200);
-        r = int(t / 200);
+        t = round(abs(int(line_str)) / 1e3 * 200)
+        r = int(t / 200)
         a = t % 200
-        if 100 < a : 
+        if 100 < a:
             a = 200 - a
             r += 1
-            return str(r) + "+" + add_zero(a, 2) 
-        elif 0 == a : 
-            return str(r) + "" 
-        elif 100 == a : 
-            return str(r) + ".5" 
-        else : 
-            return str(r) + "-" + add_zero(a, 2)  
+            return str(r) + "+" + add_zero(a, 2)
+        elif 0 == a:
+            return str(r) + ""
+        elif 100 == a:
+            return str(r) + ".5"
+        else:
+            return str(r) + "-" + add_zero(a, 2)
+
 
 def is_SC(game_type):
     try:
@@ -99,9 +106,10 @@ def is_SC(game_type):
     except ValueError:
         return False
 
+
 def transform_status(game_type, time_option):
     lang_list = {
-        "11" : {
+        "11": {
             0: langFont.Font_SCStatus[0],
             1: langFont.Font_SCStatus[1],
             2: langFont.Font_SCStatus[2],
@@ -109,7 +117,7 @@ def transform_status(game_type, time_option):
             4: langFont.Font_SCStatus[4],
             60: langFont.Font_SCStatus[5]
         },
-        "12" : {
+        "12": {
             0: langFont.Font_BKStatus[0],
             1: langFont.Font_BKStatus[1],
             2: langFont.Font_BKStatus[2],
@@ -124,7 +132,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_BKStatus[11],
             61: langFont.Font_BKStatus[12]
         },
-        "13" : {
+        "13": {
             0: langFont.Font_BBStatus[0],
             1: langFont.Font_BBStatus[1],
             2: langFont.Font_BBStatus[2],
@@ -231,7 +239,7 @@ def transform_status(game_type, time_option):
             150: langFont.Font_BBStatus[103],
             151: langFont.Font_BBStatus[104]
         },
-        "14" : {
+        "14": {
             0: langFont.Font_TNStatus[0],
             1: langFont.Font_TNStatus[1],
             2: langFont.Font_TNStatus[2],
@@ -242,7 +250,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_TNStatus[7],
             61: langFont.Font_TNStatus[8]
         },
-        "15" : {
+        "15": {
             0: langFont.Font_IHStatus[0],
             1: langFont.Font_IHStatus[1],
             2: langFont.Font_IHStatus[2],
@@ -253,7 +261,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_IHStatus[7],
             61: langFont.Font_IHStatus[8]
         },
-        "16" : {
+        "16": {
             0: langFont.Font_VLStatus[0],
             1: langFont.Font_VLStatus[1],
             2: langFont.Font_VLStatus[2],
@@ -266,7 +274,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_VLStatus[9],
             61: langFont.Font_VLStatus[10]
         },
-        "17" : {
+        "17": {
             0: langFont.Font_BMStatus[0],
             1: langFont.Font_BMStatus[1],
             2: langFont.Font_BMStatus[2],
@@ -277,7 +285,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_BMStatus[7],
             61: langFont.Font_BMStatus[8]
         },
-        "18" : {
+        "18": {
             0: langFont.Font_ESStatus[0],
             1: langFont.Font_ESStatus[1],
             2: langFont.Font_ESStatus[2],
@@ -290,7 +298,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_ESStatus[9],
             61: langFont.Font_ESStatus[10]
         },
-        "19" : {
+        "19": {
             0: langFont.Font_AFStatus[0],
             1: langFont.Font_AFStatus[1],
             2: langFont.Font_AFStatus[2],
@@ -305,11 +313,11 @@ def transform_status(game_type, time_option):
             60: langFont.Font_AFStatus[11],
             61: langFont.Font_AFStatus[12]
         },
-        "20" : {
+        "20": {
             0: langFont.Font_PBStatus[0],
             20: langFont.Font_PBStatus[1]
         },
-        "21" : {
+        "21": {
             0: langFont.Font_TTStatus[0],
             1: langFont.Font_TTStatus[1],
             2: langFont.Font_TTStatus[2],
@@ -322,7 +330,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_TTStatus[9],
             61: langFont.Font_TTStatus[10]
         },
-        "22" : {
+        "22": {
             0: langFont.Font_HBStatus[0],
             11: langFont.Font_HBStatus[1],
             12: langFont.Font_HBStatus[2],
@@ -332,7 +340,7 @@ def transform_status(game_type, time_option):
             60: langFont.Font_HBStatus[6],
             61: langFont.Font_HBStatus[7]
         },
-        "53" : {
+        "53": {
             0: langFont.Font_WPStatus[0],
             1: langFont.Font_WPStatus[1],
             2: langFont.Font_WPStatus[2],
@@ -347,102 +355,105 @@ def transform_status(game_type, time_option):
             60: langFont.Font_WPStatus[11],
             61: langFont.Font_WPStatus[12]
         },
-        "23" : {
+        "23": {
             0: langFont.Font_OPStatus[0],
             20: langFont.Font_OPStatus[1]
         },
-        "24 ": {
+        "24": {
             0: langFont.Font_OPStatus[0],
             20: langFont.Font_OPStatus[1]
         },
-        "28" : {
+        "28": {
             0: langFont.Font_BXStatus[0]
         }
     }
-    game_type = "11" if is_SC(game_type) else str(game_type) 
+    game_type = "11" if is_SC(game_type) else str(game_type)
     time_option = int(time_option)
-    try :
+    try:
         return lang_list[game_type][time_option] if lang_list[game_type] and time_option in lang_list[game_type] else ""
     except KeyError:
         traceback.print_exc()
         return ""
 
+
 def ally_name_process(id, name):
     return name + " - 加時賽" if id.endswith("3") else name
+
 
 def transform_game_type(type_id, game_display_name):
     game_name = None
     if type_id.isdigit():
         game_type = int(type_id)
-    else :
+    else:
         game_type = type_id
 
-    if game_type == 100 or game_type == "cs" :  #"即將開賽"
+    if game_type == 100 or game_type == "cs":  # 即將開賽
         game_name = GameType.other
-    elif game_type == 11 or game_type == "sc" : #足球
+    elif game_type == 11 or game_type == "sc":  # 足球
         game_name = GameType.soccer
-    elif game_type == 26 or game_type == "eu" : #歐洲冠軍聯賽
+    elif game_type == 26 or game_type == "eu":  # 歐洲冠軍聯賽
         game_name = GameType.UCL
-    elif game_type == 27 or game_type == "wd" : #世界杯
+    elif game_type == 27 or game_type == "wd":  # 世界杯
         game_name = GameType.wsc
-    elif game_type == 51 or game_type == "ch" : #"冠軍聯賽"
+    elif game_type == 51 or game_type == "ch":  # 冠軍聯賽
         game_name = GameType.UCL
-    elif game_type == 52 or game_type == "fi" : #"五大聯賽"
+    elif game_type == 52 or game_type == "fi":  # 五大聯賽
         game_name = GameType.UCL
-    elif game_type == 12 or game_type == "bk" : #"籃球"
+    elif game_type == 12 or game_type == "bk":  # 籃球
         if "NBA" in game_display_name:
             game_name = GameType.basketball
-        else :    
+        else:
             game_name = GameType.otherbasketball
-    elif game_type == 13 or game_type == "bb" :  #"棒球"
+    elif game_type == 13 or game_type == "bb":  # 棒球
         if '美國職棒' in game_display_name or 'MLB' in game_display_name:
             game_name = GameType.mlb
         elif '日本職業棒球' in game_display_name or 'NPB' in game_display_name:
             game_name = GameType.npb
         elif 'CPBL' in game_display_name:
             game_name = GameType.cpbl
-        else:    
+        else:
             game_name = GameType.kbo
-    elif game_type == 14 or game_type == "tn" :  #"網球"
+    elif game_type == 14 or game_type == "tn":  # 網球
         game_name = GameType.tennis
-    elif game_type == 15 or game_type == "ih" :  #"冰球"
+    elif game_type == 15 or game_type == "ih":  # 冰球
         game_name = GameType.hockey
-    elif game_type == 16 or game_type == "vl" :  #"排球"
+    elif game_type == 16 or game_type == "vl":  # 排球
         game_name = GameType.volleyball
-    elif game_type == 17 or game_type == "bm" :  #"羽毛球"
+    elif game_type == 17 or game_type == "bm":  # 羽毛球
         game_name = GameType.other
-    elif game_type == 18 or game_type == "es" :  #"電子競技"
+    elif game_type == 18 or game_type == "es":  # 電子競技
         game_name = GameType.eSport
-    elif game_type == 19 or game_type == "af" :  #"美足"
+    elif game_type == 19 or game_type == "af":  # 美足
         game_name = GameType.football
-    elif game_type == 20 or game_type == "pb" :  #"撞球"
+    elif game_type == 20 or game_type == "pb":  # 撞球
         game_name = GameType.other
-    elif game_type == 21 or game_type == "tt" :  #"乒乓球"
+    elif game_type == 21 or game_type == "tt":  # 乒乓球
         game_name = GameType.pingpong
-    elif game_type == 22 or game_type == "hb" :  #"手球"
+    elif game_type == 22 or game_type == "hb":  # 手球
         game_name = GameType.other
-    elif game_type == 23 or game_type == "wp" :  #"水球"
+    elif game_type == 23 or game_type == "wp":  # 水球
         game_name = GameType.other
-    elif game_type == 99 or game_type == "fv" :  #"收藏夾"
+    elif game_type == 99 or game_type == "fv":  # 收藏夾
         game_name = GameType.other
-    elif game_type == 53 or game_type == "op" :  #"冬季奧運會"
+    elif game_type == 53 or game_type == "op":  # 冬季奧運會
         game_name = GameType.other
-    elif game_type == 24 or game_type == "ot" :  #"其它"
+    elif game_type == 24 or game_type == "ot":  # 其它
         game_name = GameType.other
-    elif game_type == 28 or game_type == "bx" :  #"拳擊""
+    elif game_type == 28 or game_type == "bx":  # 拳擊
         game_name = GameType.other
-    elif game_type == 54 or game_type == "tv" :  #"轉播賽事"
+    elif game_type == 54 or game_type == "tv":  # 轉播賽事
         game_name = GameType.other
-    elif game_type == 10 or game_type == "pass" :  #"過關"
+    elif game_type == 10 or game_type == "pass":  # 過關
         game_name = GameType.other
-    else :
+    else:
         game_name = GameType.other
 
     return game_name.value
 
+
 def transform_runtime(game_type, time_str, crawl_time):
-    if "-60" == time_str :
-        return transform_status(game_type, 60) 
+    if "-60" == time_str:
+        return transform_status(game_type, 60)
 
     elif len(time_str) > 0 and len(crawl_time) > 0:
         try:
@@ -451,11 +462,11 @@ def transform_runtime(game_type, time_str, crawl_time):
                 now_time = time.strptime(crawl_time, "%Y/%m/%d %H:%M:%S")
                 diff_time = int(time.mktime(now_time)) - int(time.mktime(run_time))
                 return str(int(diff_time / 60))
-            else :
+            else:
                 run_time = time.strptime(time_str, "%Y/%m/%d %H:%M:%S")
                 return time.strftime('%M:%S', run_time)
 
         except ValueError:
             traceback.print_exc()
 
-    return time_str if len(time_str) > 0 else '0'    
+    return time_str if len(time_str) > 0 else '0'

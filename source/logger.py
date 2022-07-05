@@ -3,6 +3,7 @@ import platform as _platform
 
 _logger = None
 
+
 def _setup_logging(level="INFO"):
     logger = _logging.getLogger()
     handler = _logging.StreamHandler()
@@ -15,15 +16,16 @@ def _setup_logging(level="INFO"):
 
     handler.setLevel(level)
     logger.setLevel(level)
-        
-    logger.addHandler(handler)    
+
+    logger.addHandler(handler)
 
     return logger
+
 
 def get_logger(level="INFO"):
     global _logger
 
-    if _logger == None:
-         _logger = _setup_logging(level)
+    if _logger is None:
+        _logger = _setup_logging(level)
 
     return _logger

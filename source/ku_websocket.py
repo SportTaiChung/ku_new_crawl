@@ -5,6 +5,7 @@ import logger
 import traceback
 import time
 
+
 class KuWebsocket():
     class Status(Enum):
         NONE = 0
@@ -31,12 +32,12 @@ class KuWebsocket():
         )
         self._keep_live_time = 25
         self._status = self.Status.NONE
-        self._message_index  = 1
+        self._message_index = 1
         self.crawl_index = crawl_index
         self._log_prefix = f'[{url}][{crawl_index}][{crawl_mode}][{crawl_type}]'
         self.crawl_mode = crawl_mode
         self.crawl_type = crawl_type
-        self.ku_websocket.on_open =  self.on_open
+        self.ku_websocket.on_open = self.on_open
         self.ku_websocket.on_message = self.on_message
         self.ku_websocket.on_error = self.on_error
         self.ku_websocket.on_close = self.on_close
@@ -56,27 +57,27 @@ class KuWebsocket():
     def on_close(self, ws, close_status_code, close_msg):
         self._status = self.Status.CLOSE
         logger.get_logger().info(f'[{self._log_prefix}] Closed : {str(close_msg)}')
-        if not self._on_close == None :
+        if self._on_close is not None:
             self._on_close(close_msg)
-        
+
     def on_error(self, ws, error):
         logger.get_logger().info(f'[{self._log_prefix}] error : {str(error)}')
 
-        if not self._on_error == None :
+        if self._on_error is not None:
             self._on_error(error)
 
     def on_message(self, ws, message):
         logger.get_logger().debug(f'[{self._log_prefix}] Recv : {str(message)}')
         self._last_update_time = time.time()
 
-        if not self._on_message == None :
+        if self._on_message is not None:
             self._on_message(self.get_name(), message)
 
     def on_open(self, ws):
         self._status = self.Status.CONNECTED
         logger.get_logger().info(f'[{self._log_prefix}] Opened connected.')
-        
-        if not self._on_open == None :
+
+        if self._on_open is not None:
             self._on_open(self, self.crawl_index, self.crawl_mode, self.crawl_type)
 
         self._keep_live_timer = Timer(self._keep_live_time, self.keep_live)
@@ -84,10 +85,10 @@ class KuWebsocket():
 
     def keep_live(self):
         try:
-            if not self._status == self.Status.CLOSE :
+            if not self._status == self.Status.CLOSE:
                 self._last_update_time = time.time()
                 logger.get_logger().info(f'[{self._log_prefix}] keepLive.')
-                if not self._on_keep_live == None :
+                if self._on_keep_live is not None:
                     self._on_keep_live(self, self.crawl_index)
 
                 self._keep_live_timer = Timer(self._keep_live_time, self.keep_live)
@@ -98,15 +99,15 @@ class KuWebsocket():
             traceback.print_exc()
 
     def send_command(self, message):
-        try :
-            if self._status == self.Status.CONNECTED and len(message) > 0 :
+        try:
+            if self._status == self.Status.CONNECTED and len(message) > 0:
                 self._last_update_time = time.time()
                 logger.get_logger().debug(f'[{self._log_prefix}] Send : {message}')
                 self.ku_websocket.send(message)
                 self._message_index += 1
                 return True
-                
-            else :
+
+            else:
                 logger.get_logger().debug(f'[{self._log_prefix}] WebSocket Status : {str(self._status)}')
                 self.ku_websocket.close()
                 self._status = self.Status.CLOSE
@@ -121,8 +122,8 @@ class KuWebsocket():
     def get_message_index(self):
         return self._message_index
 
-    def get_last_update_time(self):    
-        return self._last_update_time 
+    def get_last_update_time(self):
+        return self._last_update_time
 
     def is_close(self):
         return True if self._status == self.Status.CLOSE else False
@@ -134,10 +135,10 @@ class KuWebsocket():
         self.ku_websocket.run_forever(origin="https://dsp.nbb21f.net")
 
     def stop(self):
-        if not self._keep_live_timer == None:
+        if self._keep_live_timer is not None:
             self._keep_live_timer.cancel()
 
-        if not self.other_timer == None:
+        if self.other_timer is not None:
             self.other_timer.cancel()
 
         if not self._status == self.Status.CLOSE:
@@ -146,4 +147,4 @@ class KuWebsocket():
             self.ku_websocket.close()
             self.ku_websocket = None
 
-        logger.get_logger().info(f'{self._log_prefix} is Stop.')    
+        logger.get_logger().info(f'{self._log_prefix} is Stop.')

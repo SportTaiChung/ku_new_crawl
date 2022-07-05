@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class langFont:
     Font_SCStatus = ["未開賽", "上", "中", "下", "LIVE", "結束"]
     Font_BKStatus = ["未開賽", "第1節", "第2節", "第3節", "第4節", "LIVE", "中場", "暫停", "上", "下", "加時", "結束", "中斷"]
@@ -17,6 +18,7 @@ class langFont:
     Font_OPStatus = ["未開賽", "LIVE"]
     Font_BXStatus = ["未開賽"]
     Font_RollBall = "LIVE"
+
 
 class GameType(Enum):
     # baseball not used in protobuf game class
@@ -38,22 +40,23 @@ class GameType(Enum):
     volleyball = 'VL'
     other = 'other'
 
+
 class Mapping:
     sport_type = {
-        "soccer" : {"early":[1,2,3,4,5,6], "today":[1,2,3,4,5,6], "live":[1,2,4,5,6,7]},
-        "basketball" : {"early":[1,2,3,4], "today":[1,2,3,4], "live":[1,5,6,7]},
-        "baseball" : {"early":[1,2,3,4,5], "today":[1,2,3,4,5], "live":[6,7,8,9,10]},
-        "tennis" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
-        "hockey" : {"early":[1,2,3], "today":[1,2,3], "live":[3,4]},
-        "volleyball" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
-        "badminton" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
-        "eSport" : {"early":[1,2,3], "today":[1,2,3], "live":[4]}, 
-        "football" : {"early":[], "today":[], "live":[]},
-        "billiardball" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
-        "PP" : {"early":[1,2], "today":[1,2], "live":[3,4,5]},
-        "UCL" : {"early":[], "today":[], "live":[]},
-        "wsc" : {"early":[], "today":[], "live":[]},
-        "coming soon" : {"early":[], "today":[], "live":[]}
+        "soccer": {"early": [1, 2, 3, 4, 5, 6], "today": [1, 2, 3, 4, 5, 6], "live": [1, 2, 4, 5, 6, 7]},
+        "basketball": {"early": [1, 2, 3, 4], "today": [1, 2, 3, 4], "live": [1, 5, 6, 7]},
+        "baseball": {"early": [1, 2, 3, 4, 5], "today": [1, 2, 3, 4, 5], "live": [6, 7, 8, 9, 10]},
+        "tennis": {"early": [1, 2], "today": [1, 2], "live": [3, 4, 5]},
+        "hockey": {"early": [1, 2, 3], "today": [1, 2, 3], "live": [3, 4]},
+        "volleyball": {"early": [1, 2], "today": [1, 2], "live": [3, 4, 5]},
+        "badminton": {"early": [1, 2], "today": [1, 2], "live": [3, 4, 5]},
+        "eSport": {"early": [1, 2, 3], "today": [1, 2, 3], "live": [4, 2, 3]},
+        "football": {"early": [], "today": [], "live": []},
+        "billiardball": {"early": [1, 2], "today": [1, 2], "live": [3, 4, 5]},
+        "PP": {"early": [1, 2], "today": [1, 2], "live": [3, 4, 5]},
+        "UCL": {"early": [], "today": [], "live": []},
+        "wsc": {"early": [], "today": [], "live": []},
+        "coming soon": {"early": [], "today": [], "live": []}
     }
 
     # 足球 ["11003","","","0701","07",1,0,0,"0",1,120000,120000,"1",3.030,"2",0.929,"3",2.272]
@@ -78,8 +81,8 @@ class Mapping:
         tg_2_3 = 15             # 入球數 2-3
         tg_4_6 = 17             # 入球數 4-6
         tg_7 = 19               # 入球數 7+
-        ## Raw data key [ 11 : HH, 12 : HA, 13: HD, 21 : AH, 22 : AA, 23 : AD, 31 : DH, 32 : DA, 33 : DD ]
-        ## Raw data value [ HH : 13, HA : 15, HD : 17, AH : 19, AA : 21, AD : 23, DH : 25, DA : 27, DD : 29 ]
+        # Raw data key [ 11 : HH, 12 : HA, 13: HD, 21 : AH, 22 : AA, 23 : AD, 31 : DH, 32 : DA, 33 : DD ]
+        # Raw data value [ HH : 13, HA : 15, HD : 17, AH : 19, AA : 21, AD : 23, DH : 25, DA : 27, DD : 29 ]
         hf_HH = 13              # 半全場 HH
         hf_HA = 15              # 半全場 HA
         hf_HD = 17              # 半全場 HD
@@ -88,7 +91,7 @@ class Mapping:
         hf_AD = 23              # 半全場 AD
         hf_DH = 25              # 半全場 DH
         hf_DA = 27              # 半全場 DA
-        hf_DD = 29              # 半全場 DD            
+        hf_DD = 29              # 半全場 DD
 
     # 足球 ["111610718","11_2264_0_1",["聖帕特里克"],["沙姆洛克流浪"],"","",[""],[""],1,"2022/06/28 02:45","","0","34006409C","",1,1,"2022/06/28","5DF02DAC35ADD2F4",0,"45",1]
     # 籃球 ["122301832","12_4250_0_2",["水原大學-女"],["釜山大學-女"],"","",[""],[""],1,"2022/06/27 13:00","","6","","3",0,1,"2022/06/28","D14088BCF49AF575",0,"",1]
@@ -106,7 +109,7 @@ class Mapping:
         runningTime = 10        # 比賽時間
         runningType = 11        # 比賽狀態 (ex.上半場、第一局....)
         # None = 12             # 未使用 - 意義不明
-        live = 13               # 未使用 - 是否為滾球(走地) (空值 為 否) 
+        live = 13               # 未使用 - 是否為滾球(走地) (空值 為 否)
         # None = 14             # 未使用 - 意義不明
         # None = 15             # 未使用 - 意義不明
         # None = 16             # 未使用 - 日期
@@ -131,8 +134,8 @@ class Mapping:
         awayScore = 1           # 客隊比分
         homeRedcard = 2         # 主隊紅牌
         awayRedcard = 3         # 客隊紅牌
-        # homeRoundScore = 4    # 主隊各局數分數 
-        # awayRoundScore = 5    # 客隊各局數分數 
+        # homeRoundScore = 4    # 主隊各局數分數
+        # awayRoundScore = 5    # 客隊各局數分數
         # None = 6              # 未使用 - 意義不明
         # None = 7              # 未使用 - 意義不明
         # homeRoundScore = 8    # 主隊各局數分數

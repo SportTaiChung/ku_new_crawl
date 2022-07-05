@@ -1,6 +1,7 @@
 from upload import protobufUtils
 from constants import Mapping
 
+
 def tennis_parser(event_buf, odd_item):
     soccer_default = 14000
     odds_type = odd_item[Mapping.oddsData.oddType]
@@ -8,7 +9,7 @@ def tennis_parser(event_buf, odd_item):
     odds_key = event_buf.raw_event_id + "_" + odd_item[Mapping.oddsData.oddGroup]
 
     game_class = int(odds_type) - soccer_default
-    
+
     if game_class < 10:
         event_buf.game_type = "live full" if event_buf.live == "true" else "full"
         event_buf.information.league += " - 局數"
@@ -37,22 +38,21 @@ def tennis_parser(event_buf, odd_item):
 
     elif game_class < 600:
         event_buf.game_type = "5set"
-        odds_key += "_6"                
-    
-    #14001 局數-讓球
-    if odds_type in ["14001", "14101", "14201", "14301" ,"14401" ,"14501"]:
-        event_buf = protobufUtils.set_spread(event_buf, odd_item) 
+        odds_key += "_6"
+    # 14001 局數-讓球
+    if odds_type in ["14001", "14101", "14201", "14301", "14401", "14501"]:
+        event_buf = protobufUtils.set_spread(event_buf, odd_item)
 
-    #14002 局數-大小
+    # 14002 局數-大小
     elif odds_type in ["14002"]:
-        event_buf = protobufUtils.set_total(event_buf, odd_item) 
+        event_buf = protobufUtils.set_total(event_buf, odd_item)
 
-    #14013 盤數-獨贏
-    #14103 第一盤-獨贏
+    # 14013 盤數-獨贏
+    # 14103 第一盤-獨贏
     elif odds_type in ["14013", "14103"]:
         event_buf = protobufUtils.set_monney_line(event_buf, odd_item, True)
 
-    #14004 局數-單雙
+    # 14004 局數-單雙
     elif odds_type in ["14004"]:
         event_buf = protobufUtils.set_parity(event_buf, odd_item)
 

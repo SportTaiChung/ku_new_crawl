@@ -1,6 +1,7 @@
 from upload import protobufUtils
 from constants import Mapping
 
+
 def pingpong_parser(event_buf, odd_item):
     soccer_default = 21000
     odds_type = odd_item[Mapping.oddsData.oddType]
@@ -29,60 +30,60 @@ def pingpong_parser(event_buf, odd_item):
 
     elif game_class < 400:
         event_buf.game_type = "3q"
-        odds_key += "_4"                   
+        odds_key += "_4"
 
     elif game_class < 500:
         event_buf.game_type = "4set"
-        odds_key += "_5"   
+        odds_key += "_5"
 
     elif game_class < 600:
         event_buf.game_type = "5set"
-        odds_key += "_6"   
+        odds_key += "_6"
 
     elif game_class < 700:
         event_buf.game_type = "6set"
-        odds_key += "_7"   
+        odds_key += "_7"
 
     elif game_class < 800:
         event_buf.game_type = "7set"
-        odds_key += "_8"                 
+        odds_key += "_8"
 
-    #21001 局數-讓球
-    #21101 第一局-讓球
-    #21201 第二局-讓球
-    #21301 第三局-讓球
-    #21401 第四局-讓球
-    #21501 第五局-讓球
-    #21601 第六局-讓球
-    #21701 第七局-讓球
+    # 21001 局數-讓球
+    # 21101 第一局-讓球
+    # 21201 第二局-讓球
+    # 21301 第三局-讓球
+    # 21401 第四局-讓球
+    # 21501 第五局-讓球
+    # 21601 第六局-讓球
+    # 21701 第七局-讓球
     if odds_type in ["21001", "21101", "21201", "21301", "21401", "21501", "21601", "21701"]:
-        event_buf = protobufUtils.set_spread(event_buf, odd_item) 
+        event_buf = protobufUtils.set_spread(event_buf, odd_item)
 
-    #21012 總分-大小
-    #21102 第一局-大小
-    #21202 第二局-大小
-    #21302 第三局-大小
-    #21402 第四局-大小
-    #21502 第五局-大小
-    #21602 第六局-大小
-    #21702 第七局-大小    
+    # 21012 總分-大小
+    # 21102 第一局-大小
+    # 21202 第二局-大小
+    # 21302 第三局-大小
+    # 21402 第四局-大小
+    # 21502 第五局-大小
+    # 21602 第六局-大小
+    # 21702 第七局-大小
     elif odds_type in ["21012", "21102", "21202", "21302", "21402", "21502", "21602", "21702"]:
-        event_buf = protobufUtils.set_total(event_buf, odd_item) 
+        event_buf = protobufUtils.set_total(event_buf, odd_item)
 
-    #21003 局數-獨贏
-    #21103 第一局-獨贏
+    # 21003 局數-獨贏
+    # 21103 第一局-獨贏
     elif odds_type in ["21003"]:
         event_buf = protobufUtils.set_monney_line(event_buf, odd_item, True)
 
-    #21014 總分-單雙
-    #21104 第一局-單雙
-    #21204 第二局-單雙
-    #21304 第三局-單雙
-    #21404 第四局-單雙
-    #21504 第五局-單雙
-    #21604 第六局-單雙
-    #21704 第七局-單雙      
+    # 21014 總分-單雙
+    # 21104 第一局-單雙
+    # 21204 第二局-單雙
+    # 21304 第三局-單雙
+    # 21404 第四局-單雙
+    # 21504 第五局-單雙
+    # 21604 第六局-單雙
+    # 21704 第七局-單雙
     elif odds_type in ["21014", "21104", "21204", "21304", "21404", "21504", "21604", "21704"]:
         event_buf = protobufUtils.set_parity(event_buf, odd_item)
- 
-    return event_buf, odds_key    
+
+    return event_buf, odds_key

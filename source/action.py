@@ -19,6 +19,7 @@ import logger
 
 _game_list = {}
 
+
 def pako_inflate(data):
 
     decompress = zlib.decompressobj(15)
@@ -29,17 +30,18 @@ def pako_inflate(data):
 
     return decompressed_data
 
+
 def transform_to_protobuf(json_data, filter_list={}):
     game_type_list = {}
     for game_type in json_data["ally"]:
         game_id = game_type[Mapping.allyData.leagueId]
         game_name = utils.ally_name_process(game_id, game_type[Mapping.allyData.leagueName])
         game_type_list[game_id] = {
-            "aId" : game_id,
-            "name" : game_name,
-            "uuid" : game_type[Mapping.allyData.leagueUUID],
-            "sport" : game_type[Mapping.allyData.sportId],
-            "type" : game_type[Mapping.allyData.typeId],
+            "aId": game_id,
+            "name": game_name,
+            "uuid": game_type[Mapping.allyData.leagueUUID],
+            "sport": game_type[Mapping.allyData.sportId],
+            "type": game_type[Mapping.allyData.typeId],
         }
 
     game_score_list = json_data["score"]
@@ -52,7 +54,7 @@ def transform_to_protobuf(json_data, filter_list={}):
 
     data_list = protobuf_spec.ApHdcArr()
 
-    for odds in game_odds_list : 
+    for odds in game_odds_list:
 
         game_round_id = odds[0]
 
@@ -61,7 +63,7 @@ def transform_to_protobuf(json_data, filter_list={}):
         except Exception:
             game_round = []
 
-        if len(game_round) == 0 or not game_round[Mapping.gameData.gameLeagueId] in game_type_list :
+        if len(game_round) == 0 or not game_round[Mapping.gameData.gameLeagueId] in game_type_list:
             continue
 
         game_type = str(game_type_list[game_round[Mapping.gameData.gameLeagueId]]["type"])
@@ -70,10 +72,10 @@ def transform_to_protobuf(json_data, filter_list={}):
         for index in range(1, len(odds)):
             odd_item = odds[index]
             odds_key = None
-            event = protobuf_spec.ApHdc()        
+            event = protobuf_spec.ApHdc()
             event.source = "KU"
             event.game_type = ""
-            event.game_class = utils.transform_game_type(game_type, game_display_name) 
+            event.game_class = utils.transform_game_type(game_type, game_display_name)
             event.raw_event_id = game_round_id
             event.ip = "192.168.1.1"
             event.status = '0'
@@ -82,67 +84,67 @@ def transform_to_protobuf(json_data, filter_list={}):
 
             datetime_dt = datetime.datetime.today()
             datetime_dt = datetime_dt + datetime.timedelta(hours=8)
-            datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S") 
+            datetime_str = datetime_dt.strftime("%m_%d_%H_%M_%S")
             event.source_updatetime = datetime_dt.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
             event.live = 'true' if json_data["mode"] == 2 else 'false'
 
             event.live_time = utils.transform_live_time(game_type, json_data["mode"], game_round[Mapping.gameData.runningType], game_round[Mapping.gameData.startTime], datetime_dt.strftime("%Y/%m/%d %H:%M:%S"), game_round[Mapping.gameData.runningTime], game_round[Mapping.gameData.ht])
 
-            event.information.league = game_type_list[game_round[Mapping.gameData.gameLeagueId]]["name"] 
+            event.information.league = game_type_list[game_round[Mapping.gameData.gameLeagueId]]["name"]
 
             event.information.home.team_name = game_round[Mapping.gameData.homeName][0]
 
             event.information.away.team_name = game_round[Mapping.gameData.awayName][0]
-        
+
             score = game_score_list[game_round_id]
 
             event.score.home = score[Mapping.scoreData.homeScore] if len(score[Mapping.scoreData.homeScore]) > 0 else '0'
             event.score.away = score[Mapping.scoreData.awayScore] if len(score[Mapping.scoreData.awayScore]) > 0 else '0'
 
-            #足球(11)
-            if utils.is_SC(game_type) : 
+            # 足球(11)
+            if utils.is_SC(game_type):
                 event.redcard.home = str(score[Mapping.scoreData.homeRedcard])
                 event.redcard.away = str(score[Mapping.scoreData.awayRedcard])
                 event.conner.home = '0'
-                event.conner.away = '0'                
+                event.conner.away = '0'
                 event.yellowcard.home = '0'
                 event.yellowcard.away = '0'
                 event, odds_key = soccer_parser(event, odd_item)
 
-            #籃球    
+            # 籃球
             elif game_type == "12":
                 event, odds_key = basketball_parser(event, odd_item)
 
-            #棒球
+            # 棒球
             elif game_type == "13":
                 event, odds_key = baseball_parser(event, odd_item)
 
-            #網球
+            # 網球
             elif game_type == "14":
                 event, odds_key = tennis_parser(event, odd_item)
 
-            #冰球
+            # 冰球
             elif game_type == "15":
                 event, odds_key = hockey_parser(event, odd_item)
 
-            #排球
+            # 排球
             elif game_type == "16":
                 event, odds_key = volleyball_parser(event, odd_item)
 
-            #羽毛球
+            # 羽毛球
             elif game_type == "17":
                 event, odds_key = badminton_parser(event, odd_item)
 
-            #電子競技
+            # 電子競技
             elif game_type == "18":
                 event, odds_key = eSport_parser(event, odd_item)
 
-            #美足
+            # 美足
             elif game_type == "19":
-                event, odds_key = football_parser(event, odd_item) 
+                event, odds_key = football_parser(event, odd_item)
 
-            #乒乓球
+            # 乒乓球
             elif game_type == "21":
                 event, odds_key = pingpong_parser(event, odd_item)
 
@@ -156,14 +158,14 @@ def transform_to_protobuf(json_data, filter_list={}):
             if skip_game:
                 continue
 
-            if odds_key == None :
+            if odds_key is None:
                 event.game_id = game_round_id
             else:
                 event.game_id = odds_key.replace("_", "")
 
             if odds_key in event_proto_list:
                 event_proto_list[odds_key].MergeFrom(event)
-            else :
+            else:
                 event_proto_list[odds_key] = event
 
     for event_item in event_proto_list:
@@ -171,27 +173,29 @@ def transform_to_protobuf(json_data, filter_list={}):
 
     return data_list, json_data["sport"]
 
+
 def get_now_data():
     global _game_list
     return _game_list.copy()
 
+
 def onNext(message_unzip):
     global _game_list
-    
+
     message_decode = message_unzip.decode("utf-8")
     message_json = json.loads(message_decode)
 
     logger.get_logger().debug(json.dumps(message_json))
-    
+
     sport = str(message_json["sport"]) if "sport" in message_json else '-1'
     mode = str(message_json["mode"]) if "mode" in message_json else '-1'
     game_type = str(message_json["type"]) if "type" in message_json else '-1'
     search_key = sport + "_" + mode + "_" + game_type
 
-    if message_json["action"] == "first" or message_json["action"] == "cm" or message_json["action"] == "cst" or message_json["action"] == "ckg": 
+    if message_json["action"] == "first" or message_json["action"] == "cm" or message_json["action"] == "cst" or message_json["action"] == "ckg":
         # 當前完整資訊
         # 此格式適用於 "first"、"cm"、"cst"、"ckg"
-        #{
+        # {
         #    "action":"first",  命令類型
         #    "sport":12,        球種
         #    "mode":1,          盤口
@@ -213,29 +217,29 @@ def onNext(message_unzip):
         #    "date":"2022/07/05 20:38:59",      取得資料當下時間
         #    "group":0,         未使用-用途未知
         #    "sn":54167798000   未使用-流水號
-        #}
+        # }
         if "ally" in message_json and "game" in message_json and "score" in message_json and "odds" in message_json:
             _game_list[search_key] = message_json
 
         if "menu" in message_json:
             if "list" in message_json["menu"]:
-                _game_list["menu" + mode]= message_json["menu"]["list"]
+                _game_list["menu" + mode] = message_json["menu"]["list"]
 
-    elif message_json["action"] == "add" : 
-    # 增加賽事
-    # 僅適用於 add
-    #{
-    #   "action":"add",                                 命令類型 add
-    #   "game":[[Mapping.gameData], ....],              比賽資訊 - 參考Mapping.gameData
-    #   "allyIndex":[],                                 未使用 - 聯盟編號列表
-    #   "score":{賽事ID:Mapping.scoreData,.......},     比分資訊 - key 為 "賽事ID"，value 為資料(參考Mapping.scoreData)
-    #   "odds":[[賽事ID,[Mapping.oddsData],....]],      賠率資訊 - 陣列第一位為"賽事ID"，後續為該比賽的賠率，賠率內容參考 Mapping.oddsData
-    #   "mode":1,                                       盤口
-    #   "sport":11,                                     球種
-    #   "type":4,                                       玩法
-    #   "group":2,                                      未使用-用途未知
-    #   "sn":21779842001                                未使用-流水號
-    #}
+    elif message_json["action"] == "add":
+        # 增加賽事
+        # 僅適用於 add
+        # {
+        #   "action":"add",                                 命令類型 add
+        #   "game":[[Mapping.gameData], ....],              比賽資訊 - 參考Mapping.gameData
+        #   "allyIndex":[],                                 未使用 - 聯盟編號列表
+        #   "score":{賽事ID:Mapping.scoreData,.......},     比分資訊 - key 為 "賽事ID"，value 為資料(參考Mapping.scoreData)
+        #   "odds":[[賽事ID,[Mapping.oddsData],....]],      賠率資訊 - 陣列第一位為"賽事ID"，後續為該比賽的賠率，賠率內容參考 Mapping.oddsData
+        #   "mode":1,                                       盤口
+        #   "sport":11,                                     球種
+        #   "type":4,                                       玩法
+        #   "group":2,                                      未使用-用途未知
+        #   "sn":21779842001                                未使用-流水號
+        # }
         if search_key in _game_list:
             game_all_list = _game_list[search_key]
             if "game" in message_json:
@@ -244,7 +248,7 @@ def onNext(message_unzip):
 
             if "ally" in message_json:
                 for new_item in message_json["ally"]:
-                    game_all_list["ally"].append(new_item) 
+                    game_all_list["ally"].append(new_item)
 
             if "score" in message_json:
                 for new_item in message_json["score"]:
@@ -252,12 +256,12 @@ def onNext(message_unzip):
 
             if "odds" in message_json:
                 for new_item in message_json["odds"]:
-                    game_all_list["odds"].append(new_item)                 
+                    game_all_list["odds"].append(new_item)
 
-    elif message_json["action"] == "del" : 
+    elif message_json["action"] == "del":
         # 刪除賽事
         # 僅適用於 del
-        #{
+        # {
         #   "action":"del",                      命令類型 del
         #   "val":[["111591492",0701,11001],...],    需要刪除的賽事ID與賠率編號 [賽事ID, Mapping.oddsData.oddGroup, Mapping.oddsData.oddType]，如果為["111591492", -1] 則刪除該賽事
         #   "mode":1,                            盤口
@@ -265,9 +269,9 @@ def onNext(message_unzip):
         #   "type":1,                            玩法
         #   "group":2,                           未使用-用途未知
         #   "sn":21779574001                     未使用-流水號
-        #}
+        # }
         if "val" in message_json:
-            delete_list = message_json["val"] 
+            delete_list = message_json["val"]
             if search_key in _game_list:
                 odds_all_list = _game_list[search_key]["odds"]
                 for delete_item in delete_list:
@@ -282,14 +286,14 @@ def onNext(message_unzip):
                                         logger.get_logger().debug(f'Find [{str(odd_itme)}] and deleted')
                                         del _game_list[search_key]["odds"][index][odd_index]
                                         break
-                            break                               
+                            break
 
-    elif message_json["action"] == "update" :  
+    elif message_json["action"] == "update":
         # 一筆update 資訊，有可能同時更新有多個(score,odds,menu)資訊
         # 沒有包含在邏輯內的資訊不更新(ex. zdCount, game)，因未使用該資訊
         if "odds" in message_json:
-            # 更新賠率 
-            #{
+            # 更新賠率
+            # {
             #   "action":"update",      命令類型 update
             #   "odds":[{"path":["111591073","0701","11001"],"o":["1","","2",""],"sId":"07","l":""},......],  需要更新的賽事資訊 - "path" 賠率位置 [賽事ID, Mapping.oddsData.oddGroup, Mapping.oddsData.oddType]
             #   "mode":1,               盤口                                                                                   - "o" 新賠率資訊 [賠率key, 賠率, 賠率key, 賠率,....] 數量不一定 1 ~ N
@@ -297,12 +301,12 @@ def onNext(message_unzip):
             #   "type":1,               玩法                                                                                   - "l" 新球頭資訊(Mapping.oddsData.oddLine)
             #   "group":2,              未使用-用途未知
             #   "sn":21778375002        未使用-流水號
-            #}
+            # }
             update_list = message_json["odds"]
             if search_key in _game_list:
                 odds_all_list = _game_list[search_key]["odds"]
                 for update_item in update_list:
-                    if "path" in update_item :
+                    if "path" in update_item:
                         path_list = update_item["path"]
                         for odds_list in odds_all_list:
                             if path_list[0] == odds_list[0]:
@@ -329,16 +333,16 @@ def onNext(message_unzip):
                                             line = update_item["l"]
                                             odd_itme[8] = line
                                         logger.get_logger().debug(f'Find [{str(path_list)}] and Update it [{str(odd_itme)}]')
-                                        break 
-                                break                            
-                    else :
+                                        break
+                                break
+                    else:
                         logger.get_logger().debug(f'Can\'t find key[{path_list}] in [{update_item}]')
             else:
                 logger.get_logger().debug(f'Can\'t find key [{search_key}]')
 
         if "menu" in message_json:
             # 更新 Menu 列表
-            #{
+            # {
             #   "action":"update",      命令類型 update
             #   "menu": {"list":[{"type":11, "count":[1,1,1,1...]},....]},   只處理key為list，官網左邊Menu欄資訊，分別type為球種，count為各玩法的資料數量。
             #   "mode":1,               盤口 (更新Menu 只看盤口，球種與玩法沒有用到)
@@ -346,13 +350,13 @@ def onNext(message_unzip):
             #   "type":-1,              玩法 (更新Menu 只看盤口，球種與玩法沒有用到)
             #   "group":0,              未使用-用途未知
             #   "sn":21778932001        未使用-流水號
-            #}
-            if "list" in  message_json["menu"]:
+            # }
+            if "list" in message_json["menu"]:
                 _game_list["menu" + mode] = message_json["menu"]["list"]
 
         if "score" in message_json and "score" in _game_list[search_key]:
             # 更新比分
-            #{
+            # {
             #   "action":"update",          命令類型 update
             #   "score":[{"gId":"112618372","ra":"1","fra":"1"},.....],   比分資訊 - "gId" 為 賽事ID(一定會存在), 其餘 key 會根據是否需要更新而給予，不一定都會存在，對應 Mapping.scoreData
             #   "mode":1,                   盤口
@@ -360,18 +364,18 @@ def onNext(message_unzip):
             #   "type":1,                   玩法
             #   "group":4,                  未使用-用途未知
             #   "sn":21778597013            未使用-流水號
-            #}
-            score_key_list = { "ra" : 0, "rb" : 1, "rcna" : 2, "rcnb" : 3, "sa" : 4, "sb" : 5, "na" : 6, "nb" : 7, "runsA" : 8, "runsB" : 9, "pr" : 10, "tc" : 11, "fra" : 12, "frb" : 13}
+            # }
+            score_key_list = {"ra": 0, "rb": 1, "rcna": 2, "rcnb": 3, "sa": 4, "sb": 5, "na": 6, "nb": 7, "runsA": 8, "runsB": 9, "pr": 10, "tc": 11, "fra": 12, "frb": 13}
             update_score_list = message_json["score"]
             if search_key in _game_list:
                 cache_score_list = _game_list[search_key]["score"]
                 for update_score in update_score_list:
                     score_key = update_score["gId"]
-                    if score_key in cache_score_list :
-                        for score_item in update_score :
+                    if score_key in cache_score_list:
+                        for score_item in update_score:
                             if not score_item == "gId" and score_item in score_key_list:
                                 index = score_key_list[score_item]
-                                logger.get_logger().debug(f'Update Scrore {score_item}[{index}] from {_game_list[search_key]["score"][score_key]} to {update_score[score_item]}' )
+                                logger.get_logger().debug(f'Update Scrore {score_item}[{index}] from {_game_list[search_key]["score"][score_key]} to {update_score[score_item]}')
                                 _game_list[search_key]["score"][score_key][index] = update_score[score_item]
 
     # action == ban 為帳號被封
@@ -379,9 +383,8 @@ def onNext(message_unzip):
         logger.get_logger().error("The account is be ban.")
 
     # 以下 action 未使用
-    elif message_json["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]: 
+    elif message_json["action"] in ["checkTime", "sf_over", "note", "gift", "smmt_over"]:
         pass
-        
-    else :
-        logger.get_logger().debug(f'Unknown Action [{message_json["action"]}]\n {json.dumps(message_json)}')
 
+    else:
+        logger.get_logger().debug(f'Unknown Action [{message_json["action"]}]\n {json.dumps(message_json)}')
