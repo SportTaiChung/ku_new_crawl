@@ -54,8 +54,8 @@ class Mapping:
         "football": {"early": [], "today": [], "live": []},
         "billiardball": {"early": [1, 2], "today": [1, 2], "live": [3, 4, 5]},
         "PP": {"early": [1, 2], "today": [1, 2], "live": [3, 4, 5]},
-        "UCL": {"early": [], "today": [], "live": []},
-        "wsc": {"early": [], "today": [], "live": []},
+        "UCL": {"early": [1, 2, 3, 4, 5, 6], "today": [1, 2, 3, 4, 5, 6], "live": [1, 2, 4, 5, 6, 7]},
+        "wsc": {"early": [1, 2, 3, 4, 5, 6], "today": [1, 2, 3, 4, 5, 6], "live": [1, 2, 4, 5, 6, 7]},
         "coming soon": {"early": [], "today": [], "live": []}
     }
 
