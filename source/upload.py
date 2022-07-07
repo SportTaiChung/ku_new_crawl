@@ -164,7 +164,7 @@ class protobufUtils:
         hf_AD = self.get_odds(odds_item[Mapping.oddsData.hf_AD])
         hf_AA = self.get_odds(odds_item[Mapping.oddsData.hf_AA])
 
-        event_buf.multi = "{\"HH\": " + hf_HH + ", \"HD\": " + hf_HD + ", \"HA\": " + hf_HA + ", \"DH\": " + hf_DH + ", \"DD\": " + hf_DD + ", \"DA\": " + hf_DA + ", \"AH\": " + hf_AH + ", \"AD\": " + hf_AD + ", \"AA\": " + hf_AA + "}"    
+        event_buf.multi = "{\"HH\": " + hf_HH + ", \"HD\": " + hf_HD + ", \"HA\": " + hf_HA + ", \"DH\": " + hf_DH + ", \"DD\": " + hf_DD + ", \"DA\": " + hf_DA + ", \"AH\": " + hf_AH + ", \"AD\": " + hf_AD + ", \"AA\": " + hf_AA + "}"
 
         return event_buf
 

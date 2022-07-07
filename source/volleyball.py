@@ -57,7 +57,7 @@ def volleyball_parser(event_buf, odd_item):
     # 16501 第五局-讓球
     # 16601 第六局-讓球
     # 16701 第七局-讓球
-    if odds_type in ["16001", "16101", "16011", "16201", "16301", "16401", "16501", "16601", "16701" ]:
+    if odds_type in ["16001", "16101", "16011", "16201", "16301", "16401", "16501", "16601", "16701"]:
         event_buf = protobufUtils.set_spread(event_buf, odd_item)
 
     # 16012 總分-大小
