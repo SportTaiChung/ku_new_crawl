@@ -149,8 +149,8 @@ def transform_to_protobuf(json_data, filter_list={}):
                 event, odds_key = pingpong_parser(event, odd_item)
 
             skip_game = False
-            if game_type in filter_list:
-                for skip_class in filter_list[game_type]:
+            if game_type in filter_list and str(json_data["mode"]) in filter_list[game_type]:
+                for skip_class in filter_list[game_type][str(json_data["mode"])]:
                     if skip_class in event.game_type:
                         skip_game = True
                         break

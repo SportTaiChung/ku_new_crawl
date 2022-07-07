@@ -46,13 +46,14 @@ if __name__ == '__main__':
     else:
         tasks = []
         for task in secrets['tasks']:
-            task_filter = []
-            if 'games' in task:
-                for game_type in task['games']:
-                    if not game_type['enabled']:
-                        task_filter.append(game_type['name'])
             for target in task['targets']:
                 if target['enabled']:
+                    task_filter = []
+                    if 'games' in target:
+                        for game_type in target['games']:
+                            if not game_type['enabled']:
+                                task_filter.append(game_type['name'])
+
                     task_name = f'ku_{task["name"]}_{target["mode"]}'
                     task_spec = {
                         'crawler_name': task_name,

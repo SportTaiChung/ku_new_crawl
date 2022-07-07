@@ -141,7 +141,10 @@ class KUCrawler:
 
                     if task['filter']:
                         if not crawl_sport_list[task['game_type']] in self._filter_list:
-                            self._filter_list[crawl_sport_list[task['game_type']]] = task['filter']
+                            self._filter_list[crawl_sport_list[task['game_type']]] = {}
+
+                        if not crawl_mode_list[task['game_mode']] in self._filter_list[crawl_sport_list[task['game_type']]]:
+                            self._filter_list[crawl_sport_list[task['game_type']]][crawl_mode_list[task['game_mode']]] = task['filter']
 
                     websocket_list = task['socket']
                     need_connect = False
@@ -194,6 +197,7 @@ class KUCrawler:
                     if need_connect:
                         for index, url in enumerate(self._url):
                             if url not in websocket_list[type_key] or need_connect:
+
                                 socket = KuWebsocket(url, self._url_search, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keep_live=self.on_keep_live, crawl_index=crawl_sport_list[task['game_type']], crawl_mode=crawl_mode_list[task['game_mode']], crawl_type=str(sport_type))
                                 start_thread = threading.Thread(target=socket.connect)
                                 type_item = websocket_list[type_key]
