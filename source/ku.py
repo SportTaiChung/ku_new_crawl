@@ -145,7 +145,7 @@ class KUCrawler:
 
                     websocket_list = task['socket']
                     need_connect = False
-                    sport_index = 1
+                    sport_type = 1
                     # 檢查是否有抓到menu，不用管運動總類，只要確認盤口("早盤"、"今日"、"走地")。
                     # 如沒抓到就開啟預設webcoket(type = 1)，抓“全場”
                     receive_data = Action.get_now_data()
@@ -163,15 +163,15 @@ class KUCrawler:
 
                                     check_key = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(index)
                                     if check_key not in websocket_list:
-                                        sport_index = index
+                                        sport_type = index
                                         break
 
                                 break
 
                     else:
-                        sport_index = 1
+                        sport_type = 1
 
-                    type_key = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(sport_index)
+                    type_key = str(task['game_type']) + "_" + str(task['game_mode']) + "_" + str(sport_type)
 
                     if type_key not in websocket_list:
                         websocket_list[type_key] = {}
@@ -182,7 +182,7 @@ class KUCrawler:
                             for url in url_list:
                                 if url_list[url]['socket'].is_close() or time.time() - url_list[url]['socket'].get_last_update_time() > 120:
                                     type_key = type_index
-                                    sport_index = int(type_index[-1])
+                                    sport_type = int(type_index[-1])
                                     need_connect = True
                                 else:
                                     need_connect = False
@@ -194,12 +194,6 @@ class KUCrawler:
                     if need_connect:
                         for index, url in enumerate(self._url):
                             if url not in websocket_list[type_key] or need_connect:
-                                sport_type_list = Mapping.sport_type[task['game_type']][str(task['game_mode'])]
-                                if sport_index <= len(sport_type_list):
-                                    sport_type = sport_type_list[sport_index - 1]
-                                else:
-                                    sport_type = sport_index
-
                                 socket = KuWebsocket(url, self._url_search, self._protocol, on_open=self.on_open, on_message=self.on_message, on_keep_live=self.on_keep_live, crawl_index=crawl_sport_list[task['game_type']], crawl_mode=crawl_mode_list[task['game_mode']], crawl_type=str(sport_type))
                                 start_thread = threading.Thread(target=socket.connect)
                                 type_item = websocket_list[type_key]
